@@ -54,7 +54,7 @@ body {
   border-color: rgba(186, 230, 253, 0.9);
 }
 
-/* Navigation Tabs & Dropdowns */
+/* Navigation Tabs */
 .nav-tab {
   display: flex;
   align-items: center;
@@ -78,16 +78,6 @@ body {
   background-color: #ffffff;
   border: 1px solid #bae6fd;
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.12);
-}
-
-.nav-dropdown-item.active {
-  background-color: #f0f9ff;
-  color: #0284c7;
-  font-weight: 600;
-}
-
-.nav-dropdown-item.active .font-semibold {
-  color: #0284c7;
 }
 
 /* Status Badges */
