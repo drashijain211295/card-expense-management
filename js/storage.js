@@ -50,13 +50,13 @@ const StorageManager = {
         }
       });
 
-      const DATA_VERSION = 'spendwise_v2.4_deleted_ids_fixed';
+      const DATA_VERSION = 'spendwise_v3.0_full_data_reset_sync';
       const currentVersion = localStorage.getItem('spendwise_version');
 
       if (currentVersion !== DATA_VERSION) {
-        // Sync verified initial expenses without resurrecting deleted items
+        // Force baseline sync for all expenses, upi spends, and payments on fresh release
         (window.INITIAL_EXPENSES || []).forEach(initExp => {
-          if (deletedIds.includes(initExp.id)) return; // DO NOT resurrect deleted items
+          if (deletedIds.includes(initExp.id)) return;
           const idx = storedExpenses.findIndex(e => e.id === initExp.id);
           if (idx !== -1) {
             storedExpenses[idx] = { ...initExp };
@@ -65,6 +65,31 @@ const StorageManager = {
           }
         });
         hasChanges = true;
+
+        let storedUpi = this.getUpiExpenses();
+        (window.INITIAL_UPI_EXPENSES || []).forEach(initUpi => {
+          if (deletedIds.includes(initUpi.id)) return;
+          const idx = storedUpi.findIndex(u => u.id === initUpi.id);
+          if (idx !== -1) {
+            storedUpi[idx] = { ...initUpi };
+          } else {
+            storedUpi.push(initUpi);
+          }
+        });
+        this.saveUpiExpenses(storedUpi);
+
+        let storedPayments = this.getPayments();
+        (window.INITIAL_PAYMENTS || []).forEach(initPay => {
+          if (deletedIds.includes(initPay.id)) return;
+          const idx = storedPayments.findIndex(p => p.id === initPay.id);
+          if (idx !== -1) {
+            storedPayments[idx] = { ...initPay };
+          } else {
+            storedPayments.push(initPay);
+          }
+        });
+        this.savePayments(storedPayments);
+
         localStorage.setItem('spendwise_version', DATA_VERSION);
       }
 
