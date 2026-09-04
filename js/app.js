@@ -48,7 +48,12 @@ function loadStateFromStorage() {
   appState.expenses = StorageManager.getExpenses();
   appState.payments = StorageManager.getPayments();
   appState.months = StorageManager.getMonths();
-  appState.currentMonth = appState.settings.defaultMonth || "September 2026";
+  // Always default to the latest active month on refresh
+  if (appState.months && appState.months.length > 0) {
+    appState.currentMonth = appState.months[0];
+  } else {
+    appState.currentMonth = "September 2026";
+  }
 }
 
 function saveStateToStorage() {
@@ -154,13 +159,24 @@ function populateMonthDropdown() {
 
   if (!globalMonthSelect) return;
 
-  const months = appState.months.length > 0 ? appState.months : ["August 2026", "July 2026"];
+  const months = appState.months.length > 0 ? appState.months : ["September 2026", "August 2026", "July 2026"];
+
+  if (!appState.currentMonth || !months.includes(appState.currentMonth)) {
+    appState.currentMonth = months[0];
+  }
 
   const optionsHTML = months.map(m => `<option value="${m}" ${m === appState.currentMonth ? "selected" : ""}>${m}</option>`).join("");
   globalMonthSelect.innerHTML = optionsHTML;
+  globalMonthSelect.value = appState.currentMonth;
   
-  if (expenseMonthInput) expenseMonthInput.innerHTML = optionsHTML;
-  if (payMonthInput) payMonthInput.innerHTML = optionsHTML;
+  if (expenseMonthInput) {
+    expenseMonthInput.innerHTML = optionsHTML;
+    expenseMonthInput.value = appState.currentMonth;
+  }
+  if (payMonthInput) {
+    payMonthInput.innerHTML = optionsHTML;
+    payMonthInput.value = appState.currentMonth;
+  }
 }
 
 function populateCategoryDropdowns() {
@@ -179,6 +195,7 @@ function populateCategoryDropdowns() {
 
 // Master Render
 function renderApp() {
+  populateMonthDropdown();
   updateHeaderLabels();
   renderDashboardView();
   renderExpensesView();
