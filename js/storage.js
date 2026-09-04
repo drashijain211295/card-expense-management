@@ -1,6 +1,6 @@
 /**
- * SpendWise Data Persistence Manager
- * Hybrid Engine: LocalStorage (Offline Cache) + Supabase Cloud (Live Sync)
+ * SpendWise Data Persistence & Multi-Device Synchronization Engine
+ * Triple-Layer Engine: LocalStorage (Offline Cache) + Node/MongoDB Server REST API + Supabase Cloud
  */
 
 const StorageManager = {
@@ -9,17 +9,32 @@ const StorageManager = {
   STORAGE_KEY_PAYMENTS: 'spendwise_payments',
   STORAGE_KEY_SETTINGS: 'spendwise_settings',
   STORAGE_KEY_MONTHS: 'spendwise_months',
+  STORAGE_KEY_TRASH: 'spendwise_trash',
+  STORAGE_KEY_DELETED_IDS: 'spendwise_deleted_ids',
+  
+  eventSource: null,
 
   // Initialize or retrieve state
-  init(onCloudSyncCallback) {
+  init(onSyncCallback) {
+    const deletedIds = this.getDeletedIds();
+
     // 1. Initial LocalStorage baseline boot
     if (!localStorage.getItem(this.STORAGE_KEY_EXPENSES)) {
       this.resetToExcelData();
     } else {
-      const storedExpenses = this.getExpenses();
+      let storedExpenses = this.getExpenses();
       let hasChanges = false;
       
-      // Normalize dates and fuel waivers in all stored expenses for consistent display & accurate calculation
+      // Filter out any previously deleted IDs
+      if (deletedIds.length > 0) {
+        const filtered = storedExpenses.filter(e => !deletedIds.includes(e.id));
+        if (filtered.length !== storedExpenses.length) {
+          storedExpenses = filtered;
+          hasChanges = true;
+        }
+      }
+
+      // Normalize dates and fuel waivers for display
       storedExpenses.forEach(e => {
         const formatted = window.formatDisplayDate ? window.formatDisplayDate(e.date) : e.date;
         if (formatted && formatted !== e.date) {
@@ -35,12 +50,13 @@ const StorageManager = {
         }
       });
 
-      const DATA_VERSION = 'spendwise_v2.3_sept_irctc_sorted';
+      const DATA_VERSION = 'spendwise_v2.4_deleted_ids_fixed';
       const currentVersion = localStorage.getItem('spendwise_version');
 
       if (currentVersion !== DATA_VERSION) {
-        // Sync verified initial expenses without losing any user custom expenses
+        // Sync verified initial expenses without resurrecting deleted items
         (window.INITIAL_EXPENSES || []).forEach(initExp => {
+          if (deletedIds.includes(initExp.id)) return; // DO NOT resurrect deleted items
           const idx = storedExpenses.findIndex(e => e.id === initExp.id);
           if (idx !== -1) {
             storedExpenses[idx] = { ...initExp };
@@ -50,13 +66,6 @@ const StorageManager = {
         });
         hasChanges = true;
         localStorage.setItem('spendwise_version', DATA_VERSION);
-      } else {
-        (window.INITIAL_EXPENSES || []).forEach(initExp => {
-          if (!storedExpenses.some(e => e.id === initExp.id)) {
-            storedExpenses.push(initExp);
-            hasChanges = true;
-          }
-        });
       }
 
       if (hasChanges) {
@@ -65,26 +74,25 @@ const StorageManager = {
 
       // Check UPI expenses
       if (!localStorage.getItem(this.STORAGE_KEY_UPI_EXPENSES)) {
-        this.saveUpiExpenses(window.INITIAL_UPI_EXPENSES || []);
+        const upiFiltered = (window.INITIAL_UPI_EXPENSES || []).filter(u => !deletedIds.includes(u.id));
+        this.saveUpiExpenses(upiFiltered);
       } else {
-        const storedUpi = this.getUpiExpenses();
+        let storedUpi = this.getUpiExpenses();
         let upiChanges = false;
-        (window.INITIAL_UPI_EXPENSES || []).forEach(initUpi => {
-          const idx = storedUpi.findIndex(u => u.id === initUpi.id);
-          if (idx !== -1) {
-            storedUpi[idx] = { ...initUpi, ...storedUpi[idx] };
-          } else {
-            storedUpi.push(initUpi);
+        if (deletedIds.length > 0) {
+          const filtered = storedUpi.filter(u => !deletedIds.includes(u.id));
+          if (filtered.length !== storedUpi.length) {
+            storedUpi = filtered;
             upiChanges = true;
           }
-        });
+        }
         if (upiChanges) {
           this.saveUpiExpenses(storedUpi);
         }
       }
 
       const storedMonths = this.getMonths();
-      window.AVAILABLE_MONTHS.forEach(m => {
+      (window.AVAILABLE_MONTHS || []).forEach(m => {
         if (!storedMonths.includes(m)) {
           storedMonths.push(m);
         }
@@ -92,10 +100,122 @@ const StorageManager = {
       this.saveMonths(storedMonths);
     }
 
-    // 2. Initialize Cloud Connection in background if credentials exist
-    this.initCloud(onCloudSyncCallback);
+    // 2. Start Node/MongoDB Server API sync & Server-Sent Events (SSE) listener
+    this.initServerSync(onSyncCallback);
+
+    // 3. Initialize Supabase Cloud Connection in background
+    this.initCloud(onSyncCallback);
   },
 
+  // ==========================================
+  // SERVER API & REAL-TIME MULTI-DEVICE SYNC
+  // ==========================================
+  async initServerSync(onSyncCallback) {
+    try {
+      // Fetch state from server
+      const res = await fetch('/api/data').catch(() => null);
+      if (res && res.ok) {
+        const serverData = await res.json();
+        if (serverData) {
+          this.mergeServerData(serverData);
+          console.log('📡 Merged multi-device server data into local storage');
+          if (typeof onSyncCallback === 'function') onSyncCallback('server_connected', serverData);
+        }
+      } else {
+        // Server might be static or unreachable, push local baseline to server
+        this.pushFullSyncToServer();
+      }
+    } catch (e) {
+      console.warn('Server API sync notice:', e.message);
+    }
+
+    // Connect Server-Sent Events (SSE) for instant cross-device updates (Phone <-> Desktop)
+    this.connectServerSSE(onSyncCallback);
+  },
+
+  connectServerSSE(onSyncCallback) {
+    if (typeof window.EventSource === 'undefined') return;
+    try {
+      if (this.eventSource) this.eventSource.close();
+      this.eventSource = new EventSource('/api/events');
+
+      this.eventSource.onmessage = async (e) => {
+        try {
+          const payload = JSON.parse(e.data);
+          console.log('⚡ Server Realtime Push Received:', payload.type);
+          if (payload.type !== 'connected') {
+            // Re-fetch latest server state & re-render app
+            const res = await fetch('/api/data').catch(() => null);
+            if (res && res.ok) {
+              const freshData = await res.json();
+              this.mergeServerData(freshData);
+              if (typeof onSyncCallback === 'function') onSyncCallback('realtime', freshData);
+            }
+          }
+        } catch (err) {
+          console.error('SSE message parse error:', err);
+        }
+      };
+
+      this.eventSource.onerror = (e) => {
+        // Silent reconnect attempt
+      };
+    } catch (e) {
+      console.warn('SSE connection warning:', e);
+    }
+  },
+
+  mergeServerData(serverData) {
+    const deletedIds = Array.from(new Set([...this.getDeletedIds(), ...(serverData.deletedIds || [])]));
+    this.saveDeletedIds(deletedIds);
+
+    if (serverData.expenses && Array.isArray(serverData.expenses)) {
+      const validExpenses = serverData.expenses.filter(e => !deletedIds.includes(e.id));
+      this.saveExpenses(validExpenses);
+    }
+    if (serverData.upiExpenses && Array.isArray(serverData.upiExpenses)) {
+      const validUpi = serverData.upiExpenses.filter(u => !deletedIds.includes(u.id));
+      this.saveUpiExpenses(validUpi);
+    }
+    if (serverData.payments && Array.isArray(serverData.payments)) {
+      const validPayments = serverData.payments.filter(p => !deletedIds.includes(p.id));
+      this.savePayments(validPayments);
+    }
+    if (serverData.settings && Object.keys(serverData.settings).length > 0) {
+      this.saveSettings(serverData.settings);
+    }
+    if (serverData.months && Array.isArray(serverData.months) && serverData.months.length > 0) {
+      this.saveMonths(serverData.months);
+    }
+    if (serverData.trash && Array.isArray(serverData.trash)) {
+      this.saveTrash(serverData.trash);
+    }
+  },
+
+  async pushFullSyncToServer() {
+    try {
+      const payload = {
+        expenses: this.getExpenses(),
+        upiExpenses: this.getUpiExpenses(),
+        payments: this.getPayments(),
+        settings: this.getSettings(),
+        months: this.getMonths(),
+        trash: this.getTrash(),
+        deletedIds: this.getDeletedIds()
+      };
+      await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => null);
+    } catch (e) {
+      // Ignore background sync errors
+    }
+  },
+
+  // ==========================================
+  // SUPABASE CLOUD CONNECTION
+  // ==========================================
   async initCloud(onCloudSyncCallback) {
     if (typeof SupabaseService === 'undefined') return;
 
@@ -106,23 +226,29 @@ const StorageManager = {
     }
 
     try {
-      // Check cloud data
       const cloudExpenses = await SupabaseService.fetchExpenses();
       const cloudUpi = await SupabaseService.fetchUpiExpenses();
       const cloudPayments = await SupabaseService.fetchPayments();
       const cloudSettings = await SupabaseService.fetchSettings();
       const cloudMonths = await SupabaseService.fetchMonths();
 
+      const deletedIds = this.getDeletedIds();
+
       if (cloudExpenses && cloudExpenses.length > 0) {
-        // Cloud has data -> update local storage cache with cloud truth
-        this.saveExpenses(cloudExpenses);
-        if (cloudUpi && cloudUpi.length > 0) this.saveUpiExpenses(cloudUpi);
-        if (cloudPayments) this.savePayments(cloudPayments);
+        const filteredExpenses = cloudExpenses.filter(e => !deletedIds.includes(e.id));
+        this.saveExpenses(filteredExpenses);
+        if (cloudUpi && cloudUpi.length > 0) {
+          const filteredUpi = cloudUpi.filter(u => !deletedIds.includes(u.id));
+          this.saveUpiExpenses(filteredUpi);
+        }
+        if (cloudPayments) {
+          const filteredPay = cloudPayments.filter(p => !deletedIds.includes(p.id));
+          this.savePayments(filteredPay);
+        }
         if (cloudSettings) this.saveSettings(cloudSettings);
         if (cloudMonths && cloudMonths.length > 0) this.saveMonths(cloudMonths);
-        console.log(`☁️ Synced ${cloudExpenses.length} card expenses & ${cloudUpi ? cloudUpi.length : 0} UPI spends from Supabase Cloud`);
+        console.log(`☁️ Synced ${filteredExpenses.length} card expenses & ${cloudUpi ? cloudUpi.length : 0} UPI spends from Supabase Cloud`);
       } else if (cloudExpenses && cloudExpenses.length === 0) {
-        // Cloud is empty -> auto seed cloud with our local baseline data
         console.log('☁️ Supabase is empty. Seeding baseline data to Cloud...');
         await SupabaseService.syncLocalToCloud(
           this.getExpenses(),
@@ -133,7 +259,6 @@ const StorageManager = {
         );
       }
 
-      // Subscribe to real-time changes
       SupabaseService.subscribeToRealtime((table, payload) => {
         if (typeof onCloudSyncCallback === 'function') {
           onCloudSyncCallback('realtime', { table, payload });
@@ -150,20 +275,50 @@ const StorageManager = {
   },
 
   // ==========================================
+  // DELETED IDS LEDGER (PREVENTS RESURRECTION)
+  // ==========================================
+  getDeletedIds() {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY_DELETED_IDS);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveDeletedIds(ids) {
+    const unique = Array.from(new Set(ids || []));
+    localStorage.setItem(this.STORAGE_KEY_DELETED_IDS, JSON.stringify(unique));
+  },
+
+  recordDeletedId(id) {
+    if (!id) return;
+    const deletedIds = this.getDeletedIds();
+    if (!deletedIds.includes(id)) {
+      deletedIds.push(id);
+      this.saveDeletedIds(deletedIds);
+    }
+  },
+
+  // ==========================================
   // CARD EXPENSES
   // ==========================================
   getExpenses() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_EXPENSES);
-      return data ? JSON.parse(data) : [...window.INITIAL_EXPENSES];
+      const expenses = data ? JSON.parse(data) : [...(window.INITIAL_EXPENSES || [])];
+      const deletedIds = this.getDeletedIds();
+      return expenses.filter(e => !deletedIds.includes(e.id));
     } catch (e) {
       console.error("Failed to read expenses from storage", e);
-      return [...window.INITIAL_EXPENSES];
+      return [...(window.INITIAL_EXPENSES || [])];
     }
   },
 
   saveExpenses(expenses) {
-    localStorage.setItem(this.STORAGE_KEY_EXPENSES, JSON.stringify(expenses));
+    const deletedIds = this.getDeletedIds();
+    const filtered = (expenses || []).filter(e => !deletedIds.includes(e.id));
+    localStorage.setItem(this.STORAGE_KEY_EXPENSES, JSON.stringify(filtered));
   },
 
   async saveExpenseAsync(expense) {
@@ -176,12 +331,21 @@ const StorageManager = {
     }
     this.saveExpenses(expenses);
 
+    // Push to Server API (MongoDB / Local File DB)
+    fetch('/api/expense', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(expense)
+    }).catch(() => null);
+
+    // Push to Supabase Cloud if configured
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.upsertExpense(expense);
     }
   },
 
   async deleteExpenseAsync(id) {
+    this.recordDeletedId(id);
     const expenses = this.getExpenses();
     const item = expenses.find(x => x.id === id);
     if (item) {
@@ -190,6 +354,10 @@ const StorageManager = {
     const filtered = expenses.filter(x => x.id !== id);
     this.saveExpenses(filtered);
 
+    // Server API DELETE
+    fetch(`/api/expense/${id}`, { method: 'DELETE' }).catch(() => null);
+
+    // Supabase Cloud DELETE
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.deleteExpense(id);
     }
@@ -201,7 +369,9 @@ const StorageManager = {
   getUpiExpenses() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_UPI_EXPENSES);
-      return data ? JSON.parse(data) : [...(window.INITIAL_UPI_EXPENSES || [])];
+      const upiList = data ? JSON.parse(data) : [...(window.INITIAL_UPI_EXPENSES || [])];
+      const deletedIds = this.getDeletedIds();
+      return upiList.filter(u => !deletedIds.includes(u.id));
     } catch (e) {
       console.error("Failed to read UPI expenses from storage", e);
       return [...(window.INITIAL_UPI_EXPENSES || [])];
@@ -209,7 +379,9 @@ const StorageManager = {
   },
 
   saveUpiExpenses(expenses) {
-    localStorage.setItem(this.STORAGE_KEY_UPI_EXPENSES, JSON.stringify(expenses));
+    const deletedIds = this.getDeletedIds();
+    const filtered = (expenses || []).filter(u => !deletedIds.includes(u.id));
+    localStorage.setItem(this.STORAGE_KEY_UPI_EXPENSES, JSON.stringify(filtered));
   },
 
   async saveUpiExpenseAsync(expense) {
@@ -222,12 +394,19 @@ const StorageManager = {
     }
     this.saveUpiExpenses(upiList);
 
+    fetch('/api/upi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(expense)
+    }).catch(() => null);
+
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.upsertUpiExpense(expense);
     }
   },
 
   async deleteUpiExpenseAsync(id) {
+    this.recordDeletedId(id);
     const upiList = this.getUpiExpenses();
     const item = upiList.find(x => x.id === id);
     if (item) {
@@ -235,6 +414,8 @@ const StorageManager = {
     }
     const filtered = upiList.filter(x => x.id !== id);
     this.saveUpiExpenses(filtered);
+
+    fetch(`/api/upi/${id}`, { method: 'DELETE' }).catch(() => null);
 
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.deleteUpiExpense(id);
@@ -247,15 +428,19 @@ const StorageManager = {
   getPayments() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_PAYMENTS);
-      return data ? JSON.parse(data) : [...window.INITIAL_PAYMENTS];
+      const payments = data ? JSON.parse(data) : [...(window.INITIAL_PAYMENTS || [])];
+      const deletedIds = this.getDeletedIds();
+      return payments.filter(p => !deletedIds.includes(p.id));
     } catch (e) {
       console.error("Failed to read payments from storage", e);
-      return [...window.INITIAL_PAYMENTS];
+      return [...(window.INITIAL_PAYMENTS || [])];
     }
   },
 
   savePayments(payments) {
-    localStorage.setItem(this.STORAGE_KEY_PAYMENTS, JSON.stringify(payments));
+    const deletedIds = this.getDeletedIds();
+    const filtered = (payments || []).filter(p => !deletedIds.includes(p.id));
+    localStorage.setItem(this.STORAGE_KEY_PAYMENTS, JSON.stringify(filtered));
   },
 
   async savePaymentAsync(payment) {
@@ -268,12 +453,19 @@ const StorageManager = {
     }
     this.savePayments(payments);
 
+    fetch('/api/payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payment)
+    }).catch(() => null);
+
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.upsertPayment(payment);
     }
   },
 
   async deletePaymentAsync(id) {
+    this.recordDeletedId(id);
     const payments = this.getPayments();
     const item = payments.find(p => p.id === id);
     if (item) {
@@ -281,6 +473,8 @@ const StorageManager = {
     }
     const filtered = payments.filter(p => p.id !== id);
     this.savePayments(filtered);
+
+    fetch(`/api/payment/${id}`, { method: 'DELETE' }).catch(() => null);
 
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.deletePayment(id);
@@ -327,24 +521,33 @@ const StorageManager = {
     trash.splice(entryIndex, 1);
     this.saveTrash(trash);
 
+    // Remove item ID from deletedIds array
+    if (entry.item && entry.item.id) {
+      const deletedIds = this.getDeletedIds().filter(id => id !== entry.item.id);
+      this.saveDeletedIds(deletedIds);
+    }
+
     // Restore to appropriate collection
     if (entry.type === 'Card') {
       const expenses = this.getExpenses();
       if (!expenses.some(e => e.id === entry.item.id)) {
         expenses.push(entry.item);
         this.saveExpenses(expenses);
+        this.saveExpenseAsync(entry.item);
       }
     } else if (entry.type === 'UPI') {
       const upiList = this.getUpiExpenses();
       if (!upiList.some(u => u.id === entry.item.id)) {
         upiList.push(entry.item);
         this.saveUpiExpenses(upiList);
+        this.saveUpiExpenseAsync(entry.item);
       }
     } else if (entry.type === 'Payment') {
       const payments = this.getPayments();
       if (!payments.some(p => p.id === entry.item.id)) {
         payments.push(entry.item);
         this.savePayments(payments);
+        this.savePaymentAsync(entry.item);
       }
     }
 
@@ -353,34 +556,59 @@ const StorageManager = {
 
   restoreAllTrash() {
     const trash = this.getTrash();
-    const expenses = this.getExpenses();
-    const upiList = this.getUpiExpenses();
-    const payments = this.getPayments();
-
+    let restoredCount = 0;
     trash.forEach(entry => {
-      if (entry.type === 'Card') {
-        if (!expenses.some(e => e.id === entry.item.id)) expenses.push(entry.item);
-      } else if (entry.type === 'UPI') {
-        if (!upiList.some(u => u.id === entry.item.id)) upiList.push(entry.item);
-      } else if (entry.type === 'Payment') {
-        if (!payments.some(p => p.id === entry.item.id)) payments.push(entry.item);
+      if (entry.trashId) {
+        this.restoreFromTrash(entry.trashId);
+        restoredCount++;
+      }
+    });
+    return restoredCount;
+  },
+
+  async emptyTrash() {
+    const trash = this.getTrash();
+    
+    // Mark all item IDs as permanently deleted
+    trash.forEach(entry => {
+      if (entry.item && entry.item.id) {
+        this.recordDeletedId(entry.item.id);
+        
+        // Permanent deletion from Supabase Cloud
+        if (window.SupabaseService && window.SupabaseService.isConnected) {
+          if (entry.type === 'Card') window.SupabaseService.deleteExpense(entry.item.id);
+          if (entry.type === 'UPI') window.SupabaseService.deleteUpiExpense(entry.item.id);
+          if (entry.type === 'Payment') window.SupabaseService.deletePayment(entry.item.id);
+        }
       }
     });
 
-    this.saveExpenses(expenses);
-    this.saveUpiExpenses(upiList);
-    this.savePayments(payments);
     this.saveTrash([]);
-    return trash.length;
+
+    // Permanent deletion on Server API
+    fetch('/api/trash/empty', { method: 'POST' }).catch(() => null);
   },
 
-  emptyTrash() {
-    this.saveTrash([]);
-  },
+  async deleteFromTrashPermanently(trashId) {
+    const trash = this.getTrash();
+    const entry = trash.find(t => t.trashId === trashId);
+    
+    if (entry && entry.item && entry.item.id) {
+      this.recordDeletedId(entry.item.id);
 
-  deleteFromTrashPermanently(trashId) {
-    const trash = this.getTrash().filter(t => t.trashId !== trashId);
-    this.saveTrash(trash);
+      // Cloud deletion
+      if (window.SupabaseService && window.SupabaseService.isConnected) {
+        if (entry.type === 'Card') await window.SupabaseService.deleteExpense(entry.item.id);
+        if (entry.type === 'UPI') await window.SupabaseService.deleteUpiExpense(entry.item.id);
+        if (entry.type === 'Payment') await window.SupabaseService.deletePayment(entry.item.id);
+      }
+    }
+
+    const filtered = trash.filter(t => t.trashId !== trashId);
+    this.saveTrash(filtered);
+
+    // Server API DELETE
+    fetch(`/api/trash/${trashId}`, { method: 'DELETE' }).catch(() => null);
   },
 
   // ==========================================
@@ -398,6 +626,13 @@ const StorageManager = {
 
   saveSettings(settings) {
     localStorage.setItem(this.STORAGE_KEY_SETTINGS, JSON.stringify(settings));
+
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => null);
+
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       window.SupabaseService.saveSettings(settings);
     }
@@ -406,14 +641,14 @@ const StorageManager = {
   getMonths() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_MONTHS);
-      const months = data ? JSON.parse(data) : [...window.AVAILABLE_MONTHS];
+      const months = data ? JSON.parse(data) : [...(window.AVAILABLE_MONTHS || [])];
       return typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically 
         ? ExpenseCalculator.sortMonthsChronologically(months, true)
         : months;
     } catch (e) {
       return typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically 
-        ? ExpenseCalculator.sortMonthsChronologically(window.AVAILABLE_MONTHS, true)
-        : [...window.AVAILABLE_MONTHS];
+        ? ExpenseCalculator.sortMonthsChronologically(window.AVAILABLE_MONTHS || [], true)
+        : [...(window.AVAILABLE_MONTHS || [])];
     }
   },
 
@@ -437,23 +672,26 @@ const StorageManager = {
   },
 
   resetToExcelData() {
-    localStorage.setItem(this.STORAGE_KEY_EXPENSES, JSON.stringify(window.INITIAL_EXPENSES));
+    localStorage.setItem(this.STORAGE_KEY_EXPENSES, JSON.stringify(window.INITIAL_EXPENSES || []));
     localStorage.setItem(this.STORAGE_KEY_UPI_EXPENSES, JSON.stringify(window.INITIAL_UPI_EXPENSES || []));
-    localStorage.setItem(this.STORAGE_KEY_PAYMENTS, JSON.stringify(window.INITIAL_PAYMENTS));
-    localStorage.setItem(this.STORAGE_KEY_SETTINGS, JSON.stringify(window.DEFAULT_SETTINGS));
-    localStorage.setItem(this.STORAGE_KEY_MONTHS, JSON.stringify(window.AVAILABLE_MONTHS));
+    localStorage.setItem(this.STORAGE_KEY_PAYMENTS, JSON.stringify(window.INITIAL_PAYMENTS || []));
+    localStorage.setItem(this.STORAGE_KEY_SETTINGS, JSON.stringify(window.DEFAULT_SETTINGS || {}));
+    localStorage.setItem(this.STORAGE_KEY_MONTHS, JSON.stringify(window.AVAILABLE_MONTHS || []));
+    localStorage.setItem(this.STORAGE_KEY_DELETED_IDS, JSON.stringify([]));
   },
 
   // Export complete JSON backup
   exportJSONBackup() {
     const backupData = {
-      version: '1.1',
+      version: '1.2',
       exportDate: new Date().toISOString(),
       settings: this.getSettings(),
       months: this.getMonths(),
       expenses: this.getExpenses(),
       upiExpenses: this.getUpiExpenses(),
-      payments: this.getPayments()
+      payments: this.getPayments(),
+      trash: this.getTrash(),
+      deletedIds: this.getDeletedIds()
     };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -483,6 +721,10 @@ const StorageManager = {
       if (parsed.months && Array.isArray(parsed.months)) {
         this.saveMonths(parsed.months);
       }
+      if (parsed.deletedIds && Array.isArray(parsed.deletedIds)) {
+        this.saveDeletedIds(parsed.deletedIds);
+      }
+      this.pushFullSyncToServer();
       return { success: true };
     } catch (e) {
       console.error("Invalid backup file", e);

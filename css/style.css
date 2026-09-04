@@ -132,3 +132,31 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #7dd3fc;
 }
+
+/* Mobile & iPhone Modal Optimization */
+.modal-overlay {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem;
+}
+
+.modal-card {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+}
+
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: #ffffff;
+  z-index: 10;
+  padding-top: 0.75rem;
+}

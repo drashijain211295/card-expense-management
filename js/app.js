@@ -22,7 +22,8 @@ let appState = {
 document.addEventListener("DOMContentLoaded", () => {
   StorageManager.init((status, data) => {
     updateCloudStatusBadges();
-    if (status === 'connected' || status === 'realtime') {
+    updateMongoStatusBadge();
+    if (status === 'connected' || status === 'realtime' || status === 'server_connected') {
       loadStateFromStorage();
       renderApp();
     }
@@ -33,8 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initEventListeners();
   populateCategoryDropdowns();
   populateMonthDropdown();
+  setupMongoConfigForm();
   setupSupabaseConfigForm();
   updateCloudStatusBadges();
+  updateMongoStatusBadge();
   renderApp();
 });
 
@@ -1833,6 +1836,79 @@ function updateCloudStatusBadges() {
   }
 }
 
+// Update MongoDB Status Badge
+async function updateMongoStatusBadge() {
+  const settingsBadge = document.getElementById("settingsMongoStatusBadge");
+  if (!settingsBadge) return;
+  try {
+    const res = await fetch("/api/status").catch(() => null);
+    if (res && res.ok) {
+      const data = await res.json();
+      if (data.isMongoConnected) {
+        settingsBadge.innerText = "🟢 MongoDB Connected (Live)";
+        settingsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300";
+      } else {
+        settingsBadge.innerText = "🟡 Server Active (data/db.json)";
+        settingsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300";
+      }
+    } else {
+      settingsBadge.innerText = "⚪ Offline / Browser Mode";
+      settingsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300";
+    }
+  } catch (e) {
+    settingsBadge.innerText = "⚪ Offline";
+  }
+}
+
+function setupMongoConfigForm() {
+  const form = document.getElementById("mongoConfigForm");
+  const input = document.getElementById("mongoUriInput");
+  const msg = document.getElementById("mongoStatusMsg");
+  updateMongoStatusBadge();
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const uri = input?.value?.trim();
+      if (!uri) return;
+
+      const saveBtn = document.getElementById("saveMongoUriBtn");
+      if (saveBtn) saveBtn.innerText = "Connecting...";
+
+      try {
+        const res = await fetch("/api/config/mongo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uri })
+        });
+        const data = await res.json();
+        if (saveBtn) saveBtn.innerHTML = `<i data-lucide="plug-zap" class="w-3.5 h-3.5"></i><span>Connect Mongo</span>`;
+        initLucide();
+
+        if (msg) {
+          msg.classList.remove("hidden");
+          if (data.success) {
+            msg.className = "p-3 rounded-xl text-xs font-medium border bg-emerald-50 border-emerald-200 text-emerald-800";
+            msg.innerText = "✅ " + data.message;
+          } else {
+            msg.className = "p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800";
+            msg.innerText = "⚠️ " + data.message;
+          }
+        }
+        updateMongoStatusBadge();
+      } catch (err) {
+        if (saveBtn) saveBtn.innerHTML = `<i data-lucide="plug-zap" class="w-3.5 h-3.5"></i><span>Connect Mongo</span>`;
+        initLucide();
+        if (msg) {
+          msg.classList.remove("hidden");
+          msg.className = "p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800";
+          msg.innerText = "⚠️ Connection error: " + err.message;
+        }
+      }
+    });
+  }
+}
+
 // Global scope helpers for onclick handlers
 window.editExpense = editExpense;
 window.deleteExpense = deleteExpense;
@@ -1840,6 +1916,7 @@ window.editUpiExpense = editUpiExpense;
 window.deleteUpiExpense = deleteUpiExpense;
 window.deletePayment = deletePayment;
 window.updateCloudStatusBadges = updateCloudStatusBadges;
+window.updateMongoStatusBadge = updateMongoStatusBadge;
 
 // =============================================================================
 // TRASH & RECYCLE BIN VIEW (RESTORE DELETED ENTRIES)

@@ -1078,10 +1078,22 @@ const AVAILABLE_MONTHS = [
   "July 2026"
 ];
 
-// Export to window for vanilla browser usage
-window.DEFAULT_SETTINGS = DEFAULT_SETTINGS;
-window.CATEGORIES = CATEGORIES;
-window.INITIAL_EXPENSES = INITIAL_EXPENSES;
-window.INITIAL_UPI_EXPENSES = INITIAL_UPI_EXPENSES;
-window.INITIAL_PAYMENTS = INITIAL_PAYMENTS;
-window.AVAILABLE_MONTHS = AVAILABLE_MONTHS;
+// Export to window or module.exports
+if (typeof window !== 'undefined') {
+  window.DEFAULT_SETTINGS = DEFAULT_SETTINGS;
+  window.CATEGORIES = CATEGORIES;
+  window.INITIAL_EXPENSES = INITIAL_EXPENSES;
+  window.INITIAL_UPI_EXPENSES = INITIAL_UPI_EXPENSES;
+  window.INITIAL_PAYMENTS = INITIAL_PAYMENTS;
+  window.AVAILABLE_MONTHS = AVAILABLE_MONTHS;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    DEFAULT_SETTINGS,
+    CATEGORIES,
+    INITIAL_EXPENSES,
+    INITIAL_UPI_EXPENSES,
+    INITIAL_PAYMENTS,
+    AVAILABLE_MONTHS
+  };
+}
