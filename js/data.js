@@ -203,7 +203,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "july_14",
     "month": "July 2026",
-    "date": "46227",
+    "date": "24 Jul 26",
     "description": "Annual Fee + GST",
     "slipAmount": 0,
     "statementAmount": 588.82,
@@ -217,7 +217,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "july_15",
     "month": "July 2026",
-    "date": "46218",
+    "date": "15 Jul 26",
     "description": "Mummy Gift",
     "slipAmount": 1000,
     "statementAmount": 0,
@@ -231,7 +231,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "aug_1",
     "month": "August 2026",
-    "date": "46227",
+    "date": "24 Jul 26",
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 458,
     "statementAmount": 463.4,
@@ -735,7 +735,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "sep_1",
     "month": "September 2026",
-    "date": "24-08-2026",
+    "date": "24 Aug 26",
     "description": "Fuel / Card Spend",
     "slipAmount": 572.85,
     "statementAmount": 0,
@@ -749,7 +749,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "sep_2",
     "month": "September 2026",
-    "date": "26-08-2026",
+    "date": "26 Aug 26",
     "description": "Fuel / Card Spend",
     "slipAmount": 343.71,
     "statementAmount": 0,
@@ -763,7 +763,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "sep_3",
     "month": "September 2026",
-    "date": "27-08-2026",
+    "date": "27 Aug 26",
     "description": "Fuel / Card Spend",
     "slipAmount": 458.24,
     "statementAmount": 0,
@@ -777,7 +777,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "sep_4",
     "month": "September 2026",
-    "date": "01-09-2026",
+    "date": "01 Sep 26",
     "description": "Fuel / Card Spend",
     "slipAmount": 695,
     "statementAmount": 0,
@@ -791,7 +791,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "sep_5",
     "month": "September 2026",
-    "date": "01-09-2026",
+    "date": "01 Sep 26",
     "description": "Fuel / Card Spend",
     "slipAmount": 515.56,
     "statementAmount": 0,
@@ -805,7 +805,7 @@ const INITIAL_EXPENSES = [
   {
     "id": "sep_6",
     "month": "September 2026",
-    "date": "02-09-2026",
+    "date": "02 Sep 26",
     "description": "Fuel / Card Spend",
     "slipAmount": 336,
     "statementAmount": 0,

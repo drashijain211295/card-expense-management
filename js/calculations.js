@@ -184,8 +184,74 @@ const ExpenseCalculator = {
     }));
 
     return { total, breakdown };
+  },
+
+  // Parse any date string / serial to YYYY-MM-DD
+  parseToISODate(dateStr) {
+    if (!dateStr) return new Date().toISOString().split('T')[0];
+    dateStr = String(dateStr).trim();
+    
+    // Excel serial number (e.g. 46227)
+    if (/^\d{5}$/.test(dateStr)) {
+      const serial = parseInt(dateStr, 10);
+      const date = new Date((serial - 25569) * 86400 * 1000);
+      return date.toISOString().split('T')[0];
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    
+    // Try DD-MM-YYYY or D-M-YYYY or DD/MM/YYYY
+    const dmyMatch = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (dmyMatch) {
+      const d = dmyMatch[1].padStart(2, '0');
+      const m = dmyMatch[2].padStart(2, '0');
+      const y = dmyMatch[3];
+      return `${y}-${m}-${d}`;
+    }
+
+    // Try DD-MM-YY or D-M-YY or DD/MM/YY
+    const dmyShortMatch = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2})$/);
+    if (dmyShortMatch) {
+      const d = dmyShortMatch[1].padStart(2, '0');
+      const m = dmyShortMatch[2].padStart(2, '0');
+      const y = "20" + dmyShortMatch[3];
+      return `${y}-${m}-${d}`;
+    }
+
+    // Try "07 Jul 26" or "24-Jul-26" or "07 Jul 2026" or "26 Aug 26"
+    const monthMap = { jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06", jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12" };
+    const textMatch = dateStr.match(/^(\d{1,2})[- ]([a-zA-Z]{3})[- ](\d{2,4})$/);
+    if (textMatch) {
+      const d = textMatch[1].padStart(2, '0');
+      const m = monthMap[textMatch[2].toLowerCase()] || "01";
+      let y = textMatch[3];
+      if (y.length === 2) y = "20" + y;
+      return `${y}-${m}-${d}`;
+    }
+
+    return new Date().toISOString().split('T')[0];
+  },
+
+  // Format any date to DD Mon YY (e.g. 26 Aug 26, 02 Sep 26)
+  formatDisplayDate(dateStr) {
+    if (!dateStr) return '';
+    dateStr = String(dateStr).trim();
+    
+    // If Month + Year header e.g. "Aug 2026"
+    if (/^[A-Za-z]{3,9}\s+\d{4}$/.test(dateStr)) return dateStr;
+
+    const iso = this.parseToISODate(dateStr);
+    if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+      const [y, m, d] = iso.split('-');
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const mName = months[parseInt(m, 10) - 1] || m;
+      return `${d} ${mName} ${y.slice(2)}`;
+    }
+    return dateStr;
   }
 };
 
 // Export to window
 window.ExpenseCalculator = ExpenseCalculator;
+window.formatDisplayDate = (d) => ExpenseCalculator.formatDisplayDate(d);
+window.parseToISODate = (d) => ExpenseCalculator.parseToISODate(d);

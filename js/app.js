@@ -274,7 +274,7 @@ function renderDashboardView() {
       const isReconciled = (parseFloat(tx.statementAmount) || 0) > 0;
       return `
         <tr class="table-row-hover transition">
-          <td class="px-5 py-3 text-slate-400 whitespace-nowrap">${tx.date}</td>
+          <td class="px-5 py-3 text-slate-400 whitespace-nowrap">${formatDisplayDate(tx.date)}</td>
           <td class="px-5 py-3 font-medium text-white">${tx.description}</td>
           <td class="px-5 py-3">
             <span class="badge ${getPersonBadgeClass(tx.usedBy)}">${tx.usedBy}</span>
@@ -409,7 +409,7 @@ function renderExpensesView() {
 
     return `
       <tr class="table-row-hover transition">
-        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${item.date}</td>
+        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
         <td class="px-4 py-3 font-semibold text-white">
           ${item.description}
           ${item.remarks ? `<div class="text-[10px] text-slate-400 font-normal mt-0.5">${item.remarks}</div>` : ''}
@@ -494,7 +494,7 @@ function renderTallyView() {
 
     return `
       <tr class="table-row-hover transition">
-        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${item.date}</td>
+        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
         <td class="px-4 py-3 font-semibold text-white">${item.description}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-400">${slip ? `${cur}${slip.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-200">${stmt ? `${cur}${stmt.toFixed(2)}` : `<span class="text-amber-400/80 text-[10px]">Awaiting 24th</span>`}</td>
@@ -555,7 +555,7 @@ function renderPaymentsView() {
 
   tbody.innerHTML = monthPayments.map(p => `
     <tr class="table-row-hover transition">
-      <td class="px-5 py-3.5 text-slate-400 whitespace-nowrap">${p.date}</td>
+      <td class="px-5 py-3.5 text-slate-400 whitespace-nowrap">${formatDisplayDate(p.date)}</td>
       <td class="px-5 py-3.5 text-slate-400">${p.month}</td>
       <td class="px-5 py-3.5">
         <span class="badge ${getPersonBadgeClass(p.person)}">${p.person}</span>
@@ -689,12 +689,21 @@ function renderReportsView() {
   }
 }
 
-// Date formatting helpers for calendar picker
+// Date formatting helpers for calendar picker & unified display
 function parseToISODate(dateStr) {
   if (!dateStr) return new Date().toISOString().split('T')[0];
+  dateStr = String(dateStr).trim();
+  
+  // Excel serial number (e.g. 46227)
+  if (/^\d{5}$/.test(dateStr)) {
+    const serial = parseInt(dateStr, 10);
+    const date = new Date((serial - 25569) * 86400 * 1000);
+    return date.toISOString().split('T')[0];
+  }
+
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
   
-  // Try DD-MM-YYYY or D-M-YYYY
+  // Try DD-MM-YYYY or D-M-YYYY or DD/MM/YYYY
   const dmyMatch = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
   if (dmyMatch) {
     const d = dmyMatch[1].padStart(2, '0');
@@ -703,7 +712,7 @@ function parseToISODate(dateStr) {
     return `${y}-${m}-${d}`;
   }
 
-  // Try DD-MM-YY or D-M-YY
+  // Try DD-MM-YY or D-M-YY or DD/MM/YY
   const dmyShortMatch = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2})$/);
   if (dmyShortMatch) {
     const d = dmyShortMatch[1].padStart(2, '0');
@@ -712,7 +721,7 @@ function parseToISODate(dateStr) {
     return `${y}-${m}-${d}`;
   }
 
-  // Try "07 Jul 26" or "24-Jul-26" or "07 Jul 2026"
+  // Try "07 Jul 26" or "24-Jul-26" or "07 Jul 2026" or "26 Aug 26"
   const monthMap = { jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06", jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12" };
   const textMatch = dateStr.match(/^(\d{1,2})[- ]([a-zA-Z]{3})[- ](\d{2,4})$/);
   if (textMatch) {
@@ -728,8 +737,14 @@ function parseToISODate(dateStr) {
 
 function formatDisplayDate(dateStr) {
   if (!dateStr) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    const [y, m, d] = dateStr.split('-');
+  dateStr = String(dateStr).trim();
+  
+  // If Month + Year header e.g. "Aug 2026"
+  if (/^[A-Za-z]{3,9}\s+\d{4}$/.test(dateStr)) return dateStr;
+
+  const iso = parseToISODate(dateStr);
+  if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    const [y, m, d] = iso.split('-');
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const mName = months[parseInt(m, 10) - 1] || m;
     return `${d} ${mName} ${y.slice(2)}`;
@@ -902,7 +917,7 @@ function setupQuickStatementModal() {
       const p2 = appState.settings.person2 || "Rashu";
       return `
         <tr data-exp-id="${item.id}" class="hover:bg-slate-800/40">
-          <td class="px-3 py-2 text-slate-400 whitespace-nowrap">${item.date}</td>
+          <td class="px-3 py-2 text-slate-400 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
           <td class="px-3 py-2 text-white font-medium">${item.description}</td>
           <td class="px-3 py-2 text-center">
             <select class="quick-usedby-select px-2 py-1 bg-slate-800 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-indigo-500 font-medium">

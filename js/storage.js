@@ -16,6 +16,16 @@ const StorageManager = {
       // Ensure any newly configured default expenses (like September additions) are synced if missing
       const storedExpenses = this.getExpenses();
       let hasChanges = false;
+      
+      // Normalize dates in all stored expenses for consistent display
+      storedExpenses.forEach(e => {
+        const formatted = window.formatDisplayDate ? window.formatDisplayDate(e.date) : e.date;
+        if (formatted && formatted !== e.date) {
+          e.date = formatted;
+          hasChanges = true;
+        }
+      });
+
       window.INITIAL_EXPENSES.forEach(initExp => {
         if (!storedExpenses.some(e => e.id === initExp.id)) {
           storedExpenses.push(initExp);
