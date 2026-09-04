@@ -8,6 +8,25 @@ const SupabaseService = {
   isConnected: false,
   realtimeChannel: null,
 
+  // Automatically sanitize and format Supabase URLs (including dashboard URLs)
+  cleanUrl(url) {
+    if (!url) return '';
+    let cleaned = url.trim();
+    // If user pasted dashboard URL: https://supabase.com/dashboard/project/<project-ref>
+    const dashMatch = cleaned.match(/supabase\.com\/dashboard\/project\/([a-zA-Z0-9_-]+)/i);
+    if (dashMatch) {
+      cleaned = `https://${dashMatch[1]}.supabase.co`;
+    }
+    // Remove trailing slashes and common subpaths
+    cleaned = cleaned.replace(/\/+$/, '');
+    cleaned = cleaned.replace(/\/rest\/v1\/?$/i, '');
+    cleaned = cleaned.replace(/\/settings\/api\/?$/i, '');
+    if (!/^https?:\/\//i.test(cleaned)) {
+      cleaned = 'https://' + cleaned;
+    }
+    return cleaned;
+  },
+
   // Get current credentials (from config.js or localStorage)
   getCredentials() {
     const localUrl = localStorage.getItem('spendwise_supabase_url');
@@ -15,15 +34,19 @@ const SupabaseService = {
     const configUrl = window.SUPABASE_CONFIG?.url;
     const configKey = window.SUPABASE_CONFIG?.anonKey;
 
+    const rawUrl = localUrl || configUrl || '';
+    const rawKey = localKey || configKey || '';
+
     return {
-      url: (localUrl || configUrl || '').trim(),
-      key: (localKey || configKey || '').trim()
+      url: this.cleanUrl(rawUrl),
+      key: rawKey.trim()
     };
   },
 
   // Save credentials to localStorage
   saveCredentials(url, key) {
-    if (url) localStorage.setItem('spendwise_supabase_url', url.trim());
+    const cleanedUrl = this.cleanUrl(url);
+    if (cleanedUrl) localStorage.setItem('spendwise_supabase_url', cleanedUrl);
     else localStorage.removeItem('spendwise_supabase_url');
 
     if (key) localStorage.setItem('spendwise_supabase_key', key.trim());
@@ -44,7 +67,7 @@ const SupabaseService = {
         auth: { persistSession: false }
       });
       this.isConnected = true;
-      console.log('⚡ Supabase Cloud Client Initialized successfully');
+      console.log('⚡ Supabase Cloud Client Initialized successfully for', url);
       return true;
     } catch (e) {
       console.error('Failed to initialize Supabase client:', e);
@@ -56,13 +79,18 @@ const SupabaseService = {
 
   // Test connection to Supabase
   async testConnection(url, key) {
-    if (!url || !key) return { success: false, message: 'URL and Anon Key are required.' };
+    const cleanedUrl = this.cleanUrl(url);
+    const cleanedKey = (key || '').trim();
+
+    if (!cleanedUrl || !cleanedKey) {
+      return { success: false, message: 'Both Project URL and Anon Key are required.' };
+    }
     if (typeof window.supabase === 'undefined') {
       return { success: false, message: 'Supabase JS library not loaded. Check internet connection.' };
     }
 
     try {
-      const testClient = window.supabase.createClient(url.trim(), key.trim(), {
+      const testClient = window.supabase.createClient(cleanedUrl, cleanedKey, {
         auth: { persistSession: false }
       });
       const { data, error } = await testClient.from('settings').select('*').limit(1);
