@@ -554,6 +554,7 @@ function renderExpensesView() {
         </td>
         <td class="px-4 py-3 text-right font-mono text-slate-700">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-900 font-medium">${item.statementAmount ? `${cur}${item.statementAmount.toFixed(2)}` : `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-1.5 py-0.5 rounded font-medium">Pending 24th</span>`}</td>
+        <td class="px-4 py-3 text-right font-mono text-amber-600 font-bold whitespace-nowrap">${item.fuelWaiver ? `${cur}${item.fuelWaiver.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-teal-600 font-bold whitespace-nowrap">
           ${item.refundAmount ? `${cur}${item.refundAmount.toFixed(2)}${(item.refundType || 'Card').toLowerCase() === 'cash' ? ' <span class="text-[9px] px-1 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-sans" title="Cash/UPI Refund (Not on Card Statement)">Cash</span>' : ''}` : '-'}
         </td>
