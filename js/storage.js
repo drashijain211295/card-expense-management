@@ -141,7 +141,7 @@ const StorageManager = {
       const res = await fetch('/api/data').catch(() => null);
       if (res && res.ok) {
         const serverData = await res.json();
-        if (serverData) {
+        if (serverData && !serverData.error) {
           this.mergeServerData(serverData);
           console.log('📡 Merged multi-device server data into local storage');
           if (typeof onSyncCallback === 'function') onSyncCallback('server_connected', serverData);
@@ -156,6 +156,22 @@ const StorageManager = {
 
     // Connect Server-Sent Events (SSE) for instant cross-device updates (Phone <-> Desktop)
     this.connectServerSSE(onSyncCallback);
+
+    // Background polling fallback every 8 seconds for Vercel serverless cloud sync
+    if (!window._spendwise_poll_timer) {
+      window._spendwise_poll_timer = setInterval(async () => {
+        try {
+          const res = await fetch('/api/data').catch(() => null);
+          if (res && res.ok) {
+            const fresh = await res.json();
+            if (fresh && !fresh.error) {
+              this.mergeServerData(fresh);
+              if (typeof onSyncCallback === 'function') onSyncCallback('realtime', fresh);
+            }
+          }
+        } catch (e) {}
+      }, 8000);
+    }
   },
 
   connectServerSSE(onSyncCallback) {
