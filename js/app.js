@@ -1056,17 +1056,22 @@ function setupExpenseModal() {
     const date = formatDisplayDate(rawDate);
     const description = document.getElementById("expenseDescInput").value;
     const slipAmount = parseFloat(document.getElementById("expenseSlipInput").value) || 0;
-    let fuelWaiver = parseFloat(document.getElementById("expenseFuelInput").value) || 0;
+    const fuelValRaw = document.getElementById("expenseFuelInput").value.trim();
+    let fuelWaiver = fuelValRaw !== '' ? (parseFloat(fuelValRaw) || 0) : null;
     const refundAmount = parseFloat(document.getElementById("expenseRefundInput").value) || 0;
     const usedBy = document.getElementById("expenseUsedByInput").value;
     const paymentType = document.getElementById("expenseTypeInput").value;
     const category = document.getElementById("expenseCategoryInput").value;
     const remarks = document.getElementById("expenseRemarksInput").value;
 
-    // Auto calculate fuel waiver if left empty for fuel transactions
     const isFuel = (category === 'Fuel') || /petrol|fuel|filling|fuels|sharma|misrod|kanta/i.test(description || '');
-    if (isFuel && fuelWaiver === 0 && slipAmount > 0 && statementAmount > slipAmount) {
-      fuelWaiver = parseFloat((statementAmount - slipAmount).toFixed(2));
+    // If left blank (null) on a fuel transaction where statement exceeds slip, auto calculate waiver
+    if (fuelWaiver === null) {
+      if (isFuel && slipAmount > 0 && statementAmount > slipAmount) {
+        fuelWaiver = parseFloat((statementAmount - slipAmount).toFixed(2));
+      } else {
+        fuelWaiver = 0;
+      }
     }
 
     const payload = {
