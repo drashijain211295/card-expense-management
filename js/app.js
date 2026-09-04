@@ -362,20 +362,20 @@ function renderDashboardView() {
       const isReconciled = (parseFloat(tx.statementAmount) || 0) > 0;
       return `
         <tr class="table-row-hover transition">
-          <td class="px-5 py-3 text-slate-400 whitespace-nowrap">${formatDisplayDate(tx.date)}</td>
-          <td class="px-5 py-3 font-medium text-white">${tx.description}</td>
+          <td class="px-5 py-3 text-slate-500 whitespace-nowrap">${formatDisplayDate(tx.date)}</td>
+          <td class="px-5 py-3 font-medium text-slate-900">${tx.description}</td>
           <td class="px-5 py-3">
             <span class="badge ${getPersonBadgeClass(tx.usedBy)}">${tx.usedBy}</span>
           </td>
           <td class="px-5 py-3">
-            <span class="badge ${tx.paymentType === 'Non-Card' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-slate-800 text-slate-300 border-slate-700'}">${tx.paymentType}</span>
+            <span class="badge ${tx.paymentType === 'Non-Card' ? 'bg-pink-50 text-pink-700 border-pink-200' : 'bg-sky-50 text-sky-700 border-sky-200'}">${tx.paymentType}</span>
           </td>
-          <td class="px-5 py-3 text-right font-mono text-slate-400">${cur}${(tx.slipAmount || 0).toFixed(2)}</td>
-          <td class="px-5 py-3 text-right font-mono text-slate-200">${tx.statementAmount ? `${cur}${tx.statementAmount.toFixed(2)}` : '-'}</td>
-          <td class="px-5 py-3 text-right font-mono font-bold text-indigo-400">${cur}${eff.toFixed(2)}</td>
+          <td class="px-5 py-3 text-right font-mono text-slate-700">${cur}${(tx.slipAmount || 0).toFixed(2)}</td>
+          <td class="px-5 py-3 text-right font-mono text-slate-900">${tx.statementAmount ? `${cur}${tx.statementAmount.toFixed(2)}` : '-'}</td>
+          <td class="px-5 py-3 text-right font-mono font-bold text-sky-700">${cur}${eff.toFixed(2)}</td>
           <td class="px-5 py-3 text-center">
-            <span class="badge ${isReconciled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}">
-              ${isReconciled ? '✓ Statement Reconciled' : '⏳ Awaiting 24th'}
+            <span class="badge ${isReconciled ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
+              ${isReconciled ? '✓ Reconciled' : '⏳ Awaiting 24th'}
             </span>
           </td>
         </tr>
@@ -398,7 +398,7 @@ function renderDashboardChart() {
 
   const labels = breakdown.breakdown.map(b => b.category);
   const data = breakdown.breakdown.map(b => b.amount);
-  const colors = ['#6366f1', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#94a3b8'];
+  const colors = ['#0284c7', '#ec4899', '#38bdf8', '#f472b6', '#a855f7', '#14b8a6', '#f59e0b', '#94a3b8'];
 
   appState.dashboardChart = new Chart(ctx.getContext("2d"), {
     type: "doughnut",
@@ -419,7 +419,7 @@ function renderDashboardChart() {
         legend: {
           position: 'right',
           labels: {
-            color: '#475569',
+            color: '#334155',
             font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' },
             padding: 12
           }
@@ -429,7 +429,7 @@ function renderDashboardChart() {
           titleColor: '#ffffff',
           bodyColor: '#e2e8f0',
           padding: 10,
-          borderColor: '#e2e8f0',
+          borderColor: '#bae6fd',
           borderWidth: 1,
           callbacks: {
             label: (ctx) => ` ₹${ctx.parsed.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
@@ -505,21 +505,21 @@ function renderExpensesView() {
         <td class="px-4 py-3 text-right font-mono text-slate-700">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-900 font-medium">${item.statementAmount ? `${cur}${item.statementAmount.toFixed(2)}` : `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-1.5 py-0.5 rounded font-medium">Pending 24th</span>`}</td>
         <td class="px-4 py-3 text-right font-mono text-amber-600 font-bold">${item.fuelWaiver ? `${cur}${item.fuelWaiver.toFixed(2)}` : '-'}</td>
-        <td class="px-4 py-3 text-right font-mono text-emerald-600 font-bold">${item.refundAmount ? `${cur}${item.refundAmount.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-right font-mono text-teal-600 font-bold">${item.refundAmount ? `${cur}${item.refundAmount.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-center">
           <span class="badge ${getPersonBadgeClass(item.usedBy)}">${item.usedBy}</span>
         </td>
         <td class="px-4 py-3 text-center">
-          <span class="badge ${item.paymentType === 'Non-Card' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-100 text-slate-700 border-slate-200'}">${item.paymentType}</span>
+          <span class="badge ${item.paymentType === 'Non-Card' ? 'bg-pink-50 text-pink-700 border-pink-200' : 'bg-sky-50 text-sky-700 border-sky-200'}">${item.paymentType}</span>
         </td>
-        <td class="px-4 py-3 text-right font-mono font-bold text-indigo-600">${cur}${shares.effectiveAmount.toFixed(2)}</td>
-        <td class="px-4 py-3 text-right font-mono font-semibold text-indigo-600">${cur}${shares.person1Share.toFixed(2)}</td>
-        <td class="px-4 py-3 text-right font-mono font-semibold text-purple-600">${cur}${shares.person2Share.toFixed(2)}</td>
+        <td class="px-4 py-3 text-right font-mono font-bold text-sky-700">${cur}${shares.effectiveAmount.toFixed(2)}</td>
+        <td class="px-4 py-3 text-right font-mono font-semibold text-sky-700">${cur}${shares.person1Share.toFixed(2)}</td>
+        <td class="px-4 py-3 text-right font-mono font-semibold text-pink-700">${cur}${shares.person2Share.toFixed(2)}</td>
         <td class="px-4 py-3 text-center whitespace-nowrap">
-          <button onclick="editExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition hover:bg-indigo-50 rounded-lg" title="Edit / Add Statement Details">
+          <button onclick="editExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-600 transition hover:bg-sky-50 rounded-lg" title="Edit / Add Statement Details">
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
           </button>
-          <button onclick="deleteExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-red-600 transition hover:bg-red-50 rounded-lg ml-1" title="Delete">
+          <button onclick="deleteExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 transition hover:bg-rose-50 rounded-lg ml-1" title="Delete">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </td>
@@ -534,11 +534,11 @@ function renderExpensesView() {
         <td class="px-4 py-3.5 text-right font-mono text-slate-800">${cur}${totalSlip.toFixed(2)}</td>
         <td class="px-4 py-3.5 text-right font-mono text-slate-900">${cur}${totalStmt.toFixed(2)}</td>
         <td class="px-4 py-3.5 text-right font-mono text-amber-600 font-bold">${cur}${totalFuel.toFixed(2)}</td>
-        <td class="px-4 py-3.5 text-right font-mono text-emerald-600 font-bold">${cur}${totalRefund.toFixed(2)}</td>
+        <td class="px-4 py-3.5 text-right font-mono text-teal-600 font-bold">${cur}${totalRefund.toFixed(2)}</td>
         <td colspan="2"></td>
-        <td class="px-4 py-3.5 text-right font-mono font-bold text-indigo-600">${cur}${totalEffective.toFixed(2)}</td>
-        <td class="px-4 py-3.5 text-right font-mono font-bold text-indigo-600">${cur}${totalP1.toFixed(2)}</td>
-        <td class="px-4 py-3.5 text-right font-mono font-bold text-purple-600">${cur}${totalP2.toFixed(2)}</td>
+        <td class="px-4 py-3.5 text-right font-mono font-bold text-sky-800">${cur}${totalEffective.toFixed(2)}</td>
+        <td class="px-4 py-3.5 text-right font-mono font-bold text-sky-700">${cur}${totalP1.toFixed(2)}</td>
+        <td class="px-4 py-3.5 text-right font-mono font-bold text-pink-700">${cur}${totalP2.toFixed(2)}</td>
         <td></td>
       </tr>
     `;
@@ -549,9 +549,9 @@ function renderExpensesView() {
 
 function getPersonBadgeClass(usedBy) {
   const p = (usedBy || "").toLowerCase();
-  if (p === "kitkat") return "bg-indigo-50 text-indigo-700 border-indigo-200/80";
-  if (p === "rashu") return "bg-purple-50 text-purple-700 border-purple-200/80";
-  return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
+  if (p === "kitkat") return "bg-sky-50 text-sky-700 border-sky-200/90 font-semibold";
+  if (p === "rashu") return "bg-pink-50 text-pink-700 border-pink-200/90 font-semibold";
+  return "bg-purple-50 text-purple-700 border-purple-200/90 font-semibold";
 }
 
 // =============================================================================
@@ -662,23 +662,23 @@ function renderUpiView() {
           ${item.remarks ? `<div class="text-[10px] text-slate-500 font-normal mt-0.5">${item.remarks}</div>` : ''}
           ${item.category ? `<span class="inline-block mt-1 px-1.5 py-0.5 text-[9px] rounded bg-slate-100 text-slate-600 border border-slate-200">${item.category}</span>` : ''}
         </td>
-        <td class="px-4 py-3 text-right font-mono font-bold text-emerald-600">${cur}${shares.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3 text-right font-mono font-bold text-teal-600">${cur}${shares.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
         <td class="px-4 py-3 text-center">
           <span class="badge ${getPersonBadgeClass(item.usedBy)}">${item.usedBy}</span>
         </td>
         <td class="px-4 py-3 text-center">
-          <span class="badge ${item.paidBy === p2 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'}">${item.paidBy || p2}</span>
+          <span class="badge ${item.paidBy === p2 ? 'bg-pink-50 text-pink-700 border-pink-200' : 'bg-sky-50 text-sky-700 border-sky-200'}">${item.paidBy || p2}</span>
         </td>
         <td class="px-4 py-3 text-center">
           ${settleBadge}
         </td>
-        <td class="px-4 py-3 text-right font-mono text-indigo-600 font-semibold">${shares.person1Share > 0 ? `${cur}${shares.person1Share.toFixed(2)}` : '-'}</td>
-        <td class="px-4 py-3 text-right font-mono text-purple-600 font-semibold">${shares.person2Share > 0 ? `${cur}${shares.person2Share.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-right font-mono text-sky-700 font-semibold">${shares.person1Share > 0 ? `${cur}${shares.person1Share.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-right font-mono text-pink-700 font-semibold">${shares.person2Share > 0 ? `${cur}${shares.person2Share.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-center whitespace-nowrap">
-          <button onclick="editUpiExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition hover:bg-indigo-50 rounded-lg" title="Edit UPI Spend">
+          <button onclick="editUpiExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-600 transition hover:bg-sky-50 rounded-lg" title="Edit UPI Spend">
             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
           </button>
-          <button onclick="deleteUpiExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-red-600 transition hover:bg-red-50 rounded-lg ml-1" title="Delete UPI Spend">
+          <button onclick="deleteUpiExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 transition hover:bg-rose-50 rounded-lg ml-1" title="Delete UPI Spend">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </td>
@@ -690,10 +690,10 @@ function renderUpiView() {
     tfoot.innerHTML = `
       <tr>
         <td class="px-4 py-3.5 uppercase tracking-wider text-slate-700 font-bold" colspan="2">Settled Cycle Totals</td>
-        <td class="px-4 py-3.5 text-right font-mono font-bold text-emerald-600">${cur}${sumAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3.5 text-right font-mono font-bold text-teal-600">${cur}${sumAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
         <td class="px-4 py-3.5 text-center text-slate-500 font-medium" colspan="3">${filtered.length} items (${upiSummary.count} settling)</td>
-        <td class="px-4 py-3.5 text-right font-mono font-bold text-indigo-600">${cur}${sumP1.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-        <td class="px-4 py-3.5 text-right font-mono font-bold text-purple-600">${cur}${sumP2.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3.5 text-right font-mono font-bold text-sky-700">${cur}${sumP1.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3.5 text-right font-mono font-bold text-pink-700">${cur}${sumP2.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
         <td class="px-4 py-3.5"></td>
       </tr>
     `;
@@ -735,14 +735,14 @@ function renderTallyView() {
         <td class="px-4 py-3 text-right font-mono text-slate-700">${slip ? `${cur}${slip.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-900 font-medium">${stmt ? `${cur}${stmt.toFixed(2)}` : `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-1.5 py-0.5 rounded font-medium">Awaiting 24th</span>`}</td>
         <td class="px-4 py-3 text-right font-mono text-amber-600 font-bold">${(fuel + ref) > 0 ? `-${cur}${(fuel + ref).toFixed(2)}` : '-'}</td>
-        <td class="px-4 py-3 text-right font-mono font-bold text-indigo-600">${cur}${eff.toFixed(2)}</td>
+        <td class="px-4 py-3 text-right font-mono font-bold text-sky-700">${cur}${eff.toFixed(2)}</td>
         <td class="px-4 py-3 text-center">
-          <span class="badge ${isPending ? 'bg-amber-50 text-amber-700 border-amber-200' : (isMatch ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-sky-50 text-sky-700 border-sky-200')}">
+          <span class="badge ${isPending ? 'bg-amber-50 text-amber-700 border-amber-200' : (isMatch ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-pink-50 text-pink-700 border-pink-200')}">
             ${isPending ? '⏳ Awaiting 24th' : (isMatch ? '✓ Reconciled' : '⚡ Surcharge / Waiver')}
           </span>
         </td>
         <td class="px-4 py-3 text-right whitespace-nowrap">
-          <button onclick="editExpense('${item.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition text-[11px] font-semibold">
+          <button onclick="editExpense('${item.id}')" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 transition text-[11px] font-semibold">
             Edit / Reconcile
           </button>
         </td>
@@ -801,9 +801,9 @@ function renderPaymentsView() {
         <span class="text-slate-900 font-semibold">${p.purpose || 'Payment'}</span>
         ${p.notes ? ` <span class="text-slate-400">(${p.notes})</span>` : ''}
       </td>
-      <td class="px-5 py-3.5 text-right font-mono font-bold text-emerald-600">${cur}${parseFloat(p.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+      <td class="px-5 py-3.5 text-right font-mono font-bold text-teal-600">${cur}${parseFloat(p.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
       <td class="px-5 py-3.5 text-center">
-        <button onclick="deletePayment('${p.id}')" class="p-1.5 text-slate-400 hover:text-red-600 transition hover:bg-red-50 rounded-lg" title="Delete">
+        <button onclick="deletePayment('${p.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 transition hover:bg-rose-50 rounded-lg" title="Delete">
           <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
         </button>
       </td>
@@ -833,13 +833,13 @@ function renderReportsView() {
           {
             label: 'Expense Share (₹)',
             data: [summary.person1TotalExpenseShare, summary.person2TotalExpenseShare],
-            backgroundColor: ['#6366f1', '#8b5cf6'],
+            backgroundColor: ['#0284c7', '#ec4899'],
             borderRadius: 8
           },
           {
             label: 'Advance & Payments Contributed (₹)',
             data: [summary.person1Paid, summary.person2Paid],
-            backgroundColor: ['#10b981', '#06b6d4'],
+            backgroundColor: ['#38bdf8', '#f472b6'],
             borderRadius: 8
           }
         ]
@@ -852,7 +852,7 @@ function renderReportsView() {
         },
         scales: {
           x: { ticks: { color: '#64748b' }, grid: { display: false } },
-          y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+          y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(226, 238, 247, 0.8)' } }
         }
       }
     });
@@ -874,8 +874,8 @@ function renderReportsView() {
           {
             label: 'Effective Card Spend',
             data: [julSum.cardEffectiveSpend, augSum.cardEffectiveSpend],
-            borderColor: '#6366f1',
-            backgroundColor: 'rgba(99, 102, 241, 0.12)',
+            borderColor: '#0284c7',
+            backgroundColor: 'rgba(2, 132, 199, 0.10)',
             fill: true,
             tension: 0.3,
             borderWidth: 3
@@ -898,7 +898,7 @@ function renderReportsView() {
         },
         scales: {
           x: { ticks: { color: '#64748b' }, grid: { display: false } },
-          y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(0,0,0,0.05)' } }
+          y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(226, 238, 247, 0.8)' } }
         }
       }
     });
@@ -910,13 +910,13 @@ function renderReportsView() {
     const catData = ExpenseCalculator.calculateCategoryBreakdown(appState.expenses, appState.currentMonth);
     catTbody.innerHTML = catData.breakdown.map(c => `
       <tr class="table-row-hover transition">
-        <td class="px-5 py-3.5 font-semibold text-white">${c.category}</td>
-        <td class="px-5 py-3.5 text-right font-mono font-bold text-indigo-400">${cur}${c.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+        <td class="px-5 py-3.5 font-semibold text-slate-900">${c.category}</td>
+        <td class="px-5 py-3.5 text-right font-mono font-bold text-sky-700">${cur}${c.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
         <td class="px-5 py-3.5 text-right">
           <div class="flex items-center justify-end gap-2">
-            <span class="font-mono text-slate-300">${c.percentage}%</span>
-            <div class="w-16 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${c.percentage}%"></div>
+            <span class="font-mono text-slate-600">${c.percentage}%</span>
+            <div class="w-16 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+              <div class="bg-gradient-to-r from-sky-500 to-pink-500 h-1.5 rounded-full" style="width: ${c.percentage}%"></div>
             </div>
           </div>
         </td>

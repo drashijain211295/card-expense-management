@@ -32,11 +32,11 @@
           },
           colors: {
             brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
             }
           }
         }
@@ -44,20 +44,20 @@
     }
   </script>
 </head>
-<body class="bg-slate-50/70 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#f6fafe] text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
 
   <!-- TOP APP HEADER -->
-  <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-xs">
+  <header class="border-b border-[#e2eef7] bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       
       <!-- Brand Logo -->
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-pink-400 to-rose-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
           <i data-lucide="wallet-cards" class="w-5 h-5 text-white"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-900 via-indigo-700 to-violet-700 bg-clip-text text-transparent">SpendWise</span>
+            <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-700 via-sky-900 to-pink-600 bg-clip-text text-transparent">SpendWise</span>
           </div>
           <p class="text-[11px] text-slate-500 font-medium hidden sm:block">Kitkat & Rashu Card Manager</p>
         </div>
@@ -99,7 +99,7 @@
       <div class="flex items-center space-x-2 sm:space-x-3">
         <!-- Month Dropdown -->
         <div class="relative">
-          <select id="globalMonthSelect" class="bg-white border border-slate-300 text-xs font-semibold text-slate-800 rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:border-indigo-500 cursor-pointer shadow-xs hover:border-slate-400">
+          <select id="globalMonthSelect" class="bg-white border border-slate-300 text-xs font-semibold text-slate-800 rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:border-sky-500 cursor-pointer shadow-xs hover:border-slate-400">
             <option value="September 2026" selected>September 2026</option>
             <option value="August 2026">August 2026</option>
             <option value="July 2026">July 2026</option>
@@ -109,11 +109,11 @@
 
         <!-- Add Expense CTA -->
         <div class="flex items-center gap-1.5">
-          <button id="openAddExpenseBtn" class="flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-indigo-600/20 transition active:scale-95" title="Add Card Spend">
+          <button id="openAddExpenseBtn" class="flex items-center space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95" title="Add Card Spend">
             <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
             <span class="hidden sm:inline">Add Card Spend</span>
           </button>
-          <button id="openAddUpiBtn" class="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-emerald-600/20 transition active:scale-95" title="Add UPI Spend">
+          <button id="openAddUpiBtn" class="flex items-center space-x-1.5 bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-pink-600/20 transition active:scale-95" title="Add UPI Spend">
             <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
             <span class="hidden sm:inline">Add UPI</span>
           </button>
@@ -143,19 +143,19 @@
     <section id="view-dashboard" class="space-y-6">
       
       <!-- Settlement Alert / Net Status Banner with Advance Funds Action -->
-      <div id="settlementBanner" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50/70 to-indigo-50/50 border border-indigo-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+      <div id="settlementBanner" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50/80 via-white to-pink-50/80 border border-sky-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
         <div class="flex items-start sm:items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 border border-indigo-200 flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 border border-sky-200 flex items-center justify-center shrink-0">
             <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="text-xs font-bold uppercase tracking-wider text-indigo-700">Final Settlement & Advance Breakdown</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-700">Final Settlement & Advance Breakdown</span>
             <h2 id="settlementMainText" class="text-base sm:text-lg font-bold text-slate-900 mt-0.5">Calculating settlement...</h2>
             <p id="settlementSubText" class="text-xs text-slate-500 font-medium">Net Balance = (Share - Received Advance / Payments)</p>
           </div>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-          <button id="quickRecordAdvanceBtn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
+          <button id="quickRecordAdvanceBtn" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-sky-600/20 transition flex items-center gap-1.5">
             <i data-lucide="hand-coins" class="w-3.5 h-3.5"></i>
             <span>Record Received / Advance</span>
           </button>
@@ -172,13 +172,13 @@
         <div class="card-glass p-5 rounded-2xl border border-slate-200/80 flex flex-col justify-between shadow-xs">
           <div class="flex items-center justify-between text-slate-500 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Card Statement Total</span>
-            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
               <i data-lucide="credit-card" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono tracking-tight" id="dashStatementTotal">₹0.00</div>
           <div class="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
             <span>Raw billed on 24th statement</span>
           </div>
         </div>
@@ -199,41 +199,41 @@
         </div>
 
         <!-- Person 1 Breakdown (Kitkat) with Advance/Payment deduction -->
-        <div class="card-glass p-5 rounded-2xl border border-indigo-200/80 flex flex-col justify-between bg-gradient-to-b from-indigo-50/40 to-white shadow-xs">
+        <div class="card-glass p-5 rounded-2xl border border-sky-200/90 flex flex-col justify-between bg-gradient-to-b from-sky-50/50 to-white shadow-xs">
           <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-indigo-700" id="dashPerson1Label">Kitkat Share</span>
-            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-700" id="dashPerson1Label">Kitkat Share</span>
+            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center">
               <i data-lucide="user" class="w-4 h-4"></i>
             </div>
           </div>
-          <div class="text-2xl sm:text-3xl font-extrabold text-indigo-950 font-mono tracking-tight" id="dashPerson1Share">₹0.00</div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-sky-950 font-mono tracking-tight" id="dashPerson1Share">₹0.00</div>
           <div class="mt-2 space-y-1 text-[11px]">
             <div class="flex justify-between text-slate-500">
               <span>Received / Advance: <b class="text-emerald-700" id="dashPerson1Paid">₹0.00</b></span>
             </div>
             <div class="flex justify-between text-slate-700 font-semibold pt-1 border-t border-slate-200">
               <span>Final Due:</span>
-              <span class="font-mono text-indigo-700 text-xs font-bold" id="dashPerson1Balance">₹0.00</span>
+              <span class="font-mono text-sky-700 text-xs font-bold" id="dashPerson1Balance">₹0.00</span>
             </div>
           </div>
         </div>
 
         <!-- Person 2 Breakdown (Rashu) with Advance/Payment deduction -->
-        <div class="card-glass p-5 rounded-2xl border border-purple-200/80 flex flex-col justify-between bg-gradient-to-b from-purple-50/40 to-white shadow-xs">
+        <div class="card-glass p-5 rounded-2xl border border-pink-200/90 flex flex-col justify-between bg-gradient-to-b from-pink-50/50 to-white shadow-xs">
           <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-purple-700" id="dashPerson2Label">Rashu Share</span>
-            <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+            <span class="text-xs font-bold uppercase tracking-wider text-pink-700" id="dashPerson2Label">Rashu Share</span>
+            <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
               <i data-lucide="user-check" class="w-4 h-4"></i>
             </div>
           </div>
-          <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 font-mono tracking-tight" id="dashPerson2Share">₹0.00</div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-pink-950 font-mono tracking-tight" id="dashPerson2Share">₹0.00</div>
           <div class="mt-2 space-y-1 text-[11px]">
             <div class="flex justify-between text-slate-500">
               <span>Received / Advance: <b class="text-emerald-700" id="dashPerson2Paid">₹0.00</b></span>
             </div>
             <div class="flex justify-between text-slate-700 font-semibold pt-1 border-t border-slate-200">
               <span>Final Due:</span>
-              <span class="font-mono text-purple-700 text-xs font-bold" id="dashPerson2Balance">₹0.00</span>
+              <span class="font-mono text-pink-700 text-xs font-bold" id="dashPerson2Balance">₹0.00</span>
             </div>
           </div>
         </div>
@@ -248,15 +248,15 @@
           <div>
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center">
                   <i data-lucide="calendar-check" class="w-4 h-4"></i>
                 </div>
                 <div>
                   <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Statement Cycle</h3>
-                  <p class="text-[11px] text-indigo-600 font-semibold" id="dashCycleDatesLabel">Statement: 24th | Due Date: 13th</p>
+                  <p class="text-[11px] text-sky-600 font-semibold" id="dashCycleDatesLabel">Statement: 24th | Due Date: 13th</p>
                 </div>
               </div>
-              <span class="badge bg-indigo-50 text-indigo-700 border-indigo-200" id="dashCycleStatusBadge">Active Cycle</span>
+              <span class="badge bg-sky-50 text-sky-700 border-sky-200" id="dashCycleStatusBadge">Active Cycle</span>
             </div>
 
             <!-- Workflow Explanation Cards -->
@@ -269,10 +269,10 @@
                 </div>
               </div>
 
-              <div class="p-3 rounded-xl bg-indigo-50/70 border border-indigo-100 flex items-start gap-2.5">
-                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+              <div class="p-3 rounded-xl bg-sky-50/70 border border-sky-100 flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
                 <div>
-                  <h4 class="text-xs font-semibold text-indigo-900">On 24th: Add Statement & Surcharges</h4>
+                  <h4 class="text-xs font-semibold text-sky-900">On 24th: Add Statement & Surcharges</h4>
                   <p class="text-[11px] text-slate-600">Mention the statement amount and fuel waivers after statement generates.</p>
                 </div>
               </div>
@@ -292,7 +292,7 @@
 
           <!-- Quick Action Button for 24th statement entry -->
           <div class="mt-5 pt-3 border-t border-slate-200 flex flex-col gap-2">
-            <button id="openQuickStatementModalBtn" class="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-2">
+            <button id="openQuickStatementModalBtn" class="w-full py-2.5 px-3 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-600/20 transition flex items-center justify-center gap-2">
               <i data-lucide="edit" class="w-4 h-4"></i>
               <span>Quick 24th Statement Reconciler</span>
             </button>
@@ -323,7 +323,7 @@
             <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Recent Transactions</h3>
             <p class="text-xs text-slate-500">Latest entries from the current cycle</p>
           </div>
-          <button data-tab="expenses" class="nav-tab text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-semibold">
+          <button data-tab="expenses" class="nav-tab text-xs text-sky-600 hover:text-sky-800 flex items-center gap-1 font-semibold">
             <span>View All Expenses</span>
             <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
           </button>
@@ -339,7 +339,7 @@
                 <th class="px-5 py-3">Type</th>
                 <th class="px-5 py-3 text-right">Slip (Bill)</th>
                 <th class="px-5 py-3 text-right">Statement Amt</th>
-                <th class="px-5 py-3 text-right font-bold text-indigo-700">Effective Amt</th>
+                <th class="px-5 py-3 text-right font-bold text-sky-700">Effective Amt</th>
                 <th class="px-5 py-3 text-center">Status</th>
               </tr>
             </thead>
@@ -370,12 +370,12 @@
               type="text" 
               id="expenseSearchInput" 
               placeholder="Search merchant or remark..." 
-              class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 shadow-xs"
+              class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 shadow-xs"
             />
           </div>
 
           <!-- Person Filter -->
-          <select id="expensePersonFilter" class="bg-white border border-slate-300 rounded-xl text-xs text-slate-700 px-3 py-2 focus:outline-none focus:border-indigo-500 shadow-xs">
+          <select id="expensePersonFilter" class="bg-white border border-slate-300 rounded-xl text-xs text-slate-700 px-3 py-2 focus:outline-none focus:border-sky-500 shadow-xs">
             <option value="ALL">All Persons (Kitkat / Rashu / Both)</option>
             <option value="Kitkat">Kitkat Only</option>
             <option value="Rashu">Rashu Only</option>
@@ -383,12 +383,12 @@
           </select>
 
           <!-- Category Filter -->
-          <select id="expenseCategoryFilter" class="bg-white border border-slate-300 rounded-xl text-xs text-slate-700 px-3 py-2 focus:outline-none focus:border-indigo-500 shadow-xs">
+          <select id="expenseCategoryFilter" class="bg-white border border-slate-300 rounded-xl text-xs text-slate-700 px-3 py-2 focus:outline-none focus:border-sky-500 shadow-xs">
             <option value="ALL">All Categories</option>
           </select>
 
           <!-- Payment Type Filter -->
-          <select id="expenseTypeFilter" class="bg-white border border-slate-300 rounded-xl text-xs text-slate-700 px-3 py-2 focus:outline-none focus:border-indigo-500 shadow-xs">
+          <select id="expenseTypeFilter" class="bg-white border border-slate-300 rounded-xl text-xs text-slate-700 px-3 py-2 focus:outline-none focus:border-sky-500 shadow-xs">
             <option value="ALL">All Types (Card & Non-Card)</option>
             <option value="Card">Card Only</option>
             <option value="Non-Card">Non-Card Only</option>
@@ -401,7 +401,7 @@
             <i data-lucide="download" class="w-3.5 h-3.5 text-slate-500"></i>
             <span>Export CSV</span>
           </button>
-          <button id="expenseAddBtn2" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
+          <button id="expenseAddBtn2" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-sky-600/20 transition flex items-center gap-1.5">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add Spend</span>
           </button>
@@ -423,9 +423,9 @@
                 <th class="px-4 py-3.5 text-right">Refund (₹)</th>
                 <th class="px-4 py-3.5 text-center">Used By</th>
                 <th class="px-4 py-3.5 text-center">Type</th>
-                <th class="px-4 py-3.5 text-right font-bold text-indigo-700">Effective (₹)</th>
-                <th class="px-4 py-3.5 text-right font-semibold text-indigo-700" id="thPerson1Share">Kitkat Share</th>
-                <th class="px-4 py-3.5 text-right font-semibold text-purple-700" id="thPerson2Share">Rashu Share</th>
+                <th class="px-4 py-3.5 text-right font-bold text-sky-700">Effective (₹)</th>
+                <th class="px-4 py-3.5 text-right font-semibold text-sky-700" id="thPerson1Share">Kitkat Share</th>
+                <th class="px-4 py-3.5 text-right font-semibold text-pink-700" id="thPerson2Share">Rashu Share</th>
                 <th class="px-4 py-3.5 text-center">Actions</th>
               </tr>
             </thead>
@@ -448,18 +448,18 @@
     <section id="view-upi" class="space-y-6 hidden">
       
       <!-- Card Payment Due Date Settlement Rule Banner -->
-      <div id="upiDueDateBanner" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50/40 to-indigo-50/50 border border-emerald-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+      <div id="upiDueDateBanner" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50/80 via-white to-pink-50/80 border border-sky-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
         <div class="flex items-start sm:items-center gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 border border-pink-200 flex items-center justify-center shrink-0">
             <i data-lucide="calendar-clock" class="w-5 h-5"></i>
           </div>
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">UPI Settlement & Card Due Date Rule</span>
-              <span id="upiCycleDueBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 font-mono">Due: 13 Sep 2026</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-sky-800">UPI Settlement & Card Due Date Rule</span>
+              <span id="upiCycleDueBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 border border-sky-200 font-mono">Due: 13 Sep 2026</span>
             </div>
             <p id="upiDueDateExplanation" class="text-xs text-slate-600 mt-1">
-              Spends on or before <b class="text-slate-900" id="upiDueRuleDate">13 Sep 2026</b> settle in <b class="text-emerald-700 font-bold" id="upiDueRuleCurrentMonth">August 2026</b>. Spends after that date automatically roll over to <b class="text-amber-700 font-bold" id="upiDueRuleNextMonth">September 2026</b>.
+              Spends on or before <b class="text-slate-900" id="upiDueRuleDate">13 Sep 2026</b> settle in <b class="text-sky-700 font-bold" id="upiDueRuleCurrentMonth">August 2026</b>. Spends after that date automatically roll over to <b class="text-pink-700 font-bold" id="upiDueRuleNextMonth">September 2026</b>.
             </p>
           </div>
         </div>
@@ -478,38 +478,38 @@
         <div class="card-glass p-5 rounded-2xl border border-slate-200/80 flex flex-col justify-between shadow-xs">
           <div class="flex items-center justify-between text-slate-500 mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider">Settled UPI Spends</span>
-            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center">
               <i data-lucide="smartphone" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono tracking-tight" id="upiTotalSpend">₹0.00</div>
           <div class="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
             <span id="upiCountBadge">0 transactions</span>
-            <span class="text-emerald-700 font-semibold">Settling in this cycle</span>
+            <span class="text-pink-700 font-semibold">Settling in this cycle</span>
           </div>
         </div>
 
         <!-- Person 1 UPI Share -->
-        <div class="card-glass p-5 rounded-2xl border border-indigo-200/80 flex flex-col justify-between bg-gradient-to-b from-indigo-50/40 to-white shadow-xs">
+        <div class="card-glass p-5 rounded-2xl border border-sky-200/90 flex flex-col justify-between bg-gradient-to-b from-sky-50/50 to-white shadow-xs">
           <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-indigo-700" id="upiPerson1Label">Kitkat UPI Share</span>
-            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-700" id="upiPerson1Label">Kitkat UPI Share</span>
+            <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center">
               <i data-lucide="user" class="w-4 h-4"></i>
             </div>
           </div>
-          <div class="text-2xl sm:text-3xl font-extrabold text-indigo-950 font-mono tracking-tight" id="upiPerson1Share">₹0.00</div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-sky-950 font-mono tracking-tight" id="upiPerson1Share">₹0.00</div>
           <div class="mt-2 text-[11px] text-slate-500 font-medium">Added to final monthly settlement</div>
         </div>
 
         <!-- Person 2 UPI Share -->
-        <div class="card-glass p-5 rounded-2xl border border-purple-200/80 flex flex-col justify-between bg-gradient-to-b from-purple-50/40 to-white shadow-xs">
+        <div class="card-glass p-5 rounded-2xl border border-pink-200/90 flex flex-col justify-between bg-gradient-to-b from-pink-50/50 to-white shadow-xs">
           <div class="flex items-center justify-between text-slate-500 mb-2">
-            <span class="text-xs font-bold uppercase tracking-wider text-purple-700" id="upiPerson2Label">Rashu UPI Share</span>
-            <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+            <span class="text-xs font-bold uppercase tracking-wider text-pink-700" id="upiPerson2Label">Rashu UPI Share</span>
+            <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center">
               <i data-lucide="user-check" class="w-4 h-4"></i>
             </div>
           </div>
-          <div class="text-2xl sm:text-3xl font-extrabold text-purple-950 font-mono tracking-tight" id="upiPerson2Share">₹0.00</div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-pink-950 font-mono tracking-tight" id="upiPerson2Share">₹0.00</div>
           <div class="mt-2 text-[11px] text-slate-500 font-medium">Added to final monthly settlement</div>
         </div>
 
@@ -522,11 +522,11 @@
           <!-- Search Bar -->
           <div class="relative w-full sm:w-72">
             <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-            <input type="text" id="upiSearchInput" placeholder="Search UPI description / remarks..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 shadow-xs" />
+            <input type="text" id="upiSearchInput" placeholder="Search UPI description / remarks..." class="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-pink-500 shadow-xs" />
           </div>
 
           <!-- Used By Filter -->
-          <select id="upiPersonFilter" class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-indigo-500 font-medium shadow-xs">
+          <select id="upiPersonFilter" class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-pink-500 font-medium shadow-xs">
             <option value="ALL">All Users</option>
             <option value="Kitkat">Kitkat (Used)</option>
             <option value="Rashu">Rashu (Used)</option>
@@ -534,7 +534,7 @@
           </select>
 
           <!-- Paid By Filter -->
-          <select id="upiPaidByFilter" class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-indigo-500 font-medium shadow-xs">
+          <select id="upiPaidByFilter" class="w-full sm:w-auto px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-700 focus:outline-none focus:border-pink-500 font-medium shadow-xs">
             <option value="ALL">Paid by Anyone</option>
             <option value="Rashu">Paid by Rashu</option>
             <option value="Kitkat">Paid by Kitkat</option>
@@ -546,7 +546,7 @@
             <i data-lucide="download" class="w-3.5 h-3.5 text-slate-500"></i>
             <span>Export CSV</span>
           </button>
-          <button id="openAddUpiBtn2" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+          <button id="openAddUpiBtn2" class="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-pink-600/20 transition flex items-center gap-1.5">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add UPI Spend</span>
           </button>
@@ -562,12 +562,12 @@
               <tr>
                 <th class="px-4 py-3.5">Date</th>
                 <th class="px-4 py-3.5">Description</th>
-                <th class="px-4 py-3.5 text-right font-bold text-emerald-700">UPI Amount (₹)</th>
+                <th class="px-4 py-3.5 text-right font-bold text-pink-700">UPI Amount (₹)</th>
                 <th class="px-4 py-3.5 text-center">Used By</th>
                 <th class="px-4 py-3.5 text-center">Paid By</th>
                 <th class="px-4 py-3.5 text-center">Settles In</th>
-                <th class="px-4 py-3.5 text-right font-semibold text-indigo-700" id="thUpiPerson1Share">Kitkat Share</th>
-                <th class="px-4 py-3.5 text-right font-semibold text-purple-700" id="thUpiPerson2Share">Rashu Share</th>
+                <th class="px-4 py-3.5 text-right font-semibold text-sky-700" id="thUpiPerson1Share">Kitkat Share</th>
+                <th class="px-4 py-3.5 text-right font-semibold text-pink-700" id="thUpiPerson2Share">Rashu Share</th>
                 <th class="px-4 py-3.5 text-center">Actions</th>
               </tr>
             </thead>
@@ -613,7 +613,7 @@
 
         <div class="card-glass p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <span class="text-[11px] font-semibold uppercase text-slate-500">Net Effective Spend</span>
-          <div class="text-xl font-bold font-mono text-indigo-700 mt-1" id="tallyEffectiveSpend">₹0.00</div>
+          <div class="text-xl font-bold font-mono text-sky-700 mt-1" id="tallyEffectiveSpend">₹0.00</div>
           <span class="text-[10px] text-slate-500">Net payable spend</span>
         </div>
 
@@ -634,7 +634,7 @@
           </div>
           
           <div class="flex items-center gap-2">
-            <button id="openQuickStatementModalBtn2" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-md shadow-indigo-600/20 flex items-center gap-1.5 transition">
+            <button id="openQuickStatementModalBtn2" class="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl shadow-md shadow-sky-600/20 flex items-center gap-1.5 transition">
               <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
               <span>Update 24th Statement Values</span>
             </button>
@@ -654,7 +654,7 @@
                 <th class="px-4 py-3.5 text-right">Slip Amount</th>
                 <th class="px-4 py-3.5 text-right">Statement Amount</th>
                 <th class="px-4 py-3.5 text-right">Waiver / Refund</th>
-                <th class="px-4 py-3.5 text-right font-bold text-indigo-700">Effective Amount</th>
+                <th class="px-4 py-3.5 text-right font-bold text-sky-700">Effective Amount</th>
                 <th class="px-4 py-3.5 text-center">Tally Status</th>
                 <th class="px-4 py-3.5 text-right">Action</th>
               </tr>
@@ -675,15 +675,15 @@
       
       <!-- Payments Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div class="card-glass p-5 rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white shadow-xs">
-          <div class="text-xs font-bold uppercase tracking-wider text-indigo-700" id="payPerson1Label">Kitkat Contributions</div>
-          <div class="text-2xl font-extrabold font-mono text-indigo-950 mt-1" id="payPerson1Total">₹0.00</div>
+        <div class="card-glass p-5 rounded-2xl border border-sky-200/90 bg-gradient-to-b from-sky-50/50 to-white shadow-xs">
+          <div class="text-xs font-bold uppercase tracking-wider text-sky-700" id="payPerson1Label">Kitkat Contributions</div>
+          <div class="text-2xl font-extrabold font-mono text-sky-950 mt-1" id="payPerson1Total">₹0.00</div>
           <p class="text-[11px] text-slate-500 mt-1" id="payPerson1Notes">Advance / Share settlements recorded</p>
         </div>
 
-        <div class="card-glass p-5 rounded-2xl border border-purple-200/80 bg-gradient-to-b from-purple-50/40 to-white shadow-xs">
-          <div class="text-xs font-bold uppercase tracking-wider text-purple-700" id="payPerson2Label">Rashu Contributions</div>
-          <div class="text-2xl font-extrabold font-mono text-purple-950 mt-1" id="payPerson2Total">₹0.00</div>
+        <div class="card-glass p-5 rounded-2xl border border-pink-200/90 bg-gradient-to-b from-pink-50/50 to-white shadow-xs">
+          <div class="text-xs font-bold uppercase tracking-wider text-pink-700" id="payPerson2Label">Rashu Contributions</div>
+          <div class="text-2xl font-extrabold font-mono text-pink-950 mt-1" id="payPerson2Total">₹0.00</div>
           <p class="text-[11px] text-slate-500 mt-1" id="payPerson2Notes">Advance / Share settlements recorded</p>
         </div>
 
@@ -692,7 +692,7 @@
             <div class="text-xs font-bold uppercase tracking-wider text-emerald-800">Total Payments & Advance Managed</div>
             <div class="text-2xl font-extrabold font-mono text-slate-900 mt-1" id="payGrandTotal">₹0.00</div>
           </div>
-          <button id="openRecordPaymentModalBtn" class="mt-3 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-indigo-600/20 transition">
+          <button id="openRecordPaymentModalBtn" class="mt-3 w-full py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-sky-600/20 transition">
             + Record Advance / Payment
           </button>
         </div>
@@ -798,26 +798,26 @@
           <form id="settingsForm" class="space-y-4 pt-2">
             <div>
               <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Person 1 Name</label>
-              <input type="text" id="settingsPerson1" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-medium shadow-xs" />
+              <input type="text" id="settingsPerson1" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-medium shadow-xs" />
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Person 2 Name</label>
-              <input type="text" id="settingsPerson2" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-medium shadow-xs" />
+              <input type="text" id="settingsPerson2" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-pink-500 font-medium shadow-xs" />
             </div>
 
             <div class="grid grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Currency</label>
-                <input type="text" id="settingsCurrency" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-medium shadow-xs" />
+                <input type="text" id="settingsCurrency" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-medium shadow-xs" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Statement Day</label>
-                <input type="number" min="1" max="31" id="settingsStatementDay" placeholder="24" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-mono shadow-xs" />
+                <input type="number" min="1" max="31" id="settingsStatementDay" placeholder="24" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1">Card Due Day</label>
-                <input type="number" min="1" max="31" id="settingsPaymentDueDay" placeholder="13" class="w-full px-3.5 py-2.5 bg-white border border-emerald-400 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono shadow-xs" />
+                <label class="block text-xs font-semibold text-sky-700 uppercase tracking-wider mb-1">Card Due Day</label>
+                <input type="number" min="1" max="31" id="settingsPaymentDueDay" placeholder="13" class="w-full px-3.5 py-2.5 bg-white border border-sky-400 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
               </div>
             </div>
 
@@ -825,7 +825,7 @@
               <span class="font-semibold text-slate-800">💡 Due Date Rule:</span> UPI spends on or before the Card Due Day settle in that month; spends after that day roll over to the next month's settlement.
             </div>
 
-            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-indigo-600/20 transition">
+            <button type="submit" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-sky-600/20 transition">
               Save Settings
             </button>
           </form>
@@ -841,7 +841,7 @@
           <div class="space-y-3 pt-2">
             <!-- Download JSON Backup -->
             <button id="exportJSONBackupBtn" class="w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 rounded-xl border border-slate-300 shadow-xs flex items-center justify-center gap-2 transition">
-              <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i>
+              <i data-lucide="download" class="w-4 h-4 text-sky-600"></i>
               <span>Download Full JSON Backup</span>
             </button>
 
@@ -863,19 +863,19 @@
       </div>
 
       <!-- Supabase Cloud Database Configuration Card -->
-      <div class="card-glass p-6 rounded-2xl space-y-4 border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white shadow-xs">
+      <div class="card-glass p-6 rounded-2xl space-y-4 border border-sky-200/90 bg-gradient-to-b from-sky-50/40 to-white shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
           <div>
             <div class="flex items-center gap-2">
               <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                <i data-lucide="cloud" class="w-5 h-5 text-indigo-600"></i>
+                <i data-lucide="cloud" class="w-5 h-5 text-sky-600"></i>
                 Supabase Cloud Database & Live Sync (100% Free)
               </h3>
               <span id="settingsCloudStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">Local Mode</span>
             </div>
             <p class="text-xs text-slate-500 mt-0.5">Sync transactions seamlessly in real-time across your phone, laptop, and Vercel live website.</p>
           </div>
-          <a href="https://supabase.com/dashboard" target="_blank" rel="noopener" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 self-start sm:self-auto">
+          <a href="https://supabase.com/dashboard" target="_blank" rel="noopener" class="text-[11px] text-sky-600 hover:text-sky-800 font-semibold flex items-center gap-1 self-start sm:self-auto">
             <span>Open Supabase Dashboard</span>
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
           </a>
@@ -885,11 +885,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Supabase Project URL</label>
-              <input type="url" id="supabaseUrlInput" placeholder="https://your-project.supabase.co" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-mono shadow-xs" />
+              <input type="url" id="supabaseUrlInput" placeholder="https://your-project.supabase.co" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Supabase Anon / Public Key</label>
-              <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-mono shadow-xs" />
+              <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
           </div>
 
@@ -897,19 +897,19 @@
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
             <div class="flex flex-wrap gap-2">
-              <button type="submit" id="saveSupabaseConfigBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-indigo-600/20 transition flex items-center gap-1.5">
+              <button type="submit" id="saveSupabaseConfigBtn" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-sky-600/20 transition flex items-center gap-1.5">
                 <i data-lucide="plug-zap" class="w-3.5 h-3.5"></i>
                 <span>Test & Save Connection</span>
               </button>
               <button type="button" id="syncLocalToCloudBtn" class="px-4 py-2 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 rounded-xl border border-slate-300 shadow-xs transition flex items-center gap-1.5">
-                <i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-sky-600"></i>
                 <span>Upload & Sync All Local Data to Cloud</span>
               </button>
               <button type="button" id="disconnectCloudBtn" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-xs font-semibold text-red-700 rounded-xl border border-red-200 shadow-xs transition">
                 Disconnect
               </button>
             </div>
-            <p class="text-[11px] text-slate-500">Run <code class="text-indigo-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">supabase_schema.sql</code> in your Supabase SQL Editor first.</p>
+            <p class="text-[11px] text-slate-500">Run <code class="text-sky-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">supabase_schema.sql</code> in your Supabase SQL Editor first.</p>
           </div>
         </form>
       </div>
@@ -927,7 +927,7 @@
       <div class="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
           <h3 class="text-base font-bold text-slate-900 flex items-center gap-2" id="expenseModalTitle">
-            <i data-lucide="receipt" class="w-5 h-5 text-indigo-600"></i>
+            <i data-lucide="receipt" class="w-5 h-5 text-sky-600"></i>
             Log Daily Expense
           </h3>
           <p class="text-[11px] text-slate-500">Enter your daily bill amount now. Statement details can be added on 24th.</p>
@@ -943,32 +943,32 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Month Cycle</label>
-            <select id="expenseMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="expenseMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
               <option value="August 2026">August 2026</option>
               <option value="July 2026">July 2026</option>
             </select>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Transaction Date</label>
-            <input type="date" id="expenseDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs" />
+            <input type="date" id="expenseDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
           </div>
         </div>
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Merchant / Description</label>
-          <input type="text" id="expenseDescInput" required placeholder="e.g. SMART CITY FUELS, Petrol, Grocery..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs" />
+          <input type="text" id="expenseDescInput" required placeholder="e.g. SMART CITY FUELS, Petrol, Grocery..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs" />
         </div>
 
         <!-- Primary Spend Amount (Slip Amount) -->
         <div>
-          <label class="block text-[11px] font-semibold text-indigo-700 uppercase tracking-wider mb-1">Spend / Slip Amount (₹) *</label>
-          <input type="number" step="0.01" id="expenseSlipInput" required placeholder="Amount on physical bill / swiped" class="w-full px-3.5 py-2.5 bg-white border border-indigo-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:border-indigo-600 font-mono shadow-xs" />
+          <label class="block text-[11px] font-semibold text-sky-700 uppercase tracking-wider mb-1">Spend / Slip Amount (₹) *</label>
+          <input type="number" step="0.01" id="expenseSlipInput" required placeholder="Amount on physical bill / swiped" class="w-full px-3.5 py-2.5 bg-white border border-sky-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:border-sky-600 font-mono shadow-xs" />
         </div>
 
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Used By</label>
-            <select id="expenseUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 font-medium shadow-xs">
+            <select id="expenseUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 font-medium shadow-xs">
               <option value="Kitkat">Kitkat (100%)</option>
               <option value="Rashu">Rashu (100%)</option>
               <option value="Both" selected>Both (50/50)</option>
@@ -976,14 +976,14 @@
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Payment Type</label>
-            <select id="expenseTypeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="expenseTypeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
               <option value="Card">Card</option>
               <option value="Non-Card">Non-Card</option>
             </select>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Category</label>
-            <select id="expenseCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="expenseCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
               <!-- Dynamically populated -->
             </select>
           </div>
@@ -993,7 +993,7 @@
         <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
-              <i data-lucide="file-check" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <i data-lucide="file-check" class="w-3.5 h-3.5 text-sky-600"></i>
               Bank Statement & Fuel Surcharge Waiver
             </span>
             <span class="text-[10px] text-amber-700 font-semibold">Editable anytime from app</span>
@@ -1002,27 +1002,27 @@
           <div class="grid grid-cols-3 gap-2.5">
             <div>
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Statement Amt (₹)</label>
-              <input type="number" step="0.01" id="expenseStmtInput" placeholder="Billed on 24th" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-mono shadow-xs" />
+              <input type="number" step="0.01" id="expenseStmtInput" placeholder="Billed on 24th" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Fuel Waiver (₹)</label>
-              <input type="number" step="0.01" id="expenseFuelInput" placeholder="Surcharge waiver" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-mono shadow-xs" />
+              <input type="number" step="0.01" id="expenseFuelInput" placeholder="Surcharge waiver" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
             <div>
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Refund (₹)</label>
-              <input type="number" step="0.01" id="expenseRefundInput" placeholder="Reversal" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-mono shadow-xs" />
+              <input type="number" step="0.01" id="expenseRefundInput" placeholder="Reversal" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
           </div>
         </div>
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Remarks (Optional)</label>
-          <input type="text" id="expenseRemarksInput" placeholder="e.g. Bill reference, notes..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs" />
+          <input type="text" id="expenseRemarksInput" placeholder="e.g. Bill reference, notes..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs" />
         </div>
 
         <div class="pt-3 flex justify-end space-x-3 border-t border-slate-200">
           <button type="button" id="cancelExpenseModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition">Cancel</button>
-          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-md shadow-indigo-600/30 transition active:scale-95">Save Expense</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md shadow-sky-600/30 transition active:scale-95">Save Expense</button>
         </div>
       </form>
 
@@ -1038,7 +1038,7 @@
       <div class="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
           <h3 class="text-base font-bold text-slate-900 flex items-center gap-2" id="upiModalTitle">
-            <i data-lucide="smartphone" class="w-5 h-5 text-emerald-600"></i>
+            <i data-lucide="smartphone" class="w-5 h-5 text-pink-600"></i>
             Log UPI / Bank Spend
           </h3>
           <p class="text-[11px] text-slate-500">Record a non-card UPI or bank transfer expense for share settlement.</p>
@@ -1054,7 +1054,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Month Cycle</label>
-            <select id="upiMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="upiMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs">
               <option value="September 2026">September 2026</option>
               <option value="August 2026">August 2026</option>
               <option value="July 2026">July 2026</option>
@@ -1062,30 +1062,30 @@
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Date</label>
-            <input type="date" id="upiDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs" />
+            <input type="date" id="upiDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs" />
           </div>
         </div>
 
         <!-- Dynamic Card Due Date Settlement Notice -->
         <div id="upiDueDateHelperNotice" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2">
-          <i data-lucide="info" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+          <i data-lucide="info" class="w-4 h-4 text-pink-600 shrink-0"></i>
           <span id="upiDueDateHelperText">Loading due date settlement rule...</span>
         </div>
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Item / Description *</label>
-          <input type="text" id="upiDescInput" required placeholder="e.g. Diy Mirror, Car service, Grocery..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs" />
+          <input type="text" id="upiDescInput" required placeholder="e.g. Diy Mirror, Car service, Grocery..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-pink-500 shadow-xs" />
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">UPI Amount (₹) *</label>
-          <input type="number" step="0.01" id="upiAmountInput" required placeholder="Amount paid via UPI" class="w-full px-3.5 py-2.5 bg-white border border-emerald-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:border-emerald-500 font-mono shadow-xs" />
+          <label class="block text-[11px] font-semibold text-pink-700 uppercase tracking-wider mb-1">UPI Amount (₹) *</label>
+          <input type="number" step="0.01" id="upiAmountInput" required placeholder="Amount paid via UPI" class="w-full px-3.5 py-2.5 bg-white border border-pink-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:border-pink-500 font-mono shadow-xs" />
         </div>
 
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Used By</label>
-            <select id="upiUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 font-medium shadow-xs">
+            <select id="upiUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 font-medium shadow-xs">
               <option value="Kitkat">Kitkat (100%)</option>
               <option value="Rashu">Rashu (100%)</option>
               <option value="Both" selected>Both (50/50)</option>
@@ -1093,14 +1093,14 @@
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Paid By</label>
-            <select id="upiPaidByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 font-medium shadow-xs">
+            <select id="upiPaidByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 font-medium shadow-xs">
               <option value="Rashu" selected>Rashu</option>
               <option value="Kitkat">Kitkat</option>
             </select>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Category</label>
-            <select id="upiCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="upiCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs">
               <!-- Populated via JS -->
             </select>
           </div>
@@ -1108,12 +1108,12 @@
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Remarks (Optional)</label>
-          <input type="text" id="upiRemarksInput" placeholder="e.g. GooglePay reference, notes..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs" />
+          <input type="text" id="upiRemarksInput" placeholder="e.g. GooglePay reference, notes..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-pink-500 shadow-xs" />
         </div>
 
         <div class="pt-3 flex justify-end space-x-3 border-t border-slate-200">
           <button type="button" id="cancelUpiModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition">Cancel</button>
-          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-md shadow-emerald-600/30 transition active:scale-95">Save UPI Spend</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-pink-600 hover:bg-pink-500 text-white rounded-xl shadow-md shadow-pink-600/30 transition active:scale-95">Save UPI Spend</button>
         </div>
       </form>
 
@@ -1129,7 +1129,7 @@
       <div class="flex items-center justify-between pb-4 border-b border-slate-200 shrink-0">
         <div>
           <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="edit-3" class="w-5 h-5 text-indigo-600"></i>
+            <i data-lucide="edit-3" class="w-5 h-5 text-sky-600"></i>
             24th Statement Reconciliation Helper
           </h3>
           <p class="text-xs text-slate-500">Quickly enter the statement amounts and fuel surcharge waivers after receiving your statement on 24th.</p>
@@ -1150,7 +1150,7 @@
               <th class="px-3 py-2.5 text-center">24th Statement Amount (₹)</th>
               <th class="px-3 py-2.5 text-center">Fuel Waiver (₹)</th>
               <th class="px-3 py-2.5 text-center">Refund (₹)</th>
-              <th class="px-3 py-2.5 text-right font-bold text-indigo-700">Effective (₹)</th>
+              <th class="px-3 py-2.5 text-right font-bold text-sky-700">Effective (₹)</th>
             </tr>
           </thead>
           <tbody id="quickStatementTableBody" class="divide-y divide-slate-100 font-medium">
@@ -1162,7 +1162,7 @@
       <div class="pt-3 border-t border-slate-200 flex items-center justify-between shrink-0">
         <p class="text-xs text-slate-500">Changes update totals and person splits immediately.</p>
         <div class="flex gap-2">
-          <button type="button" id="saveQuickStatementBtn" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-md shadow-indigo-600/30 transition">
+          <button type="button" id="saveQuickStatementBtn" class="px-5 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md shadow-sky-600/30 transition">
             Save All Reconciliations
           </button>
         </div>
@@ -1180,7 +1180,7 @@
       <div class="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
           <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="hand-coins" class="w-5 h-5 text-indigo-600"></i>
+            <i data-lucide="hand-coins" class="w-5 h-5 text-sky-600"></i>
             Record Payment / Advance Received
           </h3>
           <p class="text-[11px] text-slate-500">Manage advance funds (e.g. ₹10,000 from Person A) to factor into final billing.</p>
@@ -1194,34 +1194,34 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Month Cycle</label>
-            <select id="payMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="payMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
               <option value="August 2026">August 2026</option>
               <option value="July 2026">July 2026</option>
             </select>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Payment Date</label>
-            <input type="date" id="payDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs" />
+            <input type="date" id="payDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Received From</label>
-            <select id="payPersonInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+            <select id="payPersonInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
               <option value="Kitkat">Kitkat</option>
               <option value="Rashu">Rashu</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-indigo-700 uppercase tracking-wider mb-1">Amount Received (₹) *</label>
-            <input type="number" step="0.01" id="payAmountInput" required placeholder="e.g. 10000.00" class="w-full px-3 py-2 bg-white border border-indigo-300 rounded-xl text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-indigo-500 shadow-xs" />
+            <label class="block text-[11px] font-semibold text-sky-700 uppercase tracking-wider mb-1">Amount Received (₹) *</label>
+            <input type="number" step="0.01" id="payAmountInput" required placeholder="e.g. 10000.00" class="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-sky-500 shadow-xs" />
           </div>
         </div>
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Type / Purpose</label>
-          <select id="payPurposeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+          <select id="payPurposeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
             <option value="Advance Received Beforehand">Advance Received Beforehand (Pre-payment)</option>
             <option value="Monthly Share Settlement">Monthly Share Settlement</option>
             <option value="Part Payment / Transfer">Part Payment / Transfer</option>
@@ -1230,7 +1230,7 @@
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Payment Method</label>
-          <select id="payMethodInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs">
+          <select id="payMethodInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
             <option value="UPI">UPI</option>
             <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
             <option value="Cash">Cash</option>
@@ -1240,12 +1240,12 @@
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Notes / Description (Optional)</label>
-          <input type="text" id="payNotesInput" placeholder="e.g. Got 10000 in advance for this cycle" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-indigo-500 shadow-xs" />
+          <input type="text" id="payNotesInput" placeholder="e.g. Got 10000 in advance for this cycle" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs" />
         </div>
 
         <div class="pt-3 flex justify-end space-x-3 border-t border-slate-200">
           <button type="button" id="cancelPaymentModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition">Cancel</button>
-          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-md shadow-indigo-600/30 transition active:scale-95">Save & Update Billing</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md shadow-sky-600/30 transition active:scale-95">Save & Update Billing</button>
         </div>
       </form>
 
@@ -1260,7 +1260,7 @@
       
       <div class="flex items-center justify-between pb-4 border-b border-slate-200">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-indigo-600"></i>
+          <i data-lucide="file-spreadsheet" class="w-5 h-5 text-sky-600"></i>
           Import Bank / Card Statement
         </h3>
         <button id="closeImportModalBtn" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition">
@@ -1271,8 +1271,8 @@
       <div class="mt-4 space-y-4 text-xs text-slate-600">
         <p>Upload your Credit Card statement (Excel .xlsx or CSV) to automatically parse transactions into SpendWise.</p>
         
-        <div class="border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-indigo-50/40 hover:border-indigo-400 rounded-2xl p-6 text-center transition cursor-pointer" id="dropZone">
-          <i data-lucide="upload-cloud" class="w-8 h-8 text-indigo-600 mx-auto mb-2"></i>
+        <div class="border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-sky-50/40 hover:border-sky-400 rounded-2xl p-6 text-center transition cursor-pointer" id="dropZone">
+          <i data-lucide="upload-cloud" class="w-8 h-8 text-sky-600 mx-auto mb-2"></i>
           <p class="font-semibold text-slate-900">Click or drag & drop statement file here</p>
           <p class="text-[11px] text-slate-500 mt-1">Supports .xlsx, .xls, .csv</p>
           <input type="file" id="statementFileInput" accept=".xlsx,.xls,.csv" class="hidden" />
