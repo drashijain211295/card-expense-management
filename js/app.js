@@ -287,13 +287,13 @@ function renderDashboardView() {
   document.getElementById("dashFuelWaiverBadge").innerText = `-${cur}${summary.cardFuelWaiverTotal.toFixed(2)} Fuel Waiver`;
   document.getElementById("dashRefundBadge").innerText = `-${cur}${summary.cardRefundTotal.toFixed(2)} Refund`;
 
-  document.getElementById("dashPerson1Share").innerText = `${cur}${settlement.person1CombinedShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson1Share").innerText = `${cur}${summary.person1TotalExpenseShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashPerson1Paid").innerText = `${cur}${summary.person1Paid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  document.getElementById("dashPerson1Balance").innerText = `${cur}${settlement.person1FinalDue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson1Balance").innerText = `${cur}${summary.person1Balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  document.getElementById("dashPerson2Share").innerText = `${cur}${settlement.person2CombinedShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson2Share").innerText = `${cur}${summary.person2TotalExpenseShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashPerson2Paid").innerText = `${cur}${summary.person2Paid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  document.getElementById("dashPerson2Balance").innerText = `${cur}${settlement.person2FinalDue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson2Balance").innerText = `${cur}${summary.person2Balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   document.getElementById("dashSelectedMonthBadge").innerText = appState.currentMonth;
 
@@ -320,28 +320,25 @@ function renderDashboardView() {
     barEl.style.width = `${pct}%`;
   }
 
-  // Settlement Banner Text (Managing Advance / Received amounts clearly)
-  const p1 = settlement.person1Name;
-  const p2 = settlement.person2Name;
+  // Settlement Banner Text (Exact Excel math: Share - Advance = Net Due)
+  const p1 = summary.person1Name;
+  const p2 = summary.person2Name;
   let bannerMain = "";
   let bannerSub = "";
 
-  const hasUpi = upi.totalUpiSpend > 0;
-  const hasPaid = summary.person1Paid > 0 || summary.person2Paid > 0;
+  if (summary.person1Paid > 0 || summary.person2Paid > 0) {
+    const p1Part = summary.person1Paid > 0 
+      ? `${p1}: ${cur}${summary.person1Balance.toFixed(2)} (Share ${cur}${summary.person1TotalExpenseShare.toFixed(2)} - Adv ${cur}${summary.person1Paid.toFixed(2)})`
+      : `${p1}: ${cur}${summary.person1Balance.toFixed(2)} (Share ${cur}${summary.person1TotalExpenseShare.toFixed(2)})`;
 
-  if (hasUpi || hasPaid) {
-    const p1UpiText = hasUpi ? ` (Card ${cur}${summary.person1TotalExpenseShare.toFixed(2)} + UPI ${cur}${upi.person1UpiShare.toFixed(2)}${summary.person1Paid > 0 ? ` - Adv ${cur}${summary.person1Paid.toFixed(2)}` : ''})` : (summary.person1Paid > 0 ? ` (Share ${cur}${summary.person1TotalExpenseShare.toFixed(2)} - Adv ${cur}${summary.person1Paid.toFixed(2)})` : '');
-    const p2UpiText = hasUpi ? ` (Card ${cur}${summary.person2TotalExpenseShare.toFixed(2)} + UPI ${cur}${upi.person2UpiShare.toFixed(2)}${summary.person2Paid > 0 ? ` - Adv ${cur}${summary.person2Paid.toFixed(2)}` : ''})` : (summary.person2Paid > 0 ? ` (Share ${cur}${summary.person2TotalExpenseShare.toFixed(2)} - Adv ${cur}${summary.person2Paid.toFixed(2)})` : '');
-
-    const p1Part = `${p1}: ${cur}${settlement.person1FinalDue.toFixed(2)}${p1UpiText}`;
-    const p2Part = `${p2}: ${cur}${settlement.person2FinalDue.toFixed(2)}${p2UpiText}`;
+    const p2Part = summary.person2Paid > 0
+      ? `${p2}: ${cur}${summary.person2Balance.toFixed(2)} (Share ${cur}${summary.person2TotalExpenseShare.toFixed(2)} - Adv ${cur}${summary.person2Paid.toFixed(2)})`
+      : `${p2}: ${cur}${summary.person2Balance.toFixed(2)} (Share ${cur}${summary.person2TotalExpenseShare.toFixed(2)})`;
 
     bannerMain = `${p1Part} | ${p2Part}`;
-    bannerSub = hasUpi 
-      ? `Combined Total: Card Shares + Non-Card UPI Spends, minus any advance payments.`
-      : `Advance funds & payments are automatically subtracted from gross shares to compute the final net settlement balance.`;
+    bannerSub = `Advance funds & payments are automatically subtracted from gross shares to compute the final net settlement balance.`;
   } else {
-    bannerMain = `${p1} owes ${cur}${settlement.person1FinalDue.toFixed(2)} | ${p2} owes ${cur}${settlement.person2FinalDue.toFixed(2)}`;
+    bannerMain = `${p1} owes ${cur}${summary.person1Balance.toFixed(2)} | ${p2} owes ${cur}${summary.person2Balance.toFixed(2)}`;
     bannerSub = `No advance/payments recorded yet for this cycle. Click "Record Received / Advance" to factor in pre-payments.`;
   }
 
