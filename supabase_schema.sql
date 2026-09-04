@@ -72,11 +72,29 @@ CREATE POLICY "Allow public access to settings" ON public.settings FOR ALL USING
 DROP POLICY IF EXISTS "Allow public access to months" ON public.months;
 CREATE POLICY "Allow public access to months" ON public.months FOR ALL USING (true) WITH CHECK (true);
 
--- Enable Realtime for all tables
-ALTER PUBLICATION supabase_realtime ADD TABLE public.expenses;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.payments;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.settings;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.months;
+-- Enable Realtime for all tables safely (idempotent)
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.expenses;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.payments;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.settings;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.months;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+END $$;
 
 -- =============================================================================
 -- INSERT DEFAULT SETTINGS & MONTHS
