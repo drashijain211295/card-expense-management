@@ -6,7 +6,7 @@
 
 // Application State
 let appState = {
-  currentMonth: "August 2026",
+  currentMonth: localStorage.getItem("spendwise_selected_month") || "September 2026",
   currentTab: "dashboard",
   settings: {},
   expenses: [],
@@ -57,14 +57,11 @@ function loadStateFromStorage() {
     ? ExpenseCalculator.sortMonthsChronologically(rawMonths, true)
     : rawMonths;
 
-  // Default to August 2026 if current month has no transactions while August has records
-  if (!appState.currentMonth || appState.currentMonth === "September 2026") {
-    const augCount = appState.expenses.filter(e => e.month === "August 2026").length;
-    if (augCount > 0) {
-      appState.currentMonth = "August 2026";
-    } else if (appState.months && appState.months.length > 0) {
-      appState.currentMonth = appState.months[0];
-    }
+  const savedMonth = localStorage.getItem("spendwise_selected_month");
+  if (savedMonth && (savedMonth === "ALL" || appState.months.includes(savedMonth))) {
+    appState.currentMonth = savedMonth;
+  } else if (!appState.currentMonth || (!appState.months.includes(appState.currentMonth) && appState.currentMonth !== "ALL")) {
+    appState.currentMonth = appState.months.length > 0 ? appState.months[0] : "September 2026";
   }
 }
 
@@ -91,6 +88,7 @@ function initEventListeners() {
   if (globalMonthSelect) {
     globalMonthSelect.addEventListener("change", (e) => {
       appState.currentMonth = e.target.value;
+      localStorage.setItem("spendwise_selected_month", appState.currentMonth);
       renderApp();
     });
   }
@@ -205,8 +203,11 @@ function populateMonthDropdown() {
     : rawMonths;
   appState.months = months;
 
-  if (!appState.currentMonth) {
-    appState.currentMonth = "August 2026";
+  const savedMonth = localStorage.getItem("spendwise_selected_month");
+  if (savedMonth && (savedMonth === "ALL" || months.includes(savedMonth))) {
+    appState.currentMonth = savedMonth;
+  } else if (!appState.currentMonth || (!months.includes(appState.currentMonth) && appState.currentMonth !== "ALL")) {
+    appState.currentMonth = months[0];
   }
 
   const selectOptions = ["ALL", ...months];
