@@ -48,87 +48,87 @@
 
   <!-- TOP APP HEADER -->
   <header class="border-b border-[#e2eef7] bg-white/90 backdrop-blur-md sticky top-0 z-40 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
       
       <!-- Brand Logo -->
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-pink-400 to-rose-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
-          <i data-lucide="wallet-cards" class="w-5 h-5 text-white"></i>
+      <div class="flex items-center space-x-2.5 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 via-pink-400 to-rose-400 flex items-center justify-center shadow-md shadow-sky-500/20">
+          <i data-lucide="wallet-cards" class="w-4 h-4 text-white"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-sky-700 via-sky-900 to-pink-600 bg-clip-text text-transparent">SpendWise</span>
+          <div class="flex items-center gap-1.5">
+            <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-sky-700 via-sky-900 to-pink-600 bg-clip-text text-transparent">SpendWise</span>
           </div>
-          <p class="text-[11px] text-slate-500 font-medium hidden sm:block">Kitkat & Rashu Card Manager</p>
+          <p class="text-[10px] text-slate-500 font-medium hidden sm:block">Kitkat & Rashu</p>
         </div>
       </div>
 
-      <!-- Navigation Tabs (Desktop) -->
-      <nav class="hidden md:flex items-center space-x-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs shadow-inner">
+      <!-- Navigation Tabs (Desktop / Large Screens) -->
+      <nav class="hidden xl:flex items-center space-x-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs shadow-inner shrink-0">
         <button data-tab="dashboard" class="nav-tab active">
-          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
           <span>Dashboard</span>
         </button>
         <button data-tab="expenses" class="nav-tab">
-          <i data-lucide="credit-card" class="w-4 h-4"></i>
-          <span>Card Expenses</span>
+          <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
+          <span>Card</span>
         </button>
         <button data-tab="upi" class="nav-tab">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          <span>UPI / Bank</span>
+          <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+          <span>UPI</span>
         </button>
         <button data-tab="tally" class="nav-tab">
-          <i data-lucide="scale" class="w-4 h-4"></i>
-          <span>Statement Tally</span>
+          <i data-lucide="scale" class="w-3.5 h-3.5"></i>
+          <span>Tally (24th)</span>
         </button>
         <button data-tab="payments" class="nav-tab">
-          <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
-          <span>Payments & Advance</span>
+          <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+          <span>Advance</span>
         </button>
         <button data-tab="reports" class="nav-tab">
-          <i data-lucide="pie-chart" class="w-4 h-4"></i>
+          <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
           <span>Reports</span>
         </button>
         <button data-tab="settings" class="nav-tab">
-          <i data-lucide="settings" class="w-4 h-4"></i>
+          <i data-lucide="settings" class="w-3.5 h-3.5"></i>
           <span>Settings</span>
         </button>
         <button data-tab="trash" class="nav-tab relative">
-          <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+          <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i>
           <span>Trash</span>
           <span id="trashCountBadge" class="hidden text-[10px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 font-bold ml-1">0</span>
         </button>
       </nav>
 
       <!-- Month Selector & Actions -->
-      <div class="flex items-center space-x-2 sm:space-x-3">
+      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
         <!-- Month Dropdown -->
         <div class="relative">
-          <select id="globalMonthSelect" class="bg-white border border-slate-300 text-xs font-semibold text-slate-800 rounded-xl px-3 py-2 pr-8 appearance-none focus:outline-none focus:border-sky-500 cursor-pointer shadow-xs hover:border-slate-400">
+          <select id="globalMonthSelect" class="bg-white border border-slate-300 text-xs font-semibold text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 pr-7 sm:pr-8 appearance-none focus:outline-none focus:border-sky-500 cursor-pointer shadow-xs hover:border-slate-400">
             <option value="September 2026" selected>September 2026</option>
             <option value="August 2026">August 2026</option>
             <option value="July 2026">July 2026</option>
           </select>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"></i>
         </div>
 
         <!-- Add Expense CTA -->
         <div class="flex items-center gap-1.5">
-          <button id="openAddExpenseBtn" class="flex items-center space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95" title="Add Card Spend">
+          <button id="openAddExpenseBtn" class="flex items-center space-x-1 sm:space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95" title="Add Card Spend">
             <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Add Card Spend</span>
+            <span class="hidden md:inline">Add Card</span>
           </button>
-          <button id="openAddUpiBtn" class="flex items-center space-x-1.5 bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-pink-600/20 transition active:scale-95" title="Add UPI Spend">
+          <button id="openAddUpiBtn" class="flex items-center space-x-1 sm:space-x-1.5 bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl shadow-md shadow-pink-600/20 transition active:scale-95" title="Add UPI Spend">
             <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Add UPI</span>
+            <span class="hidden md:inline">Add UPI</span>
           </button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- MOBILE NAV BAR -->
-  <div class="md:hidden bg-white/95 border-b border-slate-200 px-4 py-2 flex items-center justify-between overflow-x-auto gap-2 text-xs shadow-xs">
+  <!-- SECONDARY / MOBILE SUBNAV (Visible on screens smaller than XL) -->
+  <div class="xl:hidden bg-white/95 border-b border-slate-200 px-3 py-2 flex items-center overflow-x-auto gap-1.5 text-xs shadow-xs no-scrollbar w-full">
     <button data-tab="dashboard" class="nav-tab active text-xs whitespace-nowrap">Dashboard</button>
     <button data-tab="expenses" class="nav-tab text-xs whitespace-nowrap">Card</button>
     <button data-tab="upi" class="nav-tab text-xs whitespace-nowrap">UPI / Bank</button>
@@ -1235,8 +1235,8 @@
         </button>
       </div>
 
-      <div class="overflow-y-auto my-4 flex-1 pr-1">
-        <table class="w-full text-left text-xs text-slate-700">
+      <div class="overflow-y-auto overflow-x-auto my-4 flex-1 pr-1 max-w-full">
+        <table class="min-w-[640px] w-full text-left text-xs text-slate-700">
           <thead class="bg-slate-50 uppercase text-[11px] text-slate-500 font-bold sticky top-0 border-b border-slate-200 z-10">
             <tr>
               <th class="px-3 py-2.5">Date</th>
