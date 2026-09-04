@@ -1,3 +1,8 @@
+const dns = require('dns');
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 if (!globalThis.crypto) {
   try {
     const { webcrypto } = require('crypto');
@@ -93,11 +98,7 @@ async function connectMongoDB(uri) {
     if (mongoClient) {
       await mongoClient.close().catch(() => {});
     }
-    mongoClient = new MongoClient(mongoUri, { 
-      serverSelectionTimeoutMS: 5000,
-      tls: true,
-      tlsAllowInvalidCertificates: true
-    });
+    mongoClient = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 });
     await mongoClient.connect();
     db = mongoClient.db();
     isMongoConnected = true;
