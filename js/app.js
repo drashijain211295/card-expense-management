@@ -1056,6 +1056,7 @@ function setupExpenseModal() {
     const date = formatDisplayDate(rawDate);
     const description = document.getElementById("expenseDescInput").value;
     const slipAmount = parseFloat(document.getElementById("expenseSlipInput").value) || 0;
+    const statementAmount = parseFloat(document.getElementById("expenseStmtInput").value) || 0;
     const fuelValRaw = document.getElementById("expenseFuelInput").value.trim();
     let fuelWaiver = fuelValRaw !== '' ? (parseFloat(fuelValRaw) || 0) : null;
     const refundAmount = parseFloat(document.getElementById("expenseRefundInput").value) || 0;
