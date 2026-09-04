@@ -78,7 +78,7 @@
         </button>
         <button data-tab="payments" class="nav-tab">
           <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
-          <span>Payments</span>
+          <span>Payments & Advance</span>
         </button>
         <button data-tab="reports" class="nav-tab">
           <i data-lucide="pie-chart" class="w-4 h-4"></i>
@@ -115,7 +115,7 @@
     <button data-tab="dashboard" class="nav-tab active text-xs whitespace-nowrap">Dashboard</button>
     <button data-tab="expenses" class="nav-tab text-xs whitespace-nowrap">Expenses</button>
     <button data-tab="tally" class="nav-tab text-xs whitespace-nowrap">Statement Tally</button>
-    <button data-tab="payments" class="nav-tab text-xs whitespace-nowrap">Payments</button>
+    <button data-tab="payments" class="nav-tab text-xs whitespace-nowrap">Payments & Advance</button>
     <button data-tab="reports" class="nav-tab text-xs whitespace-nowrap">Reports</button>
     <button data-tab="settings" class="nav-tab text-xs whitespace-nowrap">Settings</button>
   </div>
@@ -128,21 +128,25 @@
     <!-- ========================================================================= -->
     <section id="view-dashboard" class="space-y-6">
       
-      <!-- Settlement Alert / Net Status Banner -->
+      <!-- Settlement Alert / Net Status Banner with Advance Funds Action -->
       <div id="settlementBanner" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-900/50 via-slate-900 to-violet-900/40 border border-indigo-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-lg shadow-indigo-950/40">
         <div class="flex items-start sm:items-center gap-3.5">
           <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shrink-0">
             <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="text-xs font-bold uppercase tracking-wider text-indigo-300">Final Settlement Summary</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-300">Final Settlement & Advance Breakdown</span>
             <h2 id="settlementMainText" class="text-base sm:text-lg font-bold text-white mt-0.5">Calculating settlement...</h2>
-            <p id="settlementSubText" class="text-xs text-slate-400">Based on Excel formulas (Share O17/O21 - Payments O18/O22)</p>
+            <p id="settlementSubText" class="text-xs text-slate-400">Net Balance = (Share - Received Advance / Payments)</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="quickRecordPaymentBtn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white rounded-xl border border-slate-700 transition">
-            Record Payment
+        <div class="flex items-center gap-2 flex-wrap">
+          <button id="quickRecordAdvanceBtn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow-lg shadow-indigo-600/20 transition flex items-center gap-1.5">
+            <i data-lucide="hand-coins" class="w-3.5 h-3.5"></i>
+            <span>Record Received / Advance</span>
+          </button>
+          <button id="quickRecordPaymentBtn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white rounded-xl border border-slate-700 transition">
+            All Payments
           </button>
         </div>
       </div>
@@ -180,7 +184,7 @@
           </div>
         </div>
 
-        <!-- Person 1 Breakdown (Kitkat) -->
+        <!-- Person 1 Breakdown (Kitkat) with Advance/Payment deduction -->
         <div class="card-glass p-5 rounded-2xl border border-slate-800 flex flex-col justify-between bg-gradient-to-b from-indigo-950/20 to-transparent">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-bold uppercase tracking-wider text-indigo-400" id="dashPerson1Label">Kitkat Share</span>
@@ -191,13 +195,16 @@
           <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight" id="dashPerson1Share">₹0.00</div>
           <div class="mt-2 space-y-1 text-[11px]">
             <div class="flex justify-between text-slate-400">
-              <span>Paid: <b class="text-slate-200" id="dashPerson1Paid">₹0.00</b></span>
-              <span>Balance: <b class="font-mono text-indigo-300" id="dashPerson1Balance">₹0.00</b></span>
+              <span>Received / Advance: <b class="text-emerald-400" id="dashPerson1Paid">₹0.00</b></span>
+            </div>
+            <div class="flex justify-between text-slate-300 font-semibold pt-1 border-t border-slate-800">
+              <span>Final Due:</span>
+              <span class="font-mono text-indigo-300 text-xs font-bold" id="dashPerson1Balance">₹0.00</span>
             </div>
           </div>
         </div>
 
-        <!-- Person 2 Breakdown (Rashu) -->
+        <!-- Person 2 Breakdown (Rashu) with Advance/Payment deduction -->
         <div class="card-glass p-5 rounded-2xl border border-slate-800 flex flex-col justify-between bg-gradient-to-b from-purple-950/20 to-transparent">
           <div class="flex items-center justify-between text-slate-400 mb-2">
             <span class="text-xs font-bold uppercase tracking-wider text-purple-400" id="dashPerson2Label">Rashu Share</span>
@@ -208,8 +215,11 @@
           <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight" id="dashPerson2Share">₹0.00</div>
           <div class="mt-2 space-y-1 text-[11px]">
             <div class="flex justify-between text-slate-400">
-              <span>Paid: <b class="text-slate-200" id="dashPerson2Paid">₹0.00</b></span>
-              <span>Balance: <b class="font-mono text-purple-300" id="dashPerson2Balance">₹0.00</b></span>
+              <span>Received / Advance: <b class="text-emerald-400" id="dashPerson2Paid">₹0.00</b></span>
+            </div>
+            <div class="flex justify-between text-slate-300 font-semibold pt-1 border-t border-slate-800">
+              <span>Final Due:</span>
+              <span class="font-mono text-purple-300 text-xs font-bold" id="dashPerson2Balance">₹0.00</span>
             </div>
           </div>
         </div>
@@ -219,7 +229,7 @@
       <!-- Center Row: 24th Statement Cycle Hub & Expense Breakdown Chart -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- 24th Statement Cycle Hub (Replaces old card preview mockup) -->
+        <!-- 24th Statement Cycle Hub -->
         <div class="card-glass p-6 rounded-2xl flex flex-col justify-between border border-slate-800">
           <div>
             <div class="flex items-center justify-between mb-3">
@@ -501,7 +511,7 @@
     </section>
 
     <!-- ========================================================================= -->
-    <!-- VIEW 4: PAYMENT TRACKING -->
+    <!-- VIEW 4: PAYMENT TRACKING & ADVANCE FUNDS -->
     <!-- ========================================================================= -->
     <section id="view-payments" class="space-y-6 hidden">
       
@@ -510,22 +520,22 @@
         <div class="card-glass p-5 rounded-2xl border border-slate-800">
           <div class="text-xs font-bold uppercase tracking-wider text-indigo-400" id="payPerson1Label">Kitkat Contributions</div>
           <div class="text-2xl font-extrabold font-mono text-white mt-1" id="payPerson1Total">₹0.00</div>
-          <p class="text-[11px] text-slate-400 mt-1" id="payPerson1Notes">Settlement payments recorded</p>
+          <p class="text-[11px] text-slate-400 mt-1" id="payPerson1Notes">Advance / Share settlements recorded</p>
         </div>
 
         <div class="card-glass p-5 rounded-2xl border border-slate-800">
           <div class="text-xs font-bold uppercase tracking-wider text-purple-400" id="payPerson2Label">Rashu Contributions</div>
           <div class="text-2xl font-extrabold font-mono text-white mt-1" id="payPerson2Total">₹0.00</div>
-          <p class="text-[11px] text-slate-400 mt-1" id="payPerson2Notes">Settlement payments recorded</p>
+          <p class="text-[11px] text-slate-400 mt-1" id="payPerson2Notes">Advance / Share settlements recorded</p>
         </div>
 
         <div class="card-glass p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
           <div>
-            <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Total Payments Contributed</div>
+            <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Total Payments & Advance Managed</div>
             <div class="text-2xl font-extrabold font-mono text-white mt-1" id="payGrandTotal">₹0.00</div>
           </div>
           <button id="openRecordPaymentModalBtn" class="mt-3 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow transition">
-            + Record New Payment
+            + Record Advance / Payment
           </button>
         </div>
       </div>
@@ -534,8 +544,8 @@
       <div class="card-glass rounded-2xl overflow-hidden">
         <div class="p-5 border-b border-slate-800 flex items-center justify-between">
           <div>
-            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Payment History</h3>
-            <p class="text-xs text-slate-400">Recorded payments and settlements matching Excel rows O18 & O22</p>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Payment & Advance History</h3>
+            <p class="text-xs text-slate-400">Recorded payments and received funds factored directly into final billing</p>
           </div>
         </div>
 
@@ -547,7 +557,7 @@
                 <th class="px-5 py-3.5">Month</th>
                 <th class="px-5 py-3.5">Person</th>
                 <th class="px-5 py-3.5">Payment Method</th>
-                <th class="px-5 py-3.5">Notes</th>
+                <th class="px-5 py-3.5">Notes / Advance Type</th>
                 <th class="px-5 py-3.5 text-right">Amount (₹)</th>
                 <th class="px-5 py-3.5 text-center">Actions</th>
               </tr>
@@ -571,7 +581,7 @@
         <!-- Person Share Comparison Chart -->
         <div class="card-glass p-6 rounded-2xl">
           <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-1">Person-Wise Share Breakdown</h3>
-          <p class="text-xs text-slate-400 mb-4">Total expense split between persons</p>
+          <p class="text-xs text-slate-400 mb-4">Total expense split vs payments contributed</p>
           <div class="relative h-64 w-full">
             <canvas id="personReportChart"></canvas>
           </div>
@@ -693,7 +703,7 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: ADD / EDIT EXPENSE (Optimized for Daily Spend & 24th Update) -->
+  <!-- MODAL: ADD / EDIT EXPENSE -->
   <!-- ========================================================================= -->
   <div id="expenseModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="card-glass bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl transform scale-95 transition-transform duration-200" id="expenseModalCard">
@@ -804,7 +814,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: QUICK 24th STATEMENT RECONCILER (Batch edit for 24th) -->
+  <!-- MODAL: QUICK 24th STATEMENT RECONCILER -->
   <!-- ========================================================================= -->
   <div id="quickStatementModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="card-glass bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col p-6 shadow-2xl transform scale-95 transition-transform duration-200" id="quickStatementModalCard">
@@ -854,16 +864,19 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: RECORD PAYMENT -->
+  <!-- MODAL: RECORD PAYMENT & RECEIVED ADVANCE -->
   <!-- ========================================================================= -->
   <div id="paymentModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="card-glass bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-200" id="paymentModalCard">
       
       <div class="flex items-center justify-between pb-4 border-b border-slate-800">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i data-lucide="arrow-left-right" class="w-5 h-5 text-indigo-400"></i>
-          Record Settlement Payment
-        </h3>
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="hand-coins" class="w-5 h-5 text-indigo-400"></i>
+            Record Payment / Advance Received
+          </h3>
+          <p class="text-[11px] text-slate-400">Manage advance funds (e.g. ₹10,000 from Person A) to factor into final billing.</p>
+        </div>
         <button id="closePaymentModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -880,42 +893,51 @@
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Payment Date</label>
-            <input type="text" id="payDateInput" required placeholder="e.g. 31 Aug 26" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
+            <input type="text" id="payDateInput" required placeholder="e.g. 15 Aug 26" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Paid By Person</label>
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Received From</label>
             <select id="payPersonInput" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
               <option value="Kitkat">Kitkat</option>
               <option value="Rashu">Rashu</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount Paid (₹)</label>
-            <input type="number" step="0.01" id="payAmountInput" required placeholder="4567.42" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
+            <label class="block text-[11px] font-semibold text-indigo-300 uppercase tracking-wider mb-1">Amount Received (₹) *</label>
+            <input type="number" step="0.01" id="payAmountInput" required placeholder="e.g. 10000.00" class="w-full px-3 py-2 bg-slate-800 border border-indigo-500/50 rounded-xl text-xs text-white font-mono font-bold focus:outline-none focus:border-indigo-400" />
           </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Type / Purpose</label>
+          <select id="payPurposeInput" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+            <option value="Advance Received Beforehand">Advance Received Beforehand (Pre-payment)</option>
+            <option value="Monthly Share Settlement">Monthly Share Settlement</option>
+            <option value="Part Payment / Transfer">Part Payment / Transfer</option>
+          </select>
         </div>
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Payment Method</label>
           <select id="payMethodInput" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
-            <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
             <option value="UPI">UPI</option>
-            <option value="Credit Card Direct">Credit Card Direct Bill Pay</option>
+            <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
             <option value="Cash">Cash</option>
+            <option value="Credit Card Direct">Credit Card Direct Bill Pay</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes / Remarks</label>
-          <input type="text" id="payNotesInput" placeholder="e.g. Part settlement share" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes / Description (Optional)</label>
+          <input type="text" id="payNotesInput" placeholder="e.g. Got 10000 in advance for this cycle" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
         </div>
 
         <div class="pt-3 flex justify-end space-x-3 border-t border-slate-800">
           <button type="button" id="cancelPaymentModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition">Cancel</button>
-          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-600/30 transition active:scale-95">Record Payment</button>
+          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-600/30 transition active:scale-95">Save & Update Billing</button>
         </div>
       </form>
 
@@ -964,7 +986,7 @@
       <p>© 2026 SpendWise — Statement Generated on 24th of Every Month (Kitkat & Rashu v2)</p>
       <div class="flex items-center space-x-4">
         <span>Cycle: <b>25th to 24th</b></span>
-        <span>Reconciliation: <b>2-Step Flow Active</b></span>
+        <span>Advance Management: <b>Active</b></span>
       </div>
     </div>
   </footer>

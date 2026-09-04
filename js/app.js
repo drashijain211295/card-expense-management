@@ -1,6 +1,7 @@
 /**
  * SpendWise Main Application Controller
- * Handles UI interactions, View routing, State updates, Charts, and 24th Statement Reconciliation Flow.
+ * Handles UI interactions, View routing, State updates, Charts, 24th Statement Reconciliation Flow,
+ * and Advance / Received Funds Management in Final Billing.
  */
 
 // Application State
@@ -237,24 +238,27 @@ function renderDashboardView() {
     barEl.style.width = `${pct}%`;
   }
 
-  // Settlement Banner Text
+  // Settlement Banner Text (Managing Advance / Received amounts clearly)
   const p1 = summary.person1Name;
   const p2 = summary.person2Name;
   let bannerMain = "";
   let bannerSub = "";
 
-  if (summary.person1Balance > 0 && summary.person2Balance > 0) {
-    bannerMain = `${p1} owes ${cur}${summary.person1Balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })} and ${p2} owes ${cur}${summary.person2Balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-    bannerSub = `Card pool has total pending collections of ${cur}${(summary.person1Balance + summary.person2Balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })} for ${appState.currentMonth}.`;
-  } else if (summary.person1Balance < 0 && summary.person2Balance <= 0) {
-    bannerMain = `${p1} has an advance credit surplus of ${cur}${Math.abs(summary.person1Balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-    bannerSub = `${p2} is fully settled (${cur}0.00). Advance carries forward to next month.`;
-  } else if (summary.person1Balance > 0 && summary.person2Balance === 0) {
-    bannerMain = `${p1} owes ${cur}${summary.person1Balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-    bannerSub = `${p2} has settled all their shares for ${appState.currentMonth}.`;
+  if (summary.person1Paid > 0 || summary.person2Paid > 0) {
+    // Show exact formula math: Share - Received = Net Due
+    const p1Part = summary.person1Paid > 0 
+      ? `${p1} Share: ${cur}${summary.person1TotalExpenseShare.toFixed(2)} - Received: ${cur}${summary.person1Paid.toFixed(2)} = ${summary.person1Balance >= 0 ? `Net Due ${cur}${summary.person1Balance.toFixed(2)}` : `Surplus Advance ${cur}${Math.abs(summary.person1Balance).toFixed(2)}`}`
+      : `${p1} Net Due: ${cur}${summary.person1Balance.toFixed(2)}`;
+
+    const p2Part = summary.person2Paid > 0
+      ? `${p2} Share: ${cur}${summary.person2TotalExpenseShare.toFixed(2)} - Received: ${cur}${summary.person2Paid.toFixed(2)} = ${summary.person2Balance >= 0 ? `Net Due ${cur}${summary.person2Balance.toFixed(2)}` : `Surplus Advance ${cur}${Math.abs(summary.person2Balance).toFixed(2)}`}`
+      : `${p2} Net Due: ${cur}${summary.person2Balance.toFixed(2)}`;
+
+    bannerMain = `${p1Part} | ${p2Part}`;
+    bannerSub = `Advance funds & payments are automatically subtracted from gross shares to compute the final net settlement balance.`;
   } else {
-    bannerMain = `${p1} Balance: ${cur}${summary.person1Balance.toFixed(2)} | ${p2} Balance: ${cur}${summary.person2Balance.toFixed(2)}`;
-    bannerSub = `Calculated using exact Excel formula logic (Share - Payments).`;
+    bannerMain = `${p1} owes ${cur}${summary.person1Balance.toFixed(2)} | ${p2} owes ${cur}${summary.person2Balance.toFixed(2)}`;
+    bannerSub = `No advance/payments recorded yet for this cycle. Click "Record Received / Advance" to factor in pre-payments.`;
   }
 
   document.getElementById("settlementMainText").innerText = bannerMain;
@@ -514,7 +518,7 @@ function renderTallyView() {
 }
 
 // =============================================================================
-// PAYMENT TRACKING VIEW
+// PAYMENT TRACKING & ADVANCE FUNDS VIEW
 // =============================================================================
 function renderPaymentsView() {
   const tbody = document.getElementById("paymentsTableBody");
@@ -542,7 +546,7 @@ function renderPaymentsView() {
     tbody.innerHTML = `
       <tr>
         <td colspan="7" class="px-6 py-10 text-center text-slate-500 text-xs">
-          No settlement payments recorded for ${appState.currentMonth}.
+          No advance or settlement payments recorded for ${appState.currentMonth}.
         </td>
       </tr>
     `;
@@ -556,8 +560,11 @@ function renderPaymentsView() {
       <td class="px-5 py-3.5">
         <span class="badge ${getPersonBadgeClass(p.person)}">${p.person}</span>
       </td>
-      <td class="px-5 py-3.5 text-slate-300 font-medium">${p.paymentMethod || 'Direct Transfer'}</td>
-      <td class="px-5 py-3.5 text-slate-400">${p.notes || '-'}</td>
+      <td class="px-5 py-3.5 text-slate-300 font-medium">${p.paymentMethod || 'UPI / Transfer'}</td>
+      <td class="px-5 py-3.5 text-slate-400">
+        <span class="text-white font-semibold">${p.purpose || 'Payment'}</span>
+        ${p.notes ? ` <span class="text-slate-500">(${p.notes})</span>` : ''}
+      </td>
       <td class="px-5 py-3.5 text-right font-mono font-bold text-emerald-400">${cur}${parseFloat(p.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
       <td class="px-5 py-3.5 text-center">
         <button onclick="deletePayment('${p.id}')" class="p-1 text-slate-400 hover:text-red-400 transition" title="Delete">
@@ -594,7 +601,7 @@ function renderReportsView() {
             borderRadius: 8
           },
           {
-            label: 'Amount Paid (₹)',
+            label: 'Advance & Payments Contributed (₹)',
             data: [summary.person1Paid, summary.person2Paid],
             backgroundColor: ['#10b981', '#14b8a6'],
             borderRadius: 8
@@ -886,23 +893,35 @@ function setupQuickStatementModal() {
   }
 }
 
-// Payment Modal
+// Payment & Advance Modal Setup
 function setupPaymentModal() {
   const modal = document.getElementById("paymentModal");
   const card = document.getElementById("paymentModalCard");
-  const openBtns = [document.getElementById("quickRecordPaymentBtn"), document.getElementById("openRecordPaymentModalBtn")];
+  const openBtns = [
+    document.getElementById("quickRecordPaymentBtn"), 
+    document.getElementById("openRecordPaymentModalBtn"),
+    document.getElementById("quickRecordAdvanceBtn")
+  ];
   const closeBtn = document.getElementById("closePaymentModalBtn");
   const cancelBtn = document.getElementById("cancelPaymentModalBtn");
   const form = document.getElementById("paymentForm");
+  const purposeSelect = document.getElementById("payPurposeInput");
+  const amountInput = document.getElementById("payAmountInput");
 
-  const open = () => {
+  const open = (isAdvance = false) => {
     form.reset();
     document.getElementById("payMonthInput").value = appState.currentMonth;
     document.getElementById("payDateInput").value = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+    
+    if (purposeSelect) {
+      purposeSelect.value = isAdvance ? "Advance Received Beforehand" : "Monthly Share Settlement";
+    }
+
     modal.classList.remove("hidden");
     setTimeout(() => {
       modal.classList.remove("opacity-0");
       card.classList.remove("scale-95");
+      if (amountInput) amountInput.focus();
     }, 10);
   };
 
@@ -912,7 +931,16 @@ function setupPaymentModal() {
     setTimeout(() => modal.classList.add("hidden"), 200);
   };
 
-  openBtns.forEach(btn => { if (btn) btn.addEventListener("click", open); });
+  const quickAdvBtn = document.getElementById("quickRecordAdvanceBtn");
+  if (quickAdvBtn) {
+    quickAdvBtn.addEventListener("click", () => open(true));
+  }
+
+  const payBtn1 = document.getElementById("quickRecordPaymentBtn");
+  const payBtn2 = document.getElementById("openRecordPaymentModalBtn");
+  if (payBtn1) payBtn1.addEventListener("click", () => open(false));
+  if (payBtn2) payBtn2.addEventListener("click", () => open(false));
+
   if (closeBtn) closeBtn.addEventListener("click", close);
   if (cancelBtn) cancelBtn.addEventListener("click", close);
 
@@ -922,6 +950,7 @@ function setupPaymentModal() {
     const date = document.getElementById("payDateInput").value;
     const person = document.getElementById("payPersonInput").value;
     const amount = parseFloat(document.getElementById("payAmountInput").value) || 0;
+    const purpose = document.getElementById("payPurposeInput").value;
     const paymentMethod = document.getElementById("payMethodInput").value;
     const notes = document.getElementById("payNotesInput").value;
 
@@ -931,6 +960,7 @@ function setupPaymentModal() {
       date,
       person,
       amount,
+      purpose,
       paymentMethod,
       notes
     });
@@ -938,6 +968,7 @@ function setupPaymentModal() {
     saveStateToStorage();
     renderApp();
     close();
+    alert(`Recorded ${appState.settings.currencySymbol || '₹'}${amount.toFixed(2)} received from ${person} for ${month}!`);
   });
 }
 
