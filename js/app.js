@@ -56,11 +56,15 @@ function loadStateFromStorage() {
   appState.months = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically
     ? ExpenseCalculator.sortMonthsChronologically(rawMonths, true)
     : rawMonths;
-  // Always default to the latest active month on refresh
-  if (appState.months && appState.months.length > 0) {
-    appState.currentMonth = appState.months[0];
-  } else {
-    appState.currentMonth = "September 2026";
+
+  // Default to August 2026 if current month has no transactions while August has records
+  if (!appState.currentMonth || appState.currentMonth === "September 2026") {
+    const augCount = appState.expenses.filter(e => e.month === "August 2026").length;
+    if (augCount > 0) {
+      appState.currentMonth = "August 2026";
+    } else if (appState.months && appState.months.length > 0) {
+      appState.currentMonth = appState.months[0];
+    }
   }
 }
 
@@ -201,25 +205,31 @@ function populateMonthDropdown() {
     : rawMonths;
   appState.months = months;
 
-  if (!appState.currentMonth || !months.includes(appState.currentMonth)) {
-    appState.currentMonth = months[0];
+  if (!appState.currentMonth) {
+    appState.currentMonth = "August 2026";
   }
 
-  const optionsHTML = months.map(m => `<option value="${m}" ${m === appState.currentMonth ? "selected" : ""}>${m}</option>`).join("");
-  globalMonthSelect.innerHTML = optionsHTML;
+  const selectOptions = ["ALL", ...months];
+  const globalOptionsHTML = selectOptions.map(m => {
+    const label = m === "ALL" ? "All Months Combined" : m;
+    return `<option value="${m}" ${m === appState.currentMonth ? "selected" : ""}>${label}</option>`;
+  }).join("");
+
+  globalMonthSelect.innerHTML = globalOptionsHTML;
   globalMonthSelect.value = appState.currentMonth;
   
+  const formOptionsHTML = months.map(m => `<option value="${m}">${m}</option>`).join("");
   if (expenseMonthInput) {
-    expenseMonthInput.innerHTML = optionsHTML;
-    expenseMonthInput.value = appState.currentMonth;
+    expenseMonthInput.innerHTML = formOptionsHTML;
+    expenseMonthInput.value = appState.currentMonth === "ALL" ? months[0] : appState.currentMonth;
   }
   if (upiMonthInput) {
-    upiMonthInput.innerHTML = optionsHTML;
-    upiMonthInput.value = appState.currentMonth;
+    upiMonthInput.innerHTML = formOptionsHTML;
+    upiMonthInput.value = appState.currentMonth === "ALL" ? months[0] : appState.currentMonth;
   }
   if (payMonthInput) {
-    payMonthInput.innerHTML = optionsHTML;
-    payMonthInput.value = appState.currentMonth;
+    payMonthInput.innerHTML = formOptionsHTML;
+    payMonthInput.value = appState.currentMonth === "ALL" ? months[0] : appState.currentMonth;
   }
 }
 
