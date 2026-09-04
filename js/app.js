@@ -837,8 +837,8 @@ function setupExpenseModal() {
       appState.expenses.push(payload);
     }
 
+    StorageManager.saveExpenseAsync(payload);
     StorageManager.addMonthIfNew(month);
-    saveStateToStorage();
     renderApp();
     close();
   });
@@ -874,7 +874,7 @@ function editExpense(id) {
 function deleteExpense(id) {
   if (confirm("Are you sure you want to delete this expense?")) {
     appState.expenses = appState.expenses.filter(x => x.id !== id);
-    saveStateToStorage();
+    StorageManager.deleteExpenseAsync(id);
     renderApp();
   }
 }
@@ -967,10 +967,10 @@ function setupQuickStatementModal() {
           tx.statementAmount = stmtVal;
           tx.fuelWaiver = fuelVal;
           tx.refundAmount = refVal;
+          StorageManager.saveExpenseAsync(tx);
         }
       });
 
-      saveStateToStorage();
       renderApp();
       close();
       alert("Statement reconciliation values and user assignments saved successfully!");
@@ -1040,7 +1040,7 @@ function setupPaymentModal() {
     const paymentMethod = document.getElementById("payMethodInput").value;
     const notes = document.getElementById("payNotesInput").value;
 
-    appState.payments.push({
+    const payload = {
       id: `pay_${Date.now()}`,
       month,
       date,
@@ -1049,9 +1049,10 @@ function setupPaymentModal() {
       purpose,
       paymentMethod,
       notes
-    });
+    };
 
-    saveStateToStorage();
+    appState.payments.push(payload);
+    StorageManager.savePaymentAsync(payload);
     renderApp();
     close();
     alert(`Recorded ${appState.settings.currencySymbol || '₹'}${amount.toFixed(2)} received from ${person} for ${month}!`);
@@ -1061,7 +1062,7 @@ function setupPaymentModal() {
 function deletePayment(id) {
   if (confirm("Are you sure you want to delete this payment record?")) {
     appState.payments = appState.payments.filter(p => p.id !== id);
-    saveStateToStorage();
+    StorageManager.deletePaymentAsync(id);
     renderApp();
   }
 }
