@@ -9,8 +9,21 @@ const express = require('express');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
+
+function getLocalIp() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -467,5 +480,8 @@ app.use((req, res, next) => {
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 SpendWise Multi-Device Server running at http://localhost:${PORT}`);
+  const localIp = getLocalIp();
+  console.log(`🚀 SpendWise Multi-Device Realtime Server is running!`);
+  console.log(`💻 Desktop Local Access: http://localhost:${PORT}`);
+  console.log(`📱 Mobile Local Network Sync: http://${localIp}:${PORT}`);
 });
