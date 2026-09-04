@@ -297,7 +297,15 @@ function renderDashboardView() {
 
   document.getElementById("dashSelectedMonthBadge").innerText = appState.currentMonth;
 
-  // Cycle Reconciled Counter Progress
+  // Cycle Reconciled Counter Progress & Dates
+  const cycleDates = ExpenseCalculator.getCycleDates(appState.currentMonth, appState.settings);
+  const cycleDatesLabel = document.getElementById("dashCycleDatesLabel");
+  const cycleStatusBadge = document.getElementById("dashCycleStatusBadge");
+
+  if (cycleDates && cycleDatesLabel) {
+    cycleDatesLabel.innerText = `Statement: ${cycleDates.formattedStmtDate} | Card Due: ${cycleDates.formattedDueDate}`;
+  }
+
   const monthTxs = appState.expenses.filter(e => e.month === appState.currentMonth);
   const cardTxs = monthTxs.filter(e => (e.paymentType || "Card").toLowerCase() !== "non-card");
   const reconciledCardTxs = cardTxs.filter(e => (parseFloat(e.statementAmount) || 0) > 0);
@@ -558,6 +566,31 @@ function renderUpiView() {
   const p2 = appState.settings.person2 || "Rashu";
 
   const upiSummary = ExpenseCalculator.calculateUpiMonthSummary(appState.upiExpenses, appState.currentMonth, appState.settings);
+  const cycleDates = upiSummary.cycleDates || ExpenseCalculator.getCycleDates(appState.currentMonth, appState.settings);
+
+  // Update Due Date Rule Banner
+  const dueRuleDateEl = document.getElementById("upiDueRuleDate");
+  const dueRuleCurMonthEl = document.getElementById("upiDueRuleCurrentMonth");
+  const dueRuleNextMonthEl = document.getElementById("upiDueRuleNextMonth");
+  const dueBadgeEl = document.getElementById("upiCycleDueBadge");
+  const rolloverBadgeEl = document.getElementById("upiRolloverBadge");
+
+  if (cycleDates) {
+    if (dueRuleDateEl) dueRuleDateEl.innerText = cycleDates.formattedDueDate;
+    if (dueRuleCurMonthEl) dueRuleCurMonthEl.innerText = appState.currentMonth;
+    if (dueRuleNextMonthEl) dueRuleNextMonthEl.innerText = cycleDates.nextMonthName;
+    if (dueBadgeEl) dueBadgeEl.innerText = `Due: ${cycleDates.formattedDueDate}`;
+  }
+
+  if (rolloverBadgeEl) {
+    if (upiSummary.rolledOverToNextCount > 0) {
+      rolloverBadgeEl.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/30 flex items-center gap-1.5";
+      rolloverBadgeEl.innerHTML = `<i data-lucide="corner-down-right" class="w-3.5 h-3.5 text-amber-400"></i><span>${upiSummary.rolledOverToNextCount} Rolled to ${cycleDates ? cycleDates.nextMonthName : 'Next Month'} (${cur}${upiSummary.rolledOverToNextTotal.toFixed(2)})</span>`;
+    } else {
+      rolloverBadgeEl.className = "px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5";
+      rolloverBadgeEl.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i><span>All Spends Settled in ${appState.currentMonth}</span>`;
+    }
+  }
 
   const totalEl = document.getElementById("upiTotalSpend");
   const p1El = document.getElementById("upiPerson1Share");
@@ -569,9 +602,14 @@ function renderUpiView() {
   if (p2El) p2El.innerText = `${cur}${upiSummary.person2UpiShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   if (badgeEl) badgeEl.innerText = `${upiSummary.count} transaction${upiSummary.count === 1 ? '' : 's'}`;
 
-  const monthUpi = (appState.upiExpenses || []).filter(u => u.month === appState.currentMonth);
+  // Get all UPI items related to this view (either logged for this month or settling in this month)
+  const relatedItems = (appState.upiExpenses || []).filter(u => {
+    if (appState.currentMonth === "ALL") return true;
+    const sInfo = ExpenseCalculator.getUpiSettlementInfo(u, appState.settings);
+    return u.month === appState.currentMonth || sInfo.settlementMonth === appState.currentMonth;
+  });
 
-  const filtered = monthUpi.filter(item => {
+  const filtered = relatedItems.filter(item => {
     const desc = (item.description || "").toLowerCase();
     const rem = (item.remarks || "").toLowerCase();
     const matchesSearch = desc.includes(searchQuery) || rem.includes(searchQuery);
@@ -583,7 +621,7 @@ function renderUpiView() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" class="px-6 py-12 text-center text-slate-500 text-xs">
+        <td colspan="9" class="px-6 py-12 text-center text-slate-500 text-xs">
           No UPI / Bank transactions found matching the selected filters for ${appState.currentMonth}.
         </td>
       </tr>
@@ -597,29 +635,42 @@ function renderUpiView() {
   let sumP2 = 0;
 
   tbody.innerHTML = filtered.map(item => {
+    const settlementInfo = ExpenseCalculator.getUpiSettlementInfo(item, appState.settings);
     const shares = ExpenseCalculator.calculateUpiItemShares(item, p1, p2);
-    sumAmount += shares.amount;
-    sumP1 += shares.person1Share;
-    sumP2 += shares.person2Share;
+    
+    // Only add to table footer sum if it settles in this active month
+    const isSettlingHere = appState.currentMonth === "ALL" || settlementInfo.settlementMonth === appState.currentMonth;
+    if (isSettlingHere) {
+      sumAmount += shares.amount;
+      sumP1 += shares.person1Share;
+      sumP2 += shares.person2Share;
+    }
+
+    const settleBadge = settlementInfo.isRolledOver
+      ? `<span class="badge bg-amber-500/10 text-amber-400 border border-amber-500/20" title="${settlementInfo.reason}">⏩ ${settlementInfo.settlementMonth}</span>`
+      : `<span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title="${settlementInfo.reason}">✓ ${settlementInfo.settlementMonth}</span>`;
 
     return `
-      <tr class="table-row-hover transition">
-        <td class="px-5 py-3 text-slate-400 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
-        <td class="px-5 py-3 font-semibold text-white">
+      <tr class="table-row-hover transition ${settlementInfo.isRolledOver && item.month === appState.currentMonth ? 'opacity-85 bg-amber-950/10' : ''}">
+        <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
+        <td class="px-4 py-3 font-semibold text-white">
           ${item.description}
           ${item.remarks ? `<div class="text-[10px] text-slate-400 font-normal mt-0.5">${item.remarks}</div>` : ''}
           ${item.category ? `<span class="inline-block mt-1 px-1.5 py-0.5 text-[9px] rounded bg-slate-800 text-slate-400 border border-slate-700">${item.category}</span>` : ''}
         </td>
-        <td class="px-5 py-3 text-right font-mono font-bold text-emerald-400">${cur}${shares.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-        <td class="px-5 py-3 text-center">
+        <td class="px-4 py-3 text-right font-mono font-bold text-emerald-400">${cur}${shares.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3 text-center">
           <span class="badge ${getPersonBadgeClass(item.usedBy)}">${item.usedBy}</span>
         </td>
-        <td class="px-5 py-3 text-center">
+        <td class="px-4 py-3 text-center">
           <span class="badge ${item.paidBy === p2 ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'}">${item.paidBy || p2}</span>
         </td>
-        <td class="px-5 py-3 text-right font-mono text-indigo-300 font-medium">${shares.person1Share > 0 ? `${cur}${shares.person1Share.toFixed(2)}` : '-'}</td>
-        <td class="px-5 py-3 text-right font-mono text-purple-300 font-medium">${shares.person2Share > 0 ? `${cur}${shares.person2Share.toFixed(2)}` : '-'}</td>
-        <td class="px-5 py-3 text-center whitespace-nowrap">
+        <td class="px-4 py-3 text-center">
+          ${settleBadge}
+        </td>
+        <td class="px-4 py-3 text-right font-mono text-indigo-300 font-medium">${shares.person1Share > 0 ? `${cur}${shares.person1Share.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-right font-mono text-purple-300 font-medium">${shares.person2Share > 0 ? `${cur}${shares.person2Share.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-center whitespace-nowrap">
           <button onclick="editUpiExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-400 transition" title="Edit UPI Spend">
             <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
           </button>
@@ -634,12 +685,12 @@ function renderUpiView() {
   if (tfoot) {
     tfoot.innerHTML = `
       <tr>
-        <td class="px-5 py-3.5 uppercase tracking-wider text-slate-300" colspan="2">Filtered UPI Totals</td>
-        <td class="px-5 py-3.5 text-right font-mono text-emerald-400">${cur}${sumAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-        <td class="px-5 py-3.5 text-center text-slate-400" colspan="2">${filtered.length} items</td>
-        <td class="px-5 py-3.5 text-right font-mono text-indigo-300">${cur}${sumP1.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-        <td class="px-5 py-3.5 text-right font-mono text-purple-300">${cur}${sumP2.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-        <td class="px-5 py-3.5"></td>
+        <td class="px-4 py-3.5 uppercase tracking-wider text-slate-300" colspan="2">Settled Cycle Totals</td>
+        <td class="px-4 py-3.5 text-right font-mono text-emerald-400">${cur}${sumAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3.5 text-center text-slate-400" colspan="3">${filtered.length} items (${upiSummary.count} settling)</td>
+        <td class="px-4 py-3.5 text-right font-mono text-indigo-300">${cur}${sumP1.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3.5 text-right font-mono text-purple-300">${cur}${sumP2.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-4 py-3.5"></td>
       </tr>
     `;
   }
@@ -1064,6 +1115,33 @@ function setupUpiModal() {
   const closeBtn = document.getElementById("closeUpiModalBtn");
   const cancelBtn = document.getElementById("cancelUpiModalBtn");
   const form = document.getElementById("upiForm");
+  const monthInput = document.getElementById("upiMonthInput");
+  const dateInput = document.getElementById("upiDateInput");
+
+  const updateNotice = () => {
+    const month = monthInput?.value || appState.currentMonth;
+    const rawDate = dateInput?.value;
+    const noticeEl = document.getElementById("upiDueDateHelperNotice");
+    const textEl = document.getElementById("upiDueDateHelperText");
+    if (!noticeEl || !textEl) return;
+
+    const dummyItem = { month, date: rawDate };
+    const info = ExpenseCalculator.getUpiSettlementInfo(dummyItem, appState.settings);
+
+    if (info.isRolledOver) {
+      noticeEl.className = "p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[11px] text-amber-300 flex items-center gap-2";
+      textEl.innerHTML = `<span class="font-bold">Rollover:</span> Date is after Card Due Date (${info.formattedDueDate}) ➔ Will settle in <b class="text-amber-200 underline">${info.settlementMonth}</b>.`;
+    } else {
+      noticeEl.className = "p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-300 flex items-center gap-2";
+      textEl.innerHTML = `<span class="font-bold">Settlement:</span> Date is on/before Card Due Date (${info.formattedDueDate}) ➔ Will settle in <b class="text-emerald-200 underline">${info.settlementMonth}</b>.`;
+    }
+  };
+
+  if (monthInput) monthInput.addEventListener("change", updateNotice);
+  if (dateInput) {
+    dateInput.addEventListener("input", updateNotice);
+    dateInput.addEventListener("change", updateNotice);
+  }
 
   const open = () => {
     form.reset();
@@ -1077,6 +1155,7 @@ function setupUpiModal() {
     if (usedBySelect) usedBySelect.value = "Both";
     if (paidBySelect) paidBySelect.value = appState.settings.person2 || "Rashu";
 
+    updateNotice();
     modal.classList.remove("hidden");
     setTimeout(() => {
       modal.classList.remove("opacity-0");
@@ -1162,6 +1241,20 @@ function editUpiExpense(id) {
   
   const remInput = document.getElementById("upiRemarksInput");
   if (remInput) remInput.value = item.remarks || "";
+
+  // Trigger notice update
+  const noticeEl = document.getElementById("upiDueDateHelperNotice");
+  const textEl = document.getElementById("upiDueDateHelperText");
+  if (noticeEl && textEl) {
+    const info = ExpenseCalculator.getUpiSettlementInfo(item, appState.settings);
+    if (info.isRolledOver) {
+      noticeEl.className = "p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[11px] text-amber-300 flex items-center gap-2";
+      textEl.innerHTML = `<span class="font-bold">Rollover:</span> Date is after Card Due Date (${info.formattedDueDate}) ➔ Will settle in <b class="text-amber-200 underline">${info.settlementMonth}</b>.`;
+    } else {
+      noticeEl.className = "p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-300 flex items-center gap-2";
+      textEl.innerHTML = `<span class="font-bold">Settlement:</span> Date is on/before Card Due Date (${info.formattedDueDate}) ➔ Will settle in <b class="text-emerald-200 underline">${info.settlementMonth}</b>.`;
+    }
+  }
 
   const modal = document.getElementById("upiModal");
   const card = document.getElementById("upiModalCard");
@@ -1430,10 +1523,14 @@ function setupSettingsForm() {
   const person1Input = document.getElementById("settingsPerson1");
   const person2Input = document.getElementById("settingsPerson2");
   const currInput = document.getElementById("settingsCurrency");
+  const stmtDayInput = document.getElementById("settingsStatementDay");
+  const dueDayInput = document.getElementById("settingsPaymentDueDay");
 
   if (person1Input) person1Input.value = appState.settings.person1 || "Kitkat";
   if (person2Input) person2Input.value = appState.settings.person2 || "Rashu";
   if (currInput) currInput.value = appState.settings.currencySymbol || "₹";
+  if (stmtDayInput) stmtDayInput.value = appState.settings.statementDay || 24;
+  if (dueDayInput) dueDayInput.value = appState.settings.paymentDueDay || 13;
 
   if (form) {
     form.addEventListener("submit", (e) => {
@@ -1441,9 +1538,11 @@ function setupSettingsForm() {
       appState.settings.person1 = person1Input.value.trim() || "Kitkat";
       appState.settings.person2 = person2Input.value.trim() || "Rashu";
       appState.settings.currencySymbol = currInput.value.trim() || "₹";
+      appState.settings.statementDay = parseInt(stmtDayInput.value, 10) || 24;
+      appState.settings.paymentDueDay = parseInt(dueDayInput.value, 10) || 13;
       saveStateToStorage();
       renderApp();
-      alert("Settings updated successfully!");
+      alert("Settings updated successfully! Card Due Date rule updated.");
     });
   }
 

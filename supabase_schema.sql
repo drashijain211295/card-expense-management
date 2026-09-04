@@ -56,9 +56,13 @@ CREATE TABLE IF NOT EXISTS public.settings (
     person2 TEXT DEFAULT 'Rashu',
     currency_symbol TEXT DEFAULT '₹',
     statement_day INTEGER DEFAULT 24,
+    payment_due_day INTEGER DEFAULT 13,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure column exists if table was already created
+ALTER TABLE public.settings ADD COLUMN IF NOT EXISTS payment_due_day INTEGER DEFAULT 13;
 
 -- 5. MONTHS TABLE
 CREATE TABLE IF NOT EXISTS public.months (

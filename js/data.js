@@ -4,6 +4,8 @@ const DEFAULT_SETTINGS = {
   "person1": "Kitkat",
   "person2": "Rashu",
   "currencySymbol": "₹",
+  "statementDay": 24,
+  "paymentDueDay": 13,
   "defaultMonth": "September 2026"
 };
 

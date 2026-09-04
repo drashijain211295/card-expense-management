@@ -161,6 +161,101 @@ const ExpenseCalculator = {
     };
   },
 
+  // Parse month string e.g. "August 2026"
+  parseMonthName(monthStr) {
+    if (!monthStr || monthStr === "ALL") return null;
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const parts = monthStr.trim().split(/\s+/);
+    if (parts.length < 2) return null;
+    const mName = parts[0];
+    const year = parseInt(parts[1], 10);
+    const mIdx = months.findIndex(m => m.toLowerCase().startsWith(mName.toLowerCase().slice(0, 3)));
+    if (mIdx === -1 || isNaN(year)) return null;
+
+    const nextDate = new Date(year, mIdx + 1, 1);
+    const prevDate = new Date(year, mIdx - 1, 1);
+    const nextMonthName = `${months[nextDate.getMonth()]} ${nextDate.getFullYear()}`;
+    const prevMonthName = `${months[prevDate.getMonth()]} ${prevDate.getFullYear()}`;
+
+    return {
+      monthIndex: mIdx,
+      monthName: months[mIdx],
+      year: year,
+      formatted: `${months[mIdx]} ${year}`,
+      nextMonthName,
+      prevMonthName
+    };
+  },
+
+  // Get exact Card Statement Date & Card Payment Due Date for a cycle
+  getCycleDates(monthStr, settings = {}) {
+    const info = this.parseMonthName(monthStr);
+    if (!info) return null;
+
+    const stmtDay = parseInt(settings.statementDay, 10) || 24;
+    const dueDay = parseInt(settings.paymentDueDay, 10) || 13;
+
+    // Statement Date is stmtDay of the cycle month
+    const stmtDateObj = new Date(info.year, info.monthIndex, stmtDay);
+    const stmtDateISO = `${stmtDateObj.getFullYear()}-${String(stmtDateObj.getMonth() + 1).padStart(2, '0')}-${String(stmtDateObj.getDate()).padStart(2, '0')}`;
+
+    // Payment Due Date is dueDay of the FOLLOWING month
+    const dueDateObj = new Date(info.year, info.monthIndex + 1, dueDay);
+    const dueDateISO = `${dueDateObj.getFullYear()}-${String(dueDateObj.getMonth() + 1).padStart(2, '0')}-${String(dueDateObj.getDate()).padStart(2, '0')}`;
+
+    return {
+      month: info.formatted,
+      statementDay: stmtDay,
+      paymentDueDay: dueDay,
+      statementDateISO: stmtDateISO,
+      dueDateISO: dueDateISO,
+      formattedDueDate: this.formatDisplayDate(dueDateISO),
+      formattedStmtDate: this.formatDisplayDate(stmtDateISO),
+      nextMonthName: info.nextMonthName,
+      prevMonthName: info.prevMonthName
+    };
+  },
+
+  // Determine settlement month for a UPI expense based on its date & entered month
+  getUpiSettlementInfo(item, settings = {}) {
+    const enteredMonth = item.month || "August 2026";
+    const cycleDates = this.getCycleDates(enteredMonth, settings);
+    const itemDateISO = this.parseToISODate(item.date);
+
+    if (!cycleDates || !itemDateISO) {
+      return {
+        settlementMonth: enteredMonth,
+        isRolledOver: false,
+        isBeforeDueDate: true,
+        dueDateISO: cycleDates ? cycleDates.dueDateISO : '',
+        formattedDueDate: cycleDates ? cycleDates.formattedDueDate : '',
+        reason: 'Default'
+      };
+    }
+
+    // Rule: if itemDateISO <= cycleDates.dueDateISO => Settles in enteredMonth
+    // Else (itemDateISO > cycleDates.dueDateISO) => Rolls over to next month
+    if (itemDateISO <= cycleDates.dueDateISO) {
+      return {
+        settlementMonth: enteredMonth,
+        isRolledOver: false,
+        isBeforeDueDate: true,
+        dueDateISO: cycleDates.dueDateISO,
+        formattedDueDate: cycleDates.formattedDueDate,
+        reason: `Paid on ${this.formatDisplayDate(itemDateISO)} (<= Card Due Date ${cycleDates.formattedDueDate})`
+      };
+    } else {
+      return {
+        settlementMonth: cycleDates.nextMonthName,
+        isRolledOver: true,
+        isBeforeDueDate: false,
+        dueDateISO: cycleDates.dueDateISO,
+        formattedDueDate: cycleDates.formattedDueDate,
+        reason: `Paid on ${this.formatDisplayDate(itemDateISO)} (> Card Due Date ${cycleDates.formattedDueDate}) -> Rolls over to ${cycleDates.nextMonthName}`
+      };
+    }
+  },
+
   // Calculate shares for a single UPI item (matching UPI Excel sheet)
   calculateUpiItemShares(item, person1 = "Kitkat", person2 = "Rashu") {
     const amount = parseFloat(item.amount) || 0;
@@ -187,24 +282,38 @@ const ExpenseCalculator = {
     };
   },
 
-  // Calculate full month summary for UPI expenses
+  // Calculate full month summary for UPI expenses based on Card Payment Due Date
   calculateUpiMonthSummary(allUpiExpenses, currentMonth, settings = {}) {
     const person1 = settings.person1 || "Kitkat";
     const person2 = settings.person2 || "Rashu";
-
-    const monthUpi = currentMonth === "ALL"
-      ? (allUpiExpenses || [])
-      : (allUpiExpenses || []).filter(u => u.month === currentMonth);
+    const cycleDates = currentMonth !== "ALL" ? this.getCycleDates(currentMonth, settings) : null;
 
     let totalUpiSpend = 0;
     let person1UpiShare = 0;
     let person2UpiShare = 0;
+    let settledItems = [];
+    let rolledOverToNextCount = 0;
+    let rolledOverToNextTotal = 0;
 
-    monthUpi.forEach(item => {
-      const shares = this.calculateUpiItemShares(item, person1, person2);
-      totalUpiSpend += shares.amount;
-      person1UpiShare += shares.person1Share;
-      person2UpiShare += shares.person2Share;
+    (allUpiExpenses || []).forEach(item => {
+      const settlementInfo = this.getUpiSettlementInfo(item, settings);
+      
+      // If filtering for a specific month, include items whose settlementMonth is currentMonth
+      const isSettlingInThisMonth = currentMonth === "ALL" || settlementInfo.settlementMonth === currentMonth;
+
+      if (isSettlingInThisMonth) {
+        const shares = this.calculateUpiItemShares(item, person1, person2);
+        totalUpiSpend += shares.amount;
+        person1UpiShare += shares.person1Share;
+        person2UpiShare += shares.person2Share;
+        settledItems.push({ ...item, settlementInfo, shares });
+      }
+
+      // If item was originally logged for currentMonth but rolled over to next
+      if (currentMonth !== "ALL" && item.month === currentMonth && settlementInfo.isRolledOver) {
+        rolledOverToNextCount++;
+        rolledOverToNextTotal += (parseFloat(item.amount) || 0);
+      }
     });
 
     return {
@@ -212,7 +321,11 @@ const ExpenseCalculator = {
       totalUpiSpend,
       person1UpiShare,
       person2UpiShare,
-      count: monthUpi.length
+      count: settledItems.length,
+      settledItems,
+      rolledOverToNextCount,
+      rolledOverToNextTotal,
+      cycleDates
     };
   },
 

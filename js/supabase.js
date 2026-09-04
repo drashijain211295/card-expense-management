@@ -327,7 +327,8 @@ const SupabaseService = {
         person1: data.person1 || 'Kitkat',
         person2: data.person2 || 'Rashu',
         currencySymbol: data.currency_symbol || '₹',
-        statementDay: data.statement_day || 24
+        statementDay: data.statement_day || 24,
+        paymentDueDay: data.payment_due_day || 13
       };
     } catch (e) {
       console.error('Supabase fetchSettings error:', e);
@@ -344,6 +345,7 @@ const SupabaseService = {
         person2: settings.person2,
         currency_symbol: settings.currencySymbol,
         statement_day: parseInt(settings.statementDay, 10) || 24,
+        payment_due_day: parseInt(settings.paymentDueDay, 10) || 13,
         updated_at: new Date().toISOString()
       });
       if (error) throw error;

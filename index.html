@@ -252,10 +252,10 @@
                 </div>
                 <div>
                   <h3 class="text-sm font-bold text-white uppercase tracking-wider">Statement Cycle</h3>
-                  <p class="text-[11px] text-indigo-400 font-semibold">Statement on 24th of every month</p>
+                  <p class="text-[11px] text-indigo-400 font-semibold" id="dashCycleDatesLabel">Statement: 24th | Due Date: 13th</p>
                 </div>
               </div>
-              <span class="badge bg-indigo-500/10 text-indigo-400 border-indigo-500/20">Monthly</span>
+              <span class="badge bg-indigo-500/10 text-indigo-400 border-indigo-500/20" id="dashCycleStatusBadge">Active Cycle</span>
             </div>
 
             <!-- Workflow Explanation Cards -->
@@ -445,20 +445,45 @@
     <!-- ========================================================================= -->
     <section id="view-upi" class="space-y-6 hidden">
       
+      <!-- Card Payment Due Date Settlement Rule Banner -->
+      <div id="upiDueDateBanner" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-indigo-950/40 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-emerald-950/30">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">UPI Settlement & Card Due Date Rule</span>
+              <span id="upiCycleDueBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">Due: 13 Sep 2026</span>
+            </div>
+            <p id="upiDueDateExplanation" class="text-xs text-slate-300 mt-1">
+              Spends on or before <b class="text-white" id="upiDueRuleDate">13 Sep 2026</b> settle in <b class="text-emerald-400" id="upiDueRuleCurrentMonth">August 2026</b>. Spends after that date automatically roll over to <b class="text-amber-400" id="upiDueRuleNextMonth">September 2026</b>.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 self-start sm:self-auto shrink-0">
+          <span id="upiRolloverBadge" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
+            <i data-lucide="corner-down-right" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>0 Rolled Over</span>
+          </span>
+        </div>
+      </div>
+
       <!-- UPI Top KPI Metrics -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
         <!-- Total UPI Spend -->
         <div class="card-glass p-5 rounded-2xl border border-slate-800 flex flex-col justify-between">
           <div class="flex items-center justify-between text-slate-400 mb-2">
-            <span class="text-xs font-semibold uppercase tracking-wider">Total UPI / Bank Spends</span>
+            <span class="text-xs font-semibold uppercase tracking-wider">Settled UPI Spends</span>
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
               <i data-lucide="smartphone" class="w-4 h-4"></i>
             </div>
           </div>
           <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight" id="upiTotalSpend">₹0.00</div>
-          <div class="mt-2 text-[11px] text-slate-400">
-            <span id="upiCountBadge">0 transactions</span> in selected cycle
+          <div class="mt-2 text-[11px] text-slate-400 flex items-center justify-between">
+            <span id="upiCountBadge">0 transactions</span>
+            <span class="text-emerald-400 font-medium">Settling in this cycle</span>
           </div>
         </div>
 
@@ -533,14 +558,15 @@
           <table class="w-full text-left text-xs text-slate-300">
             <thead class="bg-slate-900/80 uppercase text-[11px] text-slate-400 font-semibold border-b border-slate-800">
               <tr>
-                <th class="px-5 py-3.5">Date</th>
-                <th class="px-5 py-3.5">Description</th>
-                <th class="px-5 py-3.5 text-right font-bold text-emerald-400">UPI Amount (₹)</th>
-                <th class="px-5 py-3.5 text-center">Used By</th>
-                <th class="px-5 py-3.5 text-center">Paid By</th>
-                <th class="px-5 py-3.5 text-right font-semibold text-indigo-300" id="thUpiPerson1Share">Kitkat Share</th>
-                <th class="px-5 py-3.5 text-right font-semibold text-purple-300" id="thUpiPerson2Share">Rashu Share</th>
-                <th class="px-5 py-3.5 text-center">Actions</th>
+                <th class="px-4 py-3.5">Date</th>
+                <th class="px-4 py-3.5">Description</th>
+                <th class="px-4 py-3.5 text-right font-bold text-emerald-400">UPI Amount (₹)</th>
+                <th class="px-4 py-3.5 text-center">Used By</th>
+                <th class="px-4 py-3.5 text-center">Paid By</th>
+                <th class="px-4 py-3.5 text-center">Settles In</th>
+                <th class="px-4 py-3.5 text-right font-semibold text-indigo-300" id="thUpiPerson1Share">Kitkat Share</th>
+                <th class="px-4 py-3.5 text-right font-semibold text-purple-300" id="thUpiPerson2Share">Rashu Share</th>
+                <th class="px-4 py-3.5 text-center">Actions</th>
               </tr>
             </thead>
             <tbody id="upiTableBody" class="divide-y divide-slate-800/60 font-medium">
@@ -777,15 +803,23 @@
               <input type="text" id="settingsPerson2" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-medium" />
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-3 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Currency Symbol</label>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Currency</label>
                 <input type="text" id="settingsCurrency" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-medium" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Statement Date</label>
-                <input type="text" value="24th of every month" disabled class="w-full px-3.5 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-xs text-slate-400 font-medium cursor-not-allowed" />
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Statement Day</label>
+                <input type="number" min="1" max="31" id="settingsStatementDay" placeholder="24" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
               </div>
+              <div>
+                <label class="block text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">Card Due Day</label>
+                <input type="number" min="1" max="31" id="settingsPaymentDueDay" placeholder="13" class="w-full px-3.5 py-2.5 bg-slate-900 border border-emerald-500/40 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-400 font-mono" />
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400">
+              <span class="font-semibold text-slate-300">💡 Due Date Rule:</span> UPI spends on or before the Card Due Day settle in that month; spends after that day roll over to the next month's settlement.
             </div>
 
             <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow transition">
@@ -1022,6 +1056,12 @@
             <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</label>
             <input type="date" id="upiDateInput" required class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 [color-scheme:dark]" />
           </div>
+        </div>
+
+        <!-- Dynamic Card Due Date Settlement Notice -->
+        <div id="upiDueDateHelperNotice" class="p-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-[11px] text-slate-300 flex items-center gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+          <span id="upiDueDateHelperText">Loading due date settlement rule...</span>
         </div>
 
         <div>
