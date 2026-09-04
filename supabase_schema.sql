@@ -21,7 +21,22 @@ CREATE TABLE IF NOT EXISTS public.expenses (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. PAYMENTS & ADVANCE TABLE
+-- 2. UPI / BANK ACCOUNT EXPENSES TABLE
+CREATE TABLE IF NOT EXISTS public.upi_expenses (
+    id TEXT PRIMARY KEY,
+    month TEXT NOT NULL,
+    date TEXT NOT NULL,
+    description TEXT NOT NULL,
+    amount NUMERIC(12, 2) DEFAULT 0,
+    used_by TEXT NOT NULL DEFAULT 'Both',
+    paid_by TEXT NOT NULL DEFAULT 'Rashu',
+    category TEXT DEFAULT 'General',
+    remarks TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. PAYMENTS & ADVANCE TABLE
 CREATE TABLE IF NOT EXISTS public.payments (
     id TEXT PRIMARY KEY,
     month TEXT NOT NULL,
@@ -34,7 +49,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. SETTINGS TABLE
+-- 4. SETTINGS TABLE
 CREATE TABLE IF NOT EXISTS public.settings (
     id TEXT PRIMARY KEY DEFAULT 'global_config',
     person1 TEXT DEFAULT 'Kitkat',
@@ -45,7 +60,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. MONTHS TABLE
+-- 5. MONTHS TABLE
 CREATE TABLE IF NOT EXISTS public.months (
     name TEXT PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -55,9 +70,13 @@ CREATE TABLE IF NOT EXISTS public.months (
 -- ENABLE ROW LEVEL SECURITY (RLS) & ALLOW PUBLIC ANON ACCESS
 -- =============================================================================
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.upi_expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.months ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public access to upi_expenses" ON public.upi_expenses;
+CREATE POLICY "Allow public access to upi_expenses" ON public.upi_expenses FOR ALL USING (true) WITH CHECK (true);
 
 -- Allow anonymous read/write/update/delete for personal tracker
 DROP POLICY IF EXISTS "Allow public access to expenses" ON public.expenses;
@@ -77,6 +96,11 @@ DO $$
 BEGIN
   BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.expenses;
+  EXCEPTION WHEN duplicate_object THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.upi_expenses;
   EXCEPTION WHEN duplicate_object THEN NULL;
   END;
 

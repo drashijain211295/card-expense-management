@@ -161,6 +161,103 @@ const ExpenseCalculator = {
     };
   },
 
+  // Calculate shares for a single UPI item (matching UPI Excel sheet)
+  calculateUpiItemShares(item, person1 = "Kitkat", person2 = "Rashu") {
+    const amount = parseFloat(item.amount) || 0;
+    const usedBy = (item.usedBy || "Both").trim();
+
+    let person1Share = 0;
+    let person2Share = 0;
+
+    if (usedBy.toLowerCase() === person1.toLowerCase()) {
+      person1Share = amount;
+      person2Share = 0;
+    } else if (usedBy.toLowerCase() === person2.toLowerCase()) {
+      person1Share = 0;
+      person2Share = amount;
+    } else if (usedBy.toLowerCase() === "both") {
+      person1Share = amount / 2;
+      person2Share = amount / 2;
+    }
+
+    return {
+      amount,
+      person1Share,
+      person2Share
+    };
+  },
+
+  // Calculate full month summary for UPI expenses
+  calculateUpiMonthSummary(allUpiExpenses, currentMonth, settings = {}) {
+    const person1 = settings.person1 || "Kitkat";
+    const person2 = settings.person2 || "Rashu";
+
+    const monthUpi = currentMonth === "ALL"
+      ? (allUpiExpenses || [])
+      : (allUpiExpenses || []).filter(u => u.month === currentMonth);
+
+    let totalUpiSpend = 0;
+    let person1UpiShare = 0;
+    let person2UpiShare = 0;
+
+    monthUpi.forEach(item => {
+      const shares = this.calculateUpiItemShares(item, person1, person2);
+      totalUpiSpend += shares.amount;
+      person1UpiShare += shares.person1Share;
+      person2UpiShare += shares.person2Share;
+    });
+
+    return {
+      month: currentMonth,
+      totalUpiSpend,
+      person1UpiShare,
+      person2UpiShare,
+      count: monthUpi.length
+    };
+  },
+
+  // Calculate combined master settlement: Card Share + UPI Share - Advance/Payments
+  calculateCombinedSettlement(allCardExpenses, allUpiExpenses, allPayments, currentMonth, settings = {}) {
+    const cardSummary = this.calculateMonthSummary(allCardExpenses, allPayments, currentMonth, settings);
+    const upiSummary = this.calculateUpiMonthSummary(allUpiExpenses, currentMonth, settings);
+
+    const person1 = settings.person1 || "Kitkat";
+    const person2 = settings.person2 || "Rashu";
+
+    const person1CombinedShare = cardSummary.person1TotalExpenseShare + upiSummary.person1UpiShare;
+    const person2CombinedShare = cardSummary.person2TotalExpenseShare + upiSummary.person2UpiShare;
+    const grandCombinedSpend = cardSummary.grandTotalEffective + upiSummary.totalUpiSpend;
+
+    const person1FinalDue = person1CombinedShare - cardSummary.person1Paid;
+    const person2FinalDue = person2CombinedShare - cardSummary.person2Paid;
+
+    return {
+      month: currentMonth,
+      person1Name: person1,
+      person2Name: person2,
+
+      // Card Breakdown
+      card: cardSummary,
+
+      // UPI Breakdown
+      upi: upiSummary,
+
+      // Combined Totals
+      grandCombinedSpend,
+      person1CombinedShare,
+      person2CombinedShare,
+
+      // Paid / Advance
+      person1Paid: cardSummary.person1Paid,
+      person2Paid: cardSummary.person2Paid,
+      totalPaid: cardSummary.totalPaid,
+
+      // Final Net Balances
+      person1FinalDue,
+      person2FinalDue
+    };
+  },
+
   // Category-wise summary calculation
   calculateCategoryBreakdown(allExpenses, currentMonth) {
     const monthExpenses = currentMonth === "ALL" 

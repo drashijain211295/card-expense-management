@@ -5,6 +5,7 @@
 
 const StorageManager = {
   STORAGE_KEY_EXPENSES: 'spendwise_expenses',
+  STORAGE_KEY_UPI_EXPENSES: 'spendwise_upi_expenses',
   STORAGE_KEY_PAYMENTS: 'spendwise_payments',
   STORAGE_KEY_SETTINGS: 'spendwise_settings',
   STORAGE_KEY_MONTHS: 'spendwise_months',
@@ -37,6 +38,23 @@ const StorageManager = {
         this.saveExpenses(storedExpenses);
       }
 
+      // Check UPI expenses
+      if (!localStorage.getItem(this.STORAGE_KEY_UPI_EXPENSES)) {
+        this.saveUpiExpenses(window.INITIAL_UPI_EXPENSES || []);
+      } else {
+        const storedUpi = this.getUpiExpenses();
+        let upiChanges = false;
+        (window.INITIAL_UPI_EXPENSES || []).forEach(initUpi => {
+          if (!storedUpi.some(u => u.id === initUpi.id)) {
+            storedUpi.push(initUpi);
+            upiChanges = true;
+          }
+        });
+        if (upiChanges) {
+          this.saveUpiExpenses(storedUpi);
+        }
+      }
+
       const storedMonths = this.getMonths();
       window.AVAILABLE_MONTHS.forEach(m => {
         if (!storedMonths.includes(m)) {
@@ -62,6 +80,7 @@ const StorageManager = {
     try {
       // Check cloud data
       const cloudExpenses = await SupabaseService.fetchExpenses();
+      const cloudUpi = await SupabaseService.fetchUpiExpenses();
       const cloudPayments = await SupabaseService.fetchPayments();
       const cloudSettings = await SupabaseService.fetchSettings();
       const cloudMonths = await SupabaseService.fetchMonths();
@@ -69,10 +88,11 @@ const StorageManager = {
       if (cloudExpenses && cloudExpenses.length > 0) {
         // Cloud has data -> update local storage cache with cloud truth
         this.saveExpenses(cloudExpenses);
+        if (cloudUpi && cloudUpi.length > 0) this.saveUpiExpenses(cloudUpi);
         if (cloudPayments) this.savePayments(cloudPayments);
         if (cloudSettings) this.saveSettings(cloudSettings);
         if (cloudMonths && cloudMonths.length > 0) this.saveMonths(cloudMonths);
-        console.log(`☁️ Synced ${cloudExpenses.length} expenses from Supabase Cloud`);
+        console.log(`☁️ Synced ${cloudExpenses.length} card expenses & ${cloudUpi ? cloudUpi.length : 0} UPI spends from Supabase Cloud`);
       } else if (cloudExpenses && cloudExpenses.length === 0) {
         // Cloud is empty -> auto seed cloud with our local baseline data
         console.log('☁️ Supabase is empty. Seeding baseline data to Cloud...');
@@ -80,7 +100,8 @@ const StorageManager = {
           this.getExpenses(),
           this.getPayments(),
           this.getMonths(),
-          this.getSettings()
+          this.getSettings(),
+          this.getUpiExpenses()
         );
       }
 
@@ -100,6 +121,9 @@ const StorageManager = {
     }
   },
 
+  // ==========================================
+  // CARD EXPENSES
+  // ==========================================
   getExpenses() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_EXPENSES);
@@ -138,6 +162,50 @@ const StorageManager = {
     }
   },
 
+  // ==========================================
+  // UPI / BANK ACCOUNT EXPENSES
+  // ==========================================
+  getUpiExpenses() {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY_UPI_EXPENSES);
+      return data ? JSON.parse(data) : [...(window.INITIAL_UPI_EXPENSES || [])];
+    } catch (e) {
+      console.error("Failed to read UPI expenses from storage", e);
+      return [...(window.INITIAL_UPI_EXPENSES || [])];
+    }
+  },
+
+  saveUpiExpenses(expenses) {
+    localStorage.setItem(this.STORAGE_KEY_UPI_EXPENSES, JSON.stringify(expenses));
+  },
+
+  async saveUpiExpenseAsync(expense) {
+    const upiList = this.getUpiExpenses();
+    const idx = upiList.findIndex(x => x.id === expense.id);
+    if (idx !== -1) {
+      upiList[idx] = expense;
+    } else {
+      upiList.push(expense);
+    }
+    this.saveUpiExpenses(upiList);
+
+    if (window.SupabaseService && window.SupabaseService.isConnected) {
+      await window.SupabaseService.upsertUpiExpense(expense);
+    }
+  },
+
+  async deleteUpiExpenseAsync(id) {
+    const upiList = this.getUpiExpenses().filter(x => x.id !== id);
+    this.saveUpiExpenses(upiList);
+
+    if (window.SupabaseService && window.SupabaseService.isConnected) {
+      await window.SupabaseService.deleteUpiExpense(id);
+    }
+  },
+
+  // ==========================================
+  // PAYMENTS & ADVANCE
+  // ==========================================
   getPayments() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_PAYMENTS);
@@ -176,6 +244,9 @@ const StorageManager = {
     }
   },
 
+  // ==========================================
+  // SETTINGS & MONTHS
+  // ==========================================
   getSettings() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_SETTINGS);
@@ -219,6 +290,7 @@ const StorageManager = {
 
   resetToExcelData() {
     localStorage.setItem(this.STORAGE_KEY_EXPENSES, JSON.stringify(window.INITIAL_EXPENSES));
+    localStorage.setItem(this.STORAGE_KEY_UPI_EXPENSES, JSON.stringify(window.INITIAL_UPI_EXPENSES || []));
     localStorage.setItem(this.STORAGE_KEY_PAYMENTS, JSON.stringify(window.INITIAL_PAYMENTS));
     localStorage.setItem(this.STORAGE_KEY_SETTINGS, JSON.stringify(window.DEFAULT_SETTINGS));
     localStorage.setItem(this.STORAGE_KEY_MONTHS, JSON.stringify(window.AVAILABLE_MONTHS));
@@ -227,11 +299,12 @@ const StorageManager = {
   // Export complete JSON backup
   exportJSONBackup() {
     const backupData = {
-      version: '1.0',
+      version: '1.1',
       exportDate: new Date().toISOString(),
       settings: this.getSettings(),
       months: this.getMonths(),
       expenses: this.getExpenses(),
+      upiExpenses: this.getUpiExpenses(),
       payments: this.getPayments()
     };
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
@@ -250,6 +323,9 @@ const StorageManager = {
       if (parsed.expenses && Array.isArray(parsed.expenses)) {
         this.saveExpenses(parsed.expenses);
       }
+      if (parsed.upiExpenses && Array.isArray(parsed.upiExpenses)) {
+        this.saveUpiExpenses(parsed.upiExpenses);
+      }
       if (parsed.payments && Array.isArray(parsed.payments)) {
         this.savePayments(parsed.payments);
       }
@@ -259,10 +335,10 @@ const StorageManager = {
       if (parsed.months && Array.isArray(parsed.months)) {
         this.saveMonths(parsed.months);
       }
-      return true;
+      return { success: true };
     } catch (e) {
       console.error("Invalid backup file", e);
-      return false;
+      return { success: false, error: e.message };
     }
   },
 
@@ -313,7 +389,52 @@ const StorageManager = {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `spendwise_expenses_${currentMonth.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `spendwise_card_expenses_${currentMonth.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  },
+
+  // Export CSV of UPI Expenses
+  exportUpiCSV(currentMonth) {
+    const upiList = this.getUpiExpenses();
+    const settings = this.getSettings();
+    const filtered = currentMonth === "ALL" ? upiList : upiList.filter(u => u.month === currentMonth);
+
+    const headers = [
+      "Month",
+      "Date",
+      "Description",
+      "UPI Amount",
+      "Used By",
+      "Paid By",
+      `${settings.person1} Share`,
+      `${settings.person2} Share`,
+      "Category",
+      "Remarks"
+    ];
+
+    const rows = filtered.map(u => {
+      const shares = ExpenseCalculator.calculateUpiItemShares(u, settings.person1, settings.person2);
+      return [
+        `"${u.month}"`,
+        `"${window.formatDisplayDate ? window.formatDisplayDate(u.date) : u.date}"`,
+        `"${(u.description || '').replace(/"/g, '""')}"`,
+        u.amount || 0,
+        `"${u.usedBy}"`,
+        `"${u.paidBy || 'Rashu'}"`,
+        shares.person1Share.toFixed(2),
+        shares.person2Share.toFixed(2),
+        `"${u.category || 'General'}"`,
+        `"${(u.remarks || '').replace(/"/g, '""')}"`
+      ];
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `spendwise_upi_expenses_${currentMonth.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     link.remove();

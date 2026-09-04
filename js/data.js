@@ -857,6 +857,130 @@ const INITIAL_PAYMENTS = [
   }
 ];
 
+const INITIAL_UPI_EXPENSES = [
+  {
+    "id": "upi_aug_1",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Diy Mirror",
+    "amount": 950,
+    "usedBy": "Kitkat",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_2",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Diy rest",
+    "amount": 1121,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_3",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Car service",
+    "amount": 500,
+    "usedBy": "Kitkat",
+    "paidBy": "Rashu",
+    "category": "Travel",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_4",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "sandals",
+    "amount": 200,
+    "usedBy": "Kitkat",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_5",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "belt",
+    "amount": 220,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_6",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Stall",
+    "amount": 150,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Food & Dining",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_7",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "mosi bangles",
+    "amount": 300,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_8",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Rashu dress",
+    "amount": 600,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_9",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Aru tshit",
+    "amount": 250,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_10",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Papa Shirt",
+    "amount": 550,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  },
+  {
+    "id": "upi_aug_11",
+    "month": "August 2026",
+    "date": "01 Aug 26",
+    "description": "Rashu Watch",
+    "amount": 250,
+    "usedBy": "Rashu",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": ""
+  }
+];
+
 const AVAILABLE_MONTHS = [
   "September 2026",
   "August 2026",
@@ -867,5 +991,6 @@ const AVAILABLE_MONTHS = [
 window.DEFAULT_SETTINGS = DEFAULT_SETTINGS;
 window.CATEGORIES = CATEGORIES;
 window.INITIAL_EXPENSES = INITIAL_EXPENSES;
+window.INITIAL_UPI_EXPENSES = INITIAL_UPI_EXPENSES;
 window.INITIAL_PAYMENTS = INITIAL_PAYMENTS;
 window.AVAILABLE_MONTHS = AVAILABLE_MONTHS;

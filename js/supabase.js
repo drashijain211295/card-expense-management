@@ -165,6 +165,35 @@ const SupabaseService = {
     };
   },
 
+  mapUpiExpenseToCloud(exp) {
+    return {
+      id: exp.id,
+      month: exp.month,
+      date: exp.date,
+      description: exp.description || '',
+      amount: parseFloat(exp.amount) || 0,
+      used_by: exp.usedBy || 'Both',
+      paid_by: exp.paidBy || 'Rashu',
+      category: exp.category || 'General',
+      remarks: exp.remarks || '',
+      updated_at: new Date().toISOString()
+    };
+  },
+
+  mapUpiExpenseFromCloud(row) {
+    return {
+      id: row.id,
+      month: row.month,
+      date: row.date,
+      description: row.description || '',
+      amount: parseFloat(row.amount) || 0,
+      usedBy: row.used_by || 'Both',
+      paidBy: row.paid_by || 'Rashu',
+      category: row.category || 'General',
+      remarks: row.remarks || ''
+    };
+  },
+
   // ==========================================
   // EXPENSES CRUD
   // ==========================================
@@ -246,6 +275,46 @@ const SupabaseService = {
   },
 
   // ==========================================
+  // UPI / BANK EXPENSES CRUD
+  // ==========================================
+  async fetchUpiExpenses() {
+    if (!this.isConnected || !this.client) return null;
+    try {
+      const { data, error } = await this.client.from('upi_expenses').select('*').order('created_at', { ascending: true });
+      if (error) throw error;
+      return (data || []).map(r => this.mapUpiExpenseFromCloud(r));
+    } catch (e) {
+      console.error('Supabase fetchUpiExpenses error:', e);
+      return null;
+    }
+  },
+
+  async upsertUpiExpense(exp) {
+    if (!this.isConnected || !this.client) return false;
+    try {
+      const payload = this.mapUpiExpenseToCloud(exp);
+      const { error } = await this.client.from('upi_expenses').upsert(payload);
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.error('Supabase upsertUpiExpense error:', e);
+      return false;
+    }
+  },
+
+  async deleteUpiExpense(id) {
+    if (!this.isConnected || !this.client) return false;
+    try {
+      const { error } = await this.client.from('upi_expenses').delete().eq('id', id);
+      if (error) throw error;
+      return true;
+    } catch (e) {
+      console.error('Supabase deleteUpiExpense error:', e);
+      return false;
+    }
+  },
+
+  // ==========================================
   // SETTINGS & MONTHS
   // ==========================================
   async fetchSettings() {
@@ -312,7 +381,7 @@ const SupabaseService = {
   // ==========================================
   // ONE-CLICK SYNC: UPLOAD LOCAL DATA TO CLOUD
   // ==========================================
-  async syncLocalToCloud(localExpenses, localPayments, localMonths, localSettings) {
+  async syncLocalToCloud(localExpenses, localPayments, localMonths, localSettings, localUpiExpenses = []) {
     if (!this.isConnected || !this.client) {
       return { success: false, message: 'Not connected to Supabase' };
     }
@@ -330,10 +399,9 @@ const SupabaseService = {
         }
       }
 
-      // 3. Batch Upsert Expenses
+      // 3. Batch Upsert Card Expenses
       if (localExpenses && localExpenses.length > 0) {
         const cloudExpenses = localExpenses.map(e => this.mapExpenseToCloud(e));
-        // Upsert in chunks of 50
         for (let i = 0; i < cloudExpenses.length; i += 50) {
           const chunk = cloudExpenses.slice(i, i + 50);
           const { error } = await this.client.from('expenses').upsert(chunk);
@@ -341,7 +409,17 @@ const SupabaseService = {
         }
       }
 
-      // 4. Batch Upsert Payments
+      // 4. Batch Upsert UPI Expenses
+      if (localUpiExpenses && localUpiExpenses.length > 0) {
+        const cloudUpi = localUpiExpenses.map(u => this.mapUpiExpenseToCloud(u));
+        for (let i = 0; i < cloudUpi.length; i += 50) {
+          const chunk = cloudUpi.slice(i, i + 50);
+          const { error } = await this.client.from('upi_expenses').upsert(chunk);
+          if (error) throw error;
+        }
+      }
+
+      // 5. Batch Upsert Payments
       if (localPayments && localPayments.length > 0) {
         const cloudPayments = localPayments.map(p => this.mapPaymentToCloud(p));
         const { error } = await this.client.from('payments').upsert(cloudPayments);
@@ -350,7 +428,7 @@ const SupabaseService = {
 
       return {
         success: true,
-        message: `Synced ${localExpenses.length} expenses and ${localPayments.length} payments to Supabase Cloud!`
+        message: `Synced ${localExpenses.length} card expenses, ${localUpiExpenses.length} UPI spends, and ${localPayments.length} payments to Supabase Cloud!`
       };
     } catch (e) {
       console.error('Sync to cloud error:', e);
@@ -372,8 +450,12 @@ const SupabaseService = {
       this.realtimeChannel = this.client
         .channel('spendwise_realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, (payload) => {
-          console.log('⚡ Realtime Expense Change:', payload);
+          console.log('⚡ Realtime Card Expense Change:', payload);
           onChangeCallback('expenses', payload);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'upi_expenses' }, (payload) => {
+          console.log('⚡ Realtime UPI Expense Change:', payload);
+          onChangeCallback('upi_expenses', payload);
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, (payload) => {
           console.log('⚡ Realtime Payment Change:', payload);

@@ -10,6 +10,7 @@ let appState = {
   currentTab: "dashboard",
   settings: {},
   expenses: [],
+  upiExpenses: [],
   payments: [],
   months: [],
   dashboardChart: null,
@@ -46,6 +47,7 @@ function initLucide() {
 function loadStateFromStorage() {
   appState.settings = StorageManager.getSettings();
   appState.expenses = StorageManager.getExpenses();
+  appState.upiExpenses = StorageManager.getUpiExpenses();
   appState.payments = StorageManager.getPayments();
   appState.months = StorageManager.getMonths();
   // Always default to the latest active month on refresh
@@ -58,6 +60,7 @@ function loadStateFromStorage() {
 
 function saveStateToStorage() {
   StorageManager.saveExpenses(appState.expenses);
+  StorageManager.saveUpiExpenses(appState.upiExpenses);
   StorageManager.savePayments(appState.payments);
   StorageManager.saveSettings(appState.settings);
   StorageManager.saveMonths(appState.months);
@@ -95,6 +98,18 @@ function initEventListeners() {
     }
   });
 
+  // UPI Search & Filters
+  const upiSearchInput = document.getElementById("upiSearchInput");
+  const upiPersonFilter = document.getElementById("upiPersonFilter");
+  const upiPaidByFilter = document.getElementById("upiPaidByFilter");
+
+  [upiSearchInput, upiPersonFilter, upiPaidByFilter].forEach(el => {
+    if (el) {
+      el.addEventListener("input", renderUpiView);
+      el.addEventListener("change", renderUpiView);
+    }
+  });
+
   // Export CSV
   const exportCsvBtn = document.getElementById("exportExpensesCSVBtn");
   if (exportCsvBtn) {
@@ -103,8 +118,17 @@ function initEventListeners() {
     });
   }
 
+  // Export UPI CSV
+  const exportUpiCsvBtn = document.getElementById("exportUpiCSVBtn");
+  if (exportUpiCsvBtn) {
+    exportUpiCsvBtn.addEventListener("click", () => {
+      StorageManager.exportUpiCSV(appState.currentMonth);
+    });
+  }
+
   // Modals Open/Close Setup
   setupExpenseModal();
+  setupUpiModal();
   setupPaymentModal();
   setupImportModal();
   setupQuickStatementModal();
@@ -124,7 +148,7 @@ function switchTab(tabName) {
   });
 
   // Switch visible sections
-  const views = ["dashboard", "expenses", "tally", "payments", "reports", "settings"];
+  const views = ["dashboard", "expenses", "upi", "tally", "payments", "reports", "settings"];
   views.forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) {
@@ -143,6 +167,8 @@ function switchTab(tabName) {
     renderTallyView();
   } else if (tabName === "expenses") {
     renderExpensesView();
+  } else if (tabName === "upi") {
+    renderUpiView();
   } else if (tabName === "payments") {
     renderPaymentsView();
   } else if (tabName === "dashboard") {
@@ -155,6 +181,7 @@ function switchTab(tabName) {
 function populateMonthDropdown() {
   const globalMonthSelect = document.getElementById("globalMonthSelect");
   const expenseMonthInput = document.getElementById("expenseMonthInput");
+  const upiMonthInput = document.getElementById("upiMonthInput");
   const payMonthInput = document.getElementById("payMonthInput");
 
   if (!globalMonthSelect) return;
@@ -173,6 +200,10 @@ function populateMonthDropdown() {
     expenseMonthInput.innerHTML = optionsHTML;
     expenseMonthInput.value = appState.currentMonth;
   }
+  if (upiMonthInput) {
+    upiMonthInput.innerHTML = optionsHTML;
+    upiMonthInput.value = appState.currentMonth;
+  }
   if (payMonthInput) {
     payMonthInput.innerHTML = optionsHTML;
     payMonthInput.value = appState.currentMonth;
@@ -182,6 +213,7 @@ function populateMonthDropdown() {
 function populateCategoryDropdowns() {
   const catFilter = document.getElementById("expenseCategoryFilter");
   const catInput = document.getElementById("expenseCategoryInput");
+  const upiCatInput = document.getElementById("upiCategoryInput");
 
   const categories = window.CATEGORIES || ["Fuel", "Food & Dining", "Travel", "Shopping", "Telecom & Utilities", "Fees & Charges", "General"];
 
@@ -191,6 +223,9 @@ function populateCategoryDropdowns() {
   if (catInput) {
     catInput.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
   }
+  if (upiCatInput) {
+    upiCatInput.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
+  }
 }
 
 // Master Render
@@ -199,6 +234,7 @@ function renderApp() {
   updateHeaderLabels();
   renderDashboardView();
   renderExpensesView();
+  renderUpiView();
   renderTallyView();
   renderPaymentsView();
   if (appState.currentTab === "reports") {
@@ -216,6 +252,16 @@ function updateHeaderLabels() {
   if (thP1) thP1.innerText = `${p1} Share`;
   if (thP2) thP2.innerText = `${p2} Share`;
 
+  const thUpiP1 = document.getElementById("thUpiPerson1Share");
+  const thUpiP2 = document.getElementById("thUpiPerson2Share");
+  if (thUpiP1) thUpiP1.innerText = `${p1} Share`;
+  if (thUpiP2) thUpiP2.innerText = `${p2} Share`;
+
+  const upiP1Label = document.getElementById("upiPerson1Label");
+  const upiP2Label = document.getElementById("upiPerson2Label");
+  if (upiP1Label) upiP1Label.innerText = `${p1} UPI Share`;
+  if (upiP2Label) upiP2Label.innerText = `${p2} UPI Share`;
+
   const payP1Label = document.getElementById("payPerson1Label");
   const payP2Label = document.getElementById("payPerson2Label");
   if (payP1Label) payP1Label.innerText = `${p1} Contributions`;
@@ -231,7 +277,9 @@ function updateHeaderLabels() {
 // DASHBOARD VIEW
 // =============================================================================
 function renderDashboardView() {
-  const summary = ExpenseCalculator.calculateMonthSummary(appState.expenses, appState.payments, appState.currentMonth, appState.settings);
+  const settlement = ExpenseCalculator.calculateCombinedSettlement(appState.expenses, appState.upiExpenses, appState.payments, appState.currentMonth, appState.settings);
+  const summary = settlement.card;
+  const upi = settlement.upi;
   const cur = appState.settings.currencySymbol || "₹";
 
   document.getElementById("dashStatementTotal").innerText = `${cur}${summary.cardStatementTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -239,13 +287,13 @@ function renderDashboardView() {
   document.getElementById("dashFuelWaiverBadge").innerText = `-${cur}${summary.cardFuelWaiverTotal.toFixed(2)} Fuel Waiver`;
   document.getElementById("dashRefundBadge").innerText = `-${cur}${summary.cardRefundTotal.toFixed(2)} Refund`;
 
-  document.getElementById("dashPerson1Share").innerText = `${cur}${summary.person1TotalExpenseShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson1Share").innerText = `${cur}${settlement.person1CombinedShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashPerson1Paid").innerText = `${cur}${summary.person1Paid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  document.getElementById("dashPerson1Balance").innerText = `${cur}${summary.person1Balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson1Balance").innerText = `${cur}${settlement.person1FinalDue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  document.getElementById("dashPerson2Share").innerText = `${cur}${summary.person2TotalExpenseShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson2Share").innerText = `${cur}${settlement.person2CombinedShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashPerson2Paid").innerText = `${cur}${summary.person2Paid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  document.getElementById("dashPerson2Balance").innerText = `${cur}${summary.person2Balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  document.getElementById("dashPerson2Balance").innerText = `${cur}${settlement.person2FinalDue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   document.getElementById("dashSelectedMonthBadge").innerText = appState.currentMonth;
 
@@ -265,25 +313,27 @@ function renderDashboardView() {
   }
 
   // Settlement Banner Text (Managing Advance / Received amounts clearly)
-  const p1 = summary.person1Name;
-  const p2 = summary.person2Name;
+  const p1 = settlement.person1Name;
+  const p2 = settlement.person2Name;
   let bannerMain = "";
   let bannerSub = "";
 
-  if (summary.person1Paid > 0 || summary.person2Paid > 0) {
-    // Show exact formula math: Share - Received = Net Due
-    const p1Part = summary.person1Paid > 0 
-      ? `${p1} Share: ${cur}${summary.person1TotalExpenseShare.toFixed(2)} - Received: ${cur}${summary.person1Paid.toFixed(2)} = ${summary.person1Balance >= 0 ? `Net Due ${cur}${summary.person1Balance.toFixed(2)}` : `Surplus Advance ${cur}${Math.abs(summary.person1Balance).toFixed(2)}`}`
-      : `${p1} Net Due: ${cur}${summary.person1Balance.toFixed(2)}`;
+  const hasUpi = upi.totalUpiSpend > 0;
+  const hasPaid = summary.person1Paid > 0 || summary.person2Paid > 0;
 
-    const p2Part = summary.person2Paid > 0
-      ? `${p2} Share: ${cur}${summary.person2TotalExpenseShare.toFixed(2)} - Received: ${cur}${summary.person2Paid.toFixed(2)} = ${summary.person2Balance >= 0 ? `Net Due ${cur}${summary.person2Balance.toFixed(2)}` : `Surplus Advance ${cur}${Math.abs(summary.person2Balance).toFixed(2)}`}`
-      : `${p2} Net Due: ${cur}${summary.person2Balance.toFixed(2)}`;
+  if (hasUpi || hasPaid) {
+    const p1UpiText = hasUpi ? ` (Card ${cur}${summary.person1TotalExpenseShare.toFixed(2)} + UPI ${cur}${upi.person1UpiShare.toFixed(2)}${summary.person1Paid > 0 ? ` - Adv ${cur}${summary.person1Paid.toFixed(2)}` : ''})` : (summary.person1Paid > 0 ? ` (Share ${cur}${summary.person1TotalExpenseShare.toFixed(2)} - Adv ${cur}${summary.person1Paid.toFixed(2)})` : '');
+    const p2UpiText = hasUpi ? ` (Card ${cur}${summary.person2TotalExpenseShare.toFixed(2)} + UPI ${cur}${upi.person2UpiShare.toFixed(2)}${summary.person2Paid > 0 ? ` - Adv ${cur}${summary.person2Paid.toFixed(2)}` : ''})` : (summary.person2Paid > 0 ? ` (Share ${cur}${summary.person2TotalExpenseShare.toFixed(2)} - Adv ${cur}${summary.person2Paid.toFixed(2)})` : '');
+
+    const p1Part = `${p1}: ${cur}${settlement.person1FinalDue.toFixed(2)}${p1UpiText}`;
+    const p2Part = `${p2}: ${cur}${settlement.person2FinalDue.toFixed(2)}${p2UpiText}`;
 
     bannerMain = `${p1Part} | ${p2Part}`;
-    bannerSub = `Advance funds & payments are automatically subtracted from gross shares to compute the final net settlement balance.`;
+    bannerSub = hasUpi 
+      ? `Combined Total: Card Shares + Non-Card UPI Spends, minus any advance payments.`
+      : `Advance funds & payments are automatically subtracted from gross shares to compute the final net settlement balance.`;
   } else {
-    bannerMain = `${p1} owes ${cur}${summary.person1Balance.toFixed(2)} | ${p2} owes ${cur}${summary.person2Balance.toFixed(2)}`;
+    bannerMain = `${p1} owes ${cur}${settlement.person1FinalDue.toFixed(2)} | ${p2} owes ${cur}${settlement.person2FinalDue.toFixed(2)}`;
     bannerSub = `No advance/payments recorded yet for this cycle. Click "Record Received / Advance" to factor in pre-payments.`;
   }
 
@@ -490,6 +540,111 @@ function getPersonBadgeClass(usedBy) {
   if (p === "kitkat") return "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
   if (p === "rashu") return "bg-purple-500/10 text-purple-400 border-purple-500/20";
   return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+}
+
+// =============================================================================
+// UPI / BANK EXPENSES VIEW
+// =============================================================================
+function renderUpiView() {
+  const tbody = document.getElementById("upiTableBody");
+  const tfoot = document.getElementById("upiTableFooter");
+  if (!tbody) return;
+
+  const searchQuery = (document.getElementById("upiSearchInput")?.value || "").toLowerCase();
+  const personFilter = document.getElementById("upiPersonFilter")?.value || "ALL";
+  const paidByFilter = document.getElementById("upiPaidByFilter")?.value || "ALL";
+  const cur = appState.settings.currencySymbol || "₹";
+  const p1 = appState.settings.person1 || "Kitkat";
+  const p2 = appState.settings.person2 || "Rashu";
+
+  const upiSummary = ExpenseCalculator.calculateUpiMonthSummary(appState.upiExpenses, appState.currentMonth, appState.settings);
+
+  const totalEl = document.getElementById("upiTotalSpend");
+  const p1El = document.getElementById("upiPerson1Share");
+  const p2El = document.getElementById("upiPerson2Share");
+  const badgeEl = document.getElementById("upiCountBadge");
+
+  if (totalEl) totalEl.innerText = `${cur}${upiSummary.totalUpiSpend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (p1El) p1El.innerText = `${cur}${upiSummary.person1UpiShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (p2El) p2El.innerText = `${cur}${upiSummary.person2UpiShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (badgeEl) badgeEl.innerText = `${upiSummary.count} transaction${upiSummary.count === 1 ? '' : 's'}`;
+
+  const monthUpi = (appState.upiExpenses || []).filter(u => u.month === appState.currentMonth);
+
+  const filtered = monthUpi.filter(item => {
+    const desc = (item.description || "").toLowerCase();
+    const rem = (item.remarks || "").toLowerCase();
+    const matchesSearch = desc.includes(searchQuery) || rem.includes(searchQuery);
+    const matchesPerson = personFilter === "ALL" || (item.usedBy || "").toLowerCase() === personFilter.toLowerCase();
+    const matchesPaidBy = paidByFilter === "ALL" || (item.paidBy || "").toLowerCase() === paidByFilter.toLowerCase();
+    return matchesSearch && matchesPerson && matchesPaidBy;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="px-6 py-12 text-center text-slate-500 text-xs">
+          No UPI / Bank transactions found matching the selected filters for ${appState.currentMonth}.
+        </td>
+      </tr>
+    `;
+    if (tfoot) tfoot.innerHTML = "";
+    return;
+  }
+
+  let sumAmount = 0;
+  let sumP1 = 0;
+  let sumP2 = 0;
+
+  tbody.innerHTML = filtered.map(item => {
+    const shares = ExpenseCalculator.calculateUpiItemShares(item, p1, p2);
+    sumAmount += shares.amount;
+    sumP1 += shares.person1Share;
+    sumP2 += shares.person2Share;
+
+    return `
+      <tr class="table-row-hover transition">
+        <td class="px-5 py-3 text-slate-400 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
+        <td class="px-5 py-3 font-semibold text-white">
+          ${item.description}
+          ${item.remarks ? `<div class="text-[10px] text-slate-400 font-normal mt-0.5">${item.remarks}</div>` : ''}
+          ${item.category ? `<span class="inline-block mt-1 px-1.5 py-0.5 text-[9px] rounded bg-slate-800 text-slate-400 border border-slate-700">${item.category}</span>` : ''}
+        </td>
+        <td class="px-5 py-3 text-right font-mono font-bold text-emerald-400">${cur}${shares.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-5 py-3 text-center">
+          <span class="badge ${getPersonBadgeClass(item.usedBy)}">${item.usedBy}</span>
+        </td>
+        <td class="px-5 py-3 text-center">
+          <span class="badge ${item.paidBy === p2 ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'}">${item.paidBy || p2}</span>
+        </td>
+        <td class="px-5 py-3 text-right font-mono text-indigo-300 font-medium">${shares.person1Share > 0 ? `${cur}${shares.person1Share.toFixed(2)}` : '-'}</td>
+        <td class="px-5 py-3 text-right font-mono text-purple-300 font-medium">${shares.person2Share > 0 ? `${cur}${shares.person2Share.toFixed(2)}` : '-'}</td>
+        <td class="px-5 py-3 text-center whitespace-nowrap">
+          <button onclick="editUpiExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-400 transition" title="Edit UPI Spend">
+            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="deleteUpiExpense('${item.id}')" class="p-1.5 text-slate-400 hover:text-red-400 transition" title="Delete UPI Spend">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  if (tfoot) {
+    tfoot.innerHTML = `
+      <tr>
+        <td class="px-5 py-3.5 uppercase tracking-wider text-slate-300" colspan="2">Filtered UPI Totals</td>
+        <td class="px-5 py-3.5 text-right font-mono text-emerald-400">${cur}${sumAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-5 py-3.5 text-center text-slate-400" colspan="2">${filtered.length} items</td>
+        <td class="px-5 py-3.5 text-right font-mono text-indigo-300">${cur}${sumP1.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-5 py-3.5 text-right font-mono text-purple-300">${cur}${sumP2.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td class="px-5 py-3.5"></td>
+      </tr>
+    `;
+  }
+
+  initLucide();
 }
 
 // =============================================================================
@@ -896,6 +1051,135 @@ function deleteExpense(id) {
   }
 }
 
+// =============================================================================
+// UPI MODAL SETUP & ACTIONS
+// =============================================================================
+function setupUpiModal() {
+  const modal = document.getElementById("upiModal");
+  const card = document.getElementById("upiModalCard");
+  const openBtns = [
+    document.getElementById("openAddUpiBtn"),
+    document.getElementById("openAddUpiBtn2")
+  ];
+  const closeBtn = document.getElementById("closeUpiModalBtn");
+  const cancelBtn = document.getElementById("cancelUpiModalBtn");
+  const form = document.getElementById("upiForm");
+
+  const open = () => {
+    form.reset();
+    document.getElementById("editUpiId").value = "";
+    document.getElementById("upiMonthInput").value = appState.currentMonth;
+    document.getElementById("upiDateInput").value = new Date().toISOString().split('T')[0];
+    
+    // Set default usedBy and paidBy
+    const usedBySelect = document.getElementById("upiUsedByInput");
+    const paidBySelect = document.getElementById("upiPaidByInput");
+    if (usedBySelect) usedBySelect.value = "Both";
+    if (paidBySelect) paidBySelect.value = appState.settings.person2 || "Rashu";
+
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+      modal.classList.remove("opacity-0");
+      card.classList.remove("scale-95");
+      const descInput = document.getElementById("upiDescInput");
+      if (descInput) descInput.focus();
+    }, 10);
+  };
+
+  const close = () => {
+    modal.classList.add("opacity-0");
+    card.classList.add("scale-95");
+    setTimeout(() => modal.classList.add("hidden"), 200);
+  };
+
+  openBtns.forEach(btn => {
+    if (btn) btn.addEventListener("click", open);
+  });
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  if (cancelBtn) cancelBtn.addEventListener("click", close);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) close();
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("editUpiId").value;
+    const month = document.getElementById("upiMonthInput").value;
+    const rawDate = document.getElementById("upiDateInput").value;
+    const date = formatDisplayDate(rawDate);
+    const description = document.getElementById("upiDescInput").value.trim();
+    const amount = parseFloat(document.getElementById("upiAmountInput").value) || 0;
+    const usedBy = document.getElementById("upiUsedByInput").value;
+    const paidBy = document.getElementById("upiPaidByInput").value;
+    const category = document.getElementById("upiCategoryInput")?.value || "General";
+    const remarks = document.getElementById("upiRemarksInput")?.value.trim() || "";
+
+    const payload = {
+      id: id || `upi_${Date.now()}`,
+      month,
+      date,
+      description,
+      amount,
+      usedBy,
+      paidBy,
+      category,
+      remarks
+    };
+
+    if (id) {
+      const idx = appState.upiExpenses.findIndex(x => x.id === id);
+      if (idx !== -1) {
+        appState.upiExpenses[idx] = payload;
+      } else {
+        appState.upiExpenses.push(payload);
+      }
+    } else {
+      appState.upiExpenses.push(payload);
+    }
+
+    StorageManager.saveUpiExpenseAsync(payload);
+    StorageManager.addMonthIfNew(month);
+    renderApp();
+    close();
+  });
+}
+
+function editUpiExpense(id) {
+  const item = appState.upiExpenses.find(x => x.id === id);
+  if (!item) return;
+
+  document.getElementById("editUpiId").value = item.id;
+  document.getElementById("upiMonthInput").value = item.month || appState.currentMonth;
+  document.getElementById("upiDateInput").value = parseToISODate(item.date);
+  document.getElementById("upiDescInput").value = item.description || "";
+  document.getElementById("upiAmountInput").value = item.amount || "";
+  document.getElementById("upiUsedByInput").value = item.usedBy || "Both";
+  document.getElementById("upiPaidByInput").value = item.paidBy || "Rashu";
+  
+  const catInput = document.getElementById("upiCategoryInput");
+  if (catInput) catInput.value = item.category || "General";
+  
+  const remInput = document.getElementById("upiRemarksInput");
+  if (remInput) remInput.value = item.remarks || "";
+
+  const modal = document.getElementById("upiModal");
+  const card = document.getElementById("upiModalCard");
+  modal.classList.remove("hidden");
+  setTimeout(() => {
+    modal.classList.remove("opacity-0");
+    card.classList.remove("scale-95");
+  }, 10);
+}
+
+function deleteUpiExpense(id) {
+  if (confirm("Are you sure you want to delete this UPI expense?")) {
+    appState.upiExpenses = appState.upiExpenses.filter(x => x.id !== id);
+    StorageManager.deleteUpiExpenseAsync(id);
+    renderApp();
+  }
+}
+
 // Quick 24th Statement Reconciler Modal
 function setupQuickStatementModal() {
   const modal = document.getElementById("quickStatementModal");
@@ -1286,7 +1570,8 @@ function setupSupabaseConfigForm() {
         appState.expenses,
         appState.payments,
         appState.months,
-        appState.settings
+        appState.settings,
+        appState.upiExpenses
       );
       syncBtn.disabled = false;
       syncBtn.innerHTML = `<i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-indigo-400"></i><span>Upload & Sync All Local Data to Cloud</span>`;
@@ -1354,5 +1639,7 @@ function updateCloudStatusBadges() {
 // Global scope helpers for onclick handlers
 window.editExpense = editExpense;
 window.deleteExpense = deleteExpense;
+window.editUpiExpense = editUpiExpense;
+window.deleteUpiExpense = deleteUpiExpense;
 window.deletePayment = deletePayment;
 window.updateCloudStatusBadges = updateCloudStatusBadges;
