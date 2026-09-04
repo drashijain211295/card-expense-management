@@ -94,6 +94,9 @@ const ExpenseCalculator = {
       person2CardShare += shares.person2Share;
     });
 
+    const cardStatementGross = cardStatementTotal;
+    const cardStatementNet = Math.max(0, cardStatementGross - cardFuelWaiverTotal - cardRefundTotal);
+
     // 2. 💳 Non-Card Expenses
     let nonCardTotalSpend = 0;
     let person1NonCardShare = 0;
@@ -128,7 +131,7 @@ const ExpenseCalculator = {
 
     // Statement difference (Statement total vs recorded slip / effective total)
     const totalSlipRecorded = monthExpenses.reduce((sum, e) => sum + (parseFloat(e.slipAmount) || 0), 0);
-    const statementDifference = cardStatementTotal - cardEffectiveSpend - cardFuelWaiverTotal - cardRefundTotal;
+    const statementDifference = cardStatementGross - cardEffectiveSpend - cardFuelWaiverTotal - cardRefundTotal;
 
     return {
       month: currentMonth,
@@ -136,7 +139,9 @@ const ExpenseCalculator = {
       person2Name: person2,
 
       // Card Metrics
-      cardStatementTotal: cardStatementTotal,
+      cardStatementGross: cardStatementGross,
+      cardStatementNet: cardStatementNet,
+      cardStatementTotal: cardStatementNet,
       cardFuelWaiverTotal: cardFuelWaiverTotal,
       cardRefundTotal: cardRefundTotal,
       cardEffectiveSpend: cardEffectiveSpend,

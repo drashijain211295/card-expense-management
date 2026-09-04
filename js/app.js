@@ -290,6 +290,19 @@ function renderDashboardView() {
   const cur = appState.settings.currencySymbol || "₹";
 
   document.getElementById("dashStatementTotal").innerText = `${cur}${summary.cardStatementTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  
+  const stmtSub = document.getElementById("dashStatementSubtext");
+  if (stmtSub) {
+    if (summary.cardFuelWaiverTotal > 0 || summary.cardRefundTotal > 0) {
+      const parts = [];
+      if (summary.cardFuelWaiverTotal > 0) parts.push(`-${cur}${summary.cardFuelWaiverTotal.toFixed(2)} waiver`);
+      if (summary.cardRefundTotal > 0) parts.push(`-${cur}${summary.cardRefundTotal.toFixed(2)} refund`);
+      stmtSub.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span><span>Net Billed (${cur}${summary.cardStatementGross.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} debits ${parts.join(' ')})</span>`;
+    } else {
+      stmtSub.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span><span>Net billed on 24th statement</span>`;
+    }
+  }
+
   document.getElementById("dashEffectiveSpend").innerText = `${cur}${summary.cardEffectiveSpend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashFuelWaiverBadge").innerText = `-${cur}${summary.cardFuelWaiverTotal.toFixed(2)} Fuel Waiver`;
   document.getElementById("dashRefundBadge").innerText = `-${cur}${summary.cardRefundTotal.toFixed(2)} Refund`;

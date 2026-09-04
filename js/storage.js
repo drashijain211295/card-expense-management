@@ -35,12 +35,30 @@ const StorageManager = {
         }
       });
 
-      window.INITIAL_EXPENSES.forEach(initExp => {
-        if (!storedExpenses.some(e => e.id === initExp.id)) {
-          storedExpenses.push(initExp);
-          hasChanges = true;
-        }
-      });
+      const DATA_VERSION = 'spendwise_v2.1_aug_reconciled';
+      const currentVersion = localStorage.getItem('spendwise_version');
+
+      if (currentVersion !== DATA_VERSION) {
+        // Sync verified initial expenses (fixes August statement line items and fuel waivers)
+        window.INITIAL_EXPENSES.forEach(initExp => {
+          const idx = storedExpenses.findIndex(e => e.id === initExp.id);
+          if (idx !== -1) {
+            storedExpenses[idx] = { ...initExp };
+          } else {
+            storedExpenses.push(initExp);
+          }
+        });
+        hasChanges = true;
+        localStorage.setItem('spendwise_version', DATA_VERSION);
+      } else {
+        window.INITIAL_EXPENSES.forEach(initExp => {
+          if (!storedExpenses.some(e => e.id === initExp.id)) {
+            storedExpenses.push(initExp);
+            hasChanges = true;
+          }
+        });
+      }
+
       if (hasChanges) {
         this.saveExpenses(storedExpenses);
       }
