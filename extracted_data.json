@@ -1,0 +1,771 @@
+{
+  "july": {
+    "transactions": [
+      {
+        "id": "Card_Expense_Tracker_july_3",
+        "date": "07 Jul 26",
+        "description": "Car - petrol",
+        "slipAmount": 1145.7,
+        "statementAmount": 1159.21,
+        "fuelWaiver": 11.45,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_4",
+        "date": "09 Jul 26",
+        "description": "ASSPL",
+        "slipAmount": 0,
+        "statementAmount": 1454,
+        "fuelWaiver": 0,
+        "refundAmount": 1449,
+        "usedBy": "Both",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_5",
+        "date": "09 Jul 26",
+        "description": "Gift waha mummy",
+        "slipAmount": 0,
+        "statementAmount": 1504,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Both",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_6",
+        "date": "07 Jul 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 458,
+        "statementAmount": 463.4,
+        "fuelWaiver": 4.58,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_7",
+        "date": "10 Jul 26",
+        "description": "AGARWAL AUTOMOTIVE PR4",
+        "slipAmount": 458.28,
+        "statementAmount": 462.86,
+        "fuelWaiver": 4.58,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_8",
+        "date": "10 Jul 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 343,
+        "statementAmount": 347.04,
+        "fuelWaiver": 3.43,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_9",
+        "date": "13 Jul 26",
+        "description": "RAJA FUELS",
+        "slipAmount": 515.57,
+        "statementAmount": 521.65,
+        "fuelWaiver": 5.15,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_10",
+        "date": "15 Jul 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 343.71,
+        "statementAmount": 347.76,
+        "fuelWaiver": 3.43,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_11",
+        "date": "17 Jul 26",
+        "description": "SHASHIKRISHAN FILLING",
+        "slipAmount": 458.28,
+        "statementAmount": 463.68,
+        "fuelWaiver": 4.58,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_12",
+        "date": "18 Jul 26",
+        "description": "AGARWAL AUTOMOTIVE PR4",
+        "slipAmount": 515.56,
+        "statementAmount": 520.72,
+        "fuelWaiver": 5.15,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_13",
+        "date": "19 Jul 26",
+        "description": "NIRMAL FILLING STATION",
+        "slipAmount": 344,
+        "statementAmount": 348.05,
+        "fuelWaiver": 3.44,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_14",
+        "date": "23 Jul 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 343.71,
+        "statementAmount": 347.76,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_15",
+        "date": "23 Jul 26",
+        "description": "NIRMAL FILLING STATION",
+        "slipAmount": 458,
+        "statementAmount": 463.4,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_16",
+        "date": "46227",
+        "description": "Annual Fee + GST",
+        "slipAmount": 0,
+        "statementAmount": 588.82,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_july_17",
+        "date": "46218",
+        "description": "Mummy Gift",
+        "slipAmount": 1000,
+        "statementAmount": 0,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Both",
+        "paymentType": "Non-Card",
+        "remarks": ""
+      }
+    ],
+    "summary": {
+      "Total Effective Spend": {
+        "value": 7497.56,
+        "formatted": "7497.56",
+        "formula": "SUMIFS(I3:I18, H3:H18, \"<>Non-Card\")"
+      },
+      "Card Statement Total": {
+        "value": 8992.35,
+        "formatted": "8992.35",
+        "formula": "SUMIFS(D3:D18, H3:H18, \"<>Non-Card\")"
+      },
+      "Fuel Waiver": {
+        "value": 45.78999999999999,
+        "formatted": "45.79",
+        "formula": "SUMIFS(E3:E18, H3:H18, \"<>Non-Card\")"
+      },
+      "Refund": {
+        "value": 1449,
+        "formatted": "1449.00",
+        "formula": "SUMIFS(F3:F18, H3:H18, \"<>Non-Card\")"
+      },
+      "Kitkat Card Share": {
+        "value": 3282.5699999999997,
+        "formatted": "3282.57",
+        "formula": "SUMIFS(J3:J18, H3:H18, \"<>Non-Card\")"
+      },
+      "Rashu Card Share": {
+        "value": 4214.99,
+        "formatted": "4214.99",
+        "formula": "SUMIFS(K3:K18, H3:H18, \"<>Non-Card\")"
+      },
+      "Total Non-Card Spend": {
+        "value": 1000,
+        "formatted": "1000.00",
+        "formula": "SUMIF(H3:H18, \"Non-Card\", I3:I18)"
+      },
+      "Kitkat Non-Card Share": {
+        "value": 500,
+        "formatted": "500.00",
+        "formula": "SUMIF(H3:H18, \"Non-Card\", J3:J18)"
+      },
+      "Rashu Non-Card Share": {
+        "value": 500,
+        "formatted": "500.00",
+        "formula": "SUMIF(H3:H18, \"Non-Card\", K3:K18)"
+      },
+      "Kitkat Expense Share": {
+        "value": 3782.5699999999997,
+        "formatted": "3782.57",
+        "formula": "O8+O13"
+      },
+      "Kitkat Payment / Share Given": {
+        "value": 10000,
+        "formatted": "10000.00",
+        "formula": null
+      },
+      "Kitkat Next Month Balance": {
+        "value": -6217.43,
+        "formatted": "-6217.43",
+        "formula": "O17-O18"
+      },
+      "Rashu Expense Share": {
+        "value": 4714.99,
+        "formatted": "4714.99",
+        "formula": "O9+O14"
+      },
+      "Rashu Payment / Share Given": {
+        "value": 4714.99,
+        "formatted": "4714.99",
+        "formula": null
+      },
+      "Rashu Next Month Balance": {
+        "value": 0,
+        "formatted": "0.00",
+        "formula": "O21-O22"
+      }
+    }
+  },
+  "august": {
+    "transactions": [
+      {
+        "id": "Card_Expense_Tracker_august_3",
+        "date": "46227",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 458,
+        "statementAmount": 463.4,
+        "fuelWaiver": 1.58,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_4",
+        "date": "28 Jul 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 1145.7,
+        "statementAmount": 1159.21,
+        "fuelWaiver": 11.45,
+        "refundAmount": 1000,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_5",
+        "date": "29 Jul 26",
+        "description": "NIRMAL FILLING STATION",
+        "slipAmount": 344,
+        "statementAmount": 348.05,
+        "fuelWaiver": 3.44,
+        "refundAmount": 0,
+        "usedBy": "Both",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_6",
+        "date": "29 Jul 26",
+        "description": "UPI-U K T 1 Enterprises",
+        "slipAmount": 579.61,
+        "statementAmount": 579.61,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_7",
+        "date": "30 Jul 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 1145.7,
+        "statementAmount": 1159.21,
+        "fuelWaiver": 11.45,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_8",
+        "date": "30 Jul 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 401,
+        "statementAmount": 405.73,
+        "fuelWaiver": 4.01,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_9",
+        "date": "01 Aug 26",
+        "description": "MANOJ SHUKLA",
+        "slipAmount": 114.57,
+        "statementAmount": 115.92,
+        "fuelWaiver": 1.14,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_10",
+        "date": "02 Aug 26",
+        "description": "SMART CITY FUELS PR468",
+        "slipAmount": 1141,
+        "statementAmount": 1152.41,
+        "fuelWaiver": 11.41,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_11",
+        "date": "03 Aug 26",
+        "description": "SHASHIKRISHAN FILLING",
+        "slipAmount": 515.57,
+        "statementAmount": 521.65,
+        "fuelWaiver": 5.15,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_12",
+        "date": "03 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 343.71,
+        "statementAmount": 347.76,
+        "fuelWaiver": 3.43,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_13",
+        "date": "06 Aug 26",
+        "description": "SHASHIKRISHAN FILLING",
+        "slipAmount": 458.28,
+        "statementAmount": 463.68,
+        "fuelWaiver": 4.58,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_14",
+        "date": "06 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 343.71,
+        "statementAmount": 347.76,
+        "fuelWaiver": 3.43,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_15",
+        "date": "07 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 1145,
+        "statementAmount": 1158.51,
+        "fuelWaiver": 11.45,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_16",
+        "date": "08 Aug 26",
+        "description": "UPI-NIRMAL FILLING STAT",
+        "slipAmount": 115,
+        "statementAmount": 115.93,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_17",
+        "date": "08 Aug 26",
+        "description": "Indian Railway Caterin",
+        "slipAmount": 4775.62,
+        "statementAmount": 4775.62,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_18",
+        "date": "08 Aug 26",
+        "description": "UPI-DELHI CHOLE BHATURE",
+        "slipAmount": 120,
+        "statementAmount": 120,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_19",
+        "date": "08 Aug 26",
+        "description": "UPI-Sunil Hashwani",
+        "slipAmount": 50,
+        "statementAmount": 50,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_20",
+        "date": "08 Aug 26",
+        "description": "UPI-PRAKASH MOBILE",
+        "slipAmount": 170,
+        "statementAmount": 170,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_21",
+        "date": "08 Aug 26",
+        "description": "UPI-NASIR MANSURI",
+        "slipAmount": 100,
+        "statementAmount": 100,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_22",
+        "date": "08 Aug 26",
+        "description": "UPI-DEEPAK KUMAR RATH",
+        "slipAmount": 550,
+        "statementAmount": 550,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_23",
+        "date": "08 Aug 26",
+        "description": "UPI-New rajhans rubber p work u",
+        "slipAmount": 20,
+        "statementAmount": 20,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_24",
+        "date": "08 Aug 26",
+        "description": "UPI-KOUSHAL SINGH",
+        "slipAmount": 250,
+        "statementAmount": 250,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_25",
+        "date": "08 Aug 26",
+        "description": "UPI-BATA",
+        "slipAmount": 549,
+        "statementAmount": 549,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_26",
+        "date": "10 Aug 26",
+        "description": "SHASHIKRISHAN FILLING",
+        "slipAmount": 515.57,
+        "statementAmount": 520.73,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_27",
+        "date": "12 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 401,
+        "statementAmount": 405.01,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_28",
+        "date": "12 Aug 26",
+        "description": "AGARWAL AUTOMOTIVE PR4",
+        "slipAmount": 515.56,
+        "statementAmount": 520.72,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_29",
+        "date": "13 Aug 26",
+        "description": "Myjio",
+        "slipAmount": 9931.96,
+        "statementAmount": 9931.96,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_30",
+        "date": "14 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 2291,
+        "statementAmount": 2318.03,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_31",
+        "date": "17 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 401,
+        "statementAmount": 405.01,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_32",
+        "date": "18 Aug 26",
+        "description": "SUDHIR SHARMA",
+        "slipAmount": 1145.7,
+        "statementAmount": 1157.15,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_33",
+        "date": "18 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 1718.55,
+        "statementAmount": 1735.73,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_34",
+        "date": "19 Aug 26",
+        "description": "KANTA SHRAWAN MISROD",
+        "slipAmount": 343.17,
+        "statementAmount": 347.14,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_35",
+        "date": "19 Aug 26",
+        "description": "SHASHIKRISHAN FILLING",
+        "slipAmount": 343,
+        "statementAmount": 346.43,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_36",
+        "date": "21 Aug 26",
+        "description": "SMART CITY FUELS PR468",
+        "slipAmount": 570.7,
+        "statementAmount": 576.43,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Kitkat",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_37",
+        "date": "22 Aug 26",
+        "description": "SMART CITY FUELS PR468",
+        "slipAmount": 570.7,
+        "statementAmount": 576.41,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Card",
+        "remarks": ""
+      },
+      {
+        "id": "Card_Expense_Tracker_august_38",
+        "date": "",
+        "description": "Rashu got cash from mosiji",
+        "slipAmount": 1000,
+        "statementAmount": 1000,
+        "fuelWaiver": 0,
+        "refundAmount": 0,
+        "usedBy": "Rashu",
+        "paymentType": "Non-Card",
+        "remarks": ""
+      }
+    ],
+    "summary": {
+      "Total Effective Spend": {
+        "value": 32691.679999999997,
+        "formatted": "32691.68",
+        "formula": "SUMIFS(I3:I37, H3:H37, \"<>Non-Card\")"
+      },
+      "Card Statement Total": {
+        "value": 33764.2,
+        "formatted": "33764.20",
+        "formula": "SUMIFS(D3:D38, H3:H38, \"<>Non-Card\")"
+      },
+      "Fuel Waiver": {
+        "value": 72.52,
+        "formatted": "72.52",
+        "formula": "SUMIFS(E3:E38, H3:H38, \"<>Non-Card\")"
+      },
+      "Refund": {
+        "value": 1000,
+        "formatted": "1000.00",
+        "formula": "SUMIFS(F3:F38, H3:H38, \"<>Non-Card\")"
+      },
+      "Kitkat Card Share": {
+        "value": 16484.254999999997,
+        "formatted": "16484.25",
+        "formula": "SUMIFS(J3:J38, H3:H38, \"<>Non-Card\")"
+      },
+      "Rashu Card Share": {
+        "value": 16207.425,
+        "formatted": "16207.43",
+        "formula": "SUMIFS(K3:K38, H3:H38, \"<>Non-Card\")"
+      },
+      "Total Non-Card Spend": {
+        "value": 1000,
+        "formatted": "1000.00",
+        "formula": "SUMIF(H3:H38, \"Non-Card\", I3:I38)"
+      },
+      "Kitkat Non-Card Share": {
+        "value": 0,
+        "formatted": "0.00",
+        "formula": "SUMIF(H3:H38, \"Non-Card\", J3:J38)"
+      },
+      "Rashu Non-Card Share": {
+        "value": 1000,
+        "formatted": "1000.00",
+        "formula": "SUMIF(H3:H38, \"Non-Card\", K3:K38)"
+      },
+      "Kitkat Expense Share": {
+        "value": 16484.254999999997,
+        "formatted": "16484.25",
+        "formula": "O8+O13"
+      },
+      "Kitkat Payment / Share Given": {
+        "value": 4567.42,
+        "formatted": "4567.42",
+        "formula": null
+      },
+      "Kitkat Next Month Balance": {
+        "value": 11916.834999999997,
+        "formatted": "11916.83",
+        "formula": "O17-O18"
+      },
+      "Rashu Expense Share": {
+        "value": 17207.425,
+        "formatted": "17207.43",
+        "formula": "O9+O14"
+      },
+      "Rashu Next Month Balance": {
+        "value": 17207.425,
+        "formatted": "17207.43",
+        "formula": "O21-O22"
+      }
+    }
+  }
+}
