@@ -848,10 +848,20 @@ function setupQuickStatementModal() {
 
     tbody.innerHTML = monthExpenses.map(item => {
       const eff = ExpenseCalculator.calculateEffectiveAmount(item);
+      const used = item.usedBy || 'Both';
+      const p1 = appState.settings.person1 || "Kitkat";
+      const p2 = appState.settings.person2 || "Rashu";
       return `
         <tr data-exp-id="${item.id}" class="hover:bg-slate-800/40">
           <td class="px-3 py-2 text-slate-400 whitespace-nowrap">${item.date}</td>
           <td class="px-3 py-2 text-white font-medium">${item.description}</td>
+          <td class="px-3 py-2 text-center">
+            <select class="quick-usedby-select px-2 py-1 bg-slate-800 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-indigo-500 font-medium">
+              <option value="${p1}" ${used === p1 ? 'selected' : ''}>${p1}</option>
+              <option value="${p2}" ${used === p2 ? 'selected' : ''}>${p2}</option>
+              <option value="Both" ${used === 'Both' ? 'selected' : ''}>Both</option>
+            </select>
+          </td>
           <td class="px-3 py-2 text-right font-mono text-slate-300">${cur}${(item.slipAmount || 0).toFixed(2)}</td>
           <td class="px-3 py-2 text-center">
             <input type="number" step="0.01" value="${item.statementAmount || ''}" placeholder="${item.slipAmount || '0.00'}" class="quick-stmt-input w-24 px-2 py-1 bg-slate-800 border border-slate-700 rounded text-center text-xs font-mono text-white focus:outline-none focus:border-indigo-500" />
@@ -873,12 +883,14 @@ function setupQuickStatementModal() {
       const rows = tbody.querySelectorAll("tr[data-exp-id]");
       rows.forEach(r => {
         const id = r.getAttribute("data-exp-id");
+        const usedByVal = r.querySelector(".quick-usedby-select")?.value || "Both";
         const stmtVal = parseFloat(r.querySelector(".quick-stmt-input")?.value) || 0;
         const fuelVal = parseFloat(r.querySelector(".quick-fuel-input")?.value) || 0;
         const refVal = parseFloat(r.querySelector(".quick-ref-input")?.value) || 0;
 
         const tx = appState.expenses.find(x => x.id === id);
         if (tx) {
+          tx.usedBy = usedByVal;
           tx.statementAmount = stmtVal;
           tx.fuelWaiver = fuelVal;
           tx.refundAmount = refVal;
@@ -888,7 +900,7 @@ function setupQuickStatementModal() {
       saveStateToStorage();
       renderApp();
       close();
-      alert("Statement reconciliation values saved successfully!");
+      alert("Statement reconciliation values and user assignments saved successfully!");
     });
   }
 }

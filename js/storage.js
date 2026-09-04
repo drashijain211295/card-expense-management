@@ -12,6 +12,28 @@ const StorageManager = {
   init() {
     if (!localStorage.getItem(this.STORAGE_KEY_EXPENSES)) {
       this.resetToExcelData();
+    } else {
+      // Ensure any newly configured default expenses (like September additions) are synced if missing
+      const storedExpenses = this.getExpenses();
+      let hasChanges = false;
+      window.INITIAL_EXPENSES.forEach(initExp => {
+        if (!storedExpenses.some(e => e.id === initExp.id)) {
+          storedExpenses.push(initExp);
+          hasChanges = true;
+        }
+      });
+      if (hasChanges) {
+        this.saveExpenses(storedExpenses);
+      }
+
+      // Ensure months list contains all available months
+      const storedMonths = this.getMonths();
+      window.AVAILABLE_MONTHS.forEach(m => {
+        if (!storedMonths.includes(m)) {
+          storedMonths.unshift(m);
+        }
+      });
+      this.saveMonths(storedMonths);
     }
   },
 
@@ -73,7 +95,7 @@ const StorageManager = {
   addMonthIfNew(monthName) {
     const months = this.getMonths();
     if (!months.includes(monthName)) {
-      months.push(monthName);
+      months.unshift(monthName);
       this.saveMonths(months);
     }
   },
