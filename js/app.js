@@ -1,6 +1,6 @@
 /**
  * SpendWise Main Application Controller
- * Handles UI interactions, View routing, State updates, Charts and Forms.
+ * Handles UI interactions, View routing, State updates, Charts, and 24th Statement Reconciliation Flow.
  */
 
 // Application State
@@ -92,6 +92,7 @@ function initEventListeners() {
   setupExpenseModal();
   setupPaymentModal();
   setupImportModal();
+  setupQuickStatementModal();
   setupSettingsForm();
 }
 
@@ -183,9 +184,6 @@ function updateHeaderLabels() {
   const p1 = appState.settings.person1 || "Kitkat";
   const p2 = appState.settings.person2 || "Rashu";
 
-  const cardHolders = document.getElementById("dashCardHolders");
-  if (cardHolders) cardHolders.innerText = `${p1.toUpperCase()} & ${p2.toUpperCase()}`;
-
   const thP1 = document.getElementById("thPerson1Share");
   const thP2 = document.getElementById("thPerson2Share");
   if (thP1) thP1.innerText = `${p1} Share`;
@@ -222,8 +220,22 @@ function renderDashboardView() {
   document.getElementById("dashPerson2Paid").innerText = `${cur}${summary.person2Paid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashPerson2Balance").innerText = `${cur}${summary.person2Balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  document.getElementById("dashNonCardSpend").innerText = `${cur}${summary.nonCardTotalSpend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashSelectedMonthBadge").innerText = appState.currentMonth;
+
+  // Cycle Reconciled Counter Progress
+  const monthTxs = appState.expenses.filter(e => e.month === appState.currentMonth);
+  const cardTxs = monthTxs.filter(e => (e.paymentType || "Card").toLowerCase() !== "non-card");
+  const reconciledCardTxs = cardTxs.filter(e => (parseFloat(e.statementAmount) || 0) > 0);
+
+  const countEl = document.getElementById("dashCycleReconciledCount");
+  const barEl = document.getElementById("dashCycleProgressBar");
+  if (countEl && barEl) {
+    const total = cardTxs.length;
+    const reconciled = reconciledCardTxs.length;
+    countEl.innerText = `${reconciled} of ${total} updated on 24th`;
+    const pct = total > 0 ? (reconciled / total) * 100 : 100;
+    barEl.style.width = `${pct}%`;
+  }
 
   // Settlement Banner Text
   const p1 = summary.person1Name;
@@ -249,13 +261,13 @@ function renderDashboardView() {
   document.getElementById("settlementSubText").innerText = bannerSub;
 
   // Recent Transactions Table in Dashboard
-  const monthTxs = appState.expenses.filter(e => e.month === appState.currentMonth);
   const recentSlice = monthTxs.slice(-5).reverse();
   const recentTbody = document.getElementById("dashRecentTableBody");
 
   if (recentTbody) {
     recentTbody.innerHTML = recentSlice.map(tx => {
       const eff = ExpenseCalculator.calculateEffectiveAmount(tx);
+      const isReconciled = (parseFloat(tx.statementAmount) || 0) > 0;
       return `
         <tr class="table-row-hover transition">
           <td class="px-5 py-3 text-slate-400 whitespace-nowrap">${tx.date}</td>
@@ -264,10 +276,16 @@ function renderDashboardView() {
             <span class="badge ${getPersonBadgeClass(tx.usedBy)}">${tx.usedBy}</span>
           </td>
           <td class="px-5 py-3">
-            <span class="badge ${tx.paymentType === 'Non-Card' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'}">${tx.paymentType}</span>
+            <span class="badge ${tx.paymentType === 'Non-Card' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-slate-800 text-slate-300 border-slate-700'}">${tx.paymentType}</span>
           </td>
-          <td class="px-5 py-3 text-right font-mono text-slate-300">${cur}${(tx.statementAmount || 0).toFixed(2)}</td>
+          <td class="px-5 py-3 text-right font-mono text-slate-400">${cur}${(tx.slipAmount || 0).toFixed(2)}</td>
+          <td class="px-5 py-3 text-right font-mono text-slate-200">${tx.statementAmount ? `${cur}${tx.statementAmount.toFixed(2)}` : '-'}</td>
           <td class="px-5 py-3 text-right font-mono font-bold text-indigo-400">${cur}${eff.toFixed(2)}</td>
+          <td class="px-5 py-3 text-center">
+            <span class="badge ${isReconciled ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}">
+              ${isReconciled ? '✓ Statement Reconciled' : '⏳ Awaiting 24th'}
+            </span>
+          </td>
         </tr>
       `;
     }).join("");
@@ -393,7 +411,7 @@ function renderExpensesView() {
           ${item.remarks ? `<div class="text-[10px] text-slate-400 font-normal mt-0.5">${item.remarks}</div>` : ''}
         </td>
         <td class="px-4 py-3 text-right font-mono text-slate-400">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
-        <td class="px-4 py-3 text-right font-mono text-slate-200">${item.statementAmount ? `${cur}${item.statementAmount.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-right font-mono text-slate-200">${item.statementAmount ? `${cur}${item.statementAmount.toFixed(2)}` : `<span class="text-amber-400/80 text-[10px]">Pending 24th</span>`}</td>
         <td class="px-4 py-3 text-right font-mono text-amber-400">${item.fuelWaiver ? `${cur}${item.fuelWaiver.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-emerald-400">${item.refundAmount ? `${cur}${item.refundAmount.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-center">
@@ -406,7 +424,7 @@ function renderExpensesView() {
         <td class="px-4 py-3 text-right font-mono text-indigo-300">${cur}${shares.person1Share.toFixed(2)}</td>
         <td class="px-4 py-3 text-right font-mono text-purple-300">${cur}${shares.person2Share.toFixed(2)}</td>
         <td class="px-4 py-3 text-center whitespace-nowrap">
-          <button onclick="editExpense('${item.id}')" class="p-1 text-slate-400 hover:text-indigo-400 transition" title="Edit">
+          <button onclick="editExpense('${item.id}')" class="p-1 text-slate-400 hover:text-indigo-400 transition" title="Edit / Add 24th Statement Details">
             <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
           </button>
           <button onclick="deleteExpense('${item.id}')" class="p-1 text-slate-400 hover:text-red-400 transition ml-1" title="Delete">
@@ -468,24 +486,31 @@ function renderTallyView() {
     const eff = ExpenseCalculator.calculateEffectiveAmount(item);
 
     const isMatch = (stmt === slip && stmt > 0) || (stmt > 0 && Math.abs(stmt - slip - fuel) < 0.05);
+    const isPending = stmt === 0;
 
     return `
       <tr class="table-row-hover transition">
         <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${item.date}</td>
         <td class="px-4 py-3 font-semibold text-white">${item.description}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-400">${slip ? `${cur}${slip.toFixed(2)}` : '-'}</td>
-        <td class="px-4 py-3 text-right font-mono text-slate-200">${stmt ? `${cur}${stmt.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-right font-mono text-slate-200">${stmt ? `${cur}${stmt.toFixed(2)}` : `<span class="text-amber-400/80 text-[10px]">Awaiting 24th</span>`}</td>
         <td class="px-4 py-3 text-right font-mono text-amber-400">${(fuel + ref) > 0 ? `-${cur}${(fuel + ref).toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono font-bold text-indigo-400">${cur}${eff.toFixed(2)}</td>
         <td class="px-4 py-3 text-center">
-          <span class="badge ${isMatch ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}">
-            ${isMatch ? '✓ Matched' : '⚡ Waiver / Surcharge'}
+          <span class="badge ${isPending ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : (isMatch ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-sky-500/10 text-sky-400 border-sky-500/20')}">
+            ${isPending ? '⏳ Awaiting 24th' : (isMatch ? '✓ Reconciled' : '⚡ Surcharge / Waiver')}
           </span>
         </td>
-        <td class="px-4 py-3 text-right font-mono text-slate-400">${cur}0.00</td>
+        <td class="px-4 py-3 text-right whitespace-nowrap">
+          <button onclick="editExpense('${item.id}')" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white transition text-[11px] font-semibold">
+            Edit / Reconcile
+          </button>
+        </td>
       </tr>
     `;
   }).join("");
+
+  initLucide();
 }
 
 // =============================================================================
@@ -669,10 +694,11 @@ function setupExpenseModal() {
   const form = document.getElementById("expenseForm");
 
   const open = () => {
-    document.getElementById("expenseModalTitle").innerText = "Add New Expense";
+    document.getElementById("expenseModalTitle").innerText = "Log Daily Expense";
     form.reset();
     document.getElementById("editExpenseId").value = "";
     document.getElementById("expenseMonthInput").value = appState.currentMonth;
+    document.getElementById("expenseDateInput").value = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
     modal.classList.remove("hidden");
     setTimeout(() => {
       modal.classList.remove("opacity-0");
@@ -742,7 +768,7 @@ function editExpense(id) {
   const item = appState.expenses.find(x => x.id === id);
   if (!item) return;
 
-  document.getElementById("expenseModalTitle").innerText = "Edit Expense";
+  document.getElementById("expenseModalTitle").innerText = "Edit / Update Statement Details";
   document.getElementById("editExpenseId").value = item.id;
   document.getElementById("expenseMonthInput").value = item.month;
   document.getElementById("expenseDateInput").value = item.date;
@@ -770,6 +796,93 @@ function deleteExpense(id) {
     appState.expenses = appState.expenses.filter(x => x.id !== id);
     saveStateToStorage();
     renderApp();
+  }
+}
+
+// Quick 24th Statement Reconciler Modal
+function setupQuickStatementModal() {
+  const modal = document.getElementById("quickStatementModal");
+  const card = document.getElementById("quickStatementModalCard");
+  const openBtns = [document.getElementById("openQuickStatementModalBtn"), document.getElementById("openQuickStatementModalBtn2")];
+  const closeBtn = document.getElementById("closeQuickStatementModalBtn");
+  const saveBtn = document.getElementById("saveQuickStatementBtn");
+  const tbody = document.getElementById("quickStatementTableBody");
+
+  const open = () => {
+    renderQuickStatementTable();
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+      modal.classList.remove("opacity-0");
+      card.classList.remove("scale-95");
+    }, 10);
+  };
+
+  const close = () => {
+    modal.classList.add("opacity-0");
+    card.classList.add("scale-95");
+    setTimeout(() => modal.classList.add("hidden"), 200);
+  };
+
+  openBtns.forEach(btn => { if (btn) btn.addEventListener("click", open); });
+  if (closeBtn) closeBtn.addEventListener("click", close);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) close();
+  });
+
+  function renderQuickStatementTable() {
+    const monthExpenses = appState.expenses.filter(e => e.month === appState.currentMonth && (e.paymentType || "Card").toLowerCase() !== "non-card");
+    const cur = appState.settings.currencySymbol || "₹";
+
+    if (monthExpenses.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No card transactions for this cycle.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = monthExpenses.map(item => {
+      const eff = ExpenseCalculator.calculateEffectiveAmount(item);
+      return `
+        <tr data-exp-id="${item.id}" class="hover:bg-slate-800/40">
+          <td class="px-3 py-2 text-slate-400 whitespace-nowrap">${item.date}</td>
+          <td class="px-3 py-2 text-white font-medium">${item.description}</td>
+          <td class="px-3 py-2 text-right font-mono text-slate-300">${cur}${(item.slipAmount || 0).toFixed(2)}</td>
+          <td class="px-3 py-2 text-center">
+            <input type="number" step="0.01" value="${item.statementAmount || ''}" placeholder="${item.slipAmount || '0.00'}" class="quick-stmt-input w-24 px-2 py-1 bg-slate-800 border border-slate-700 rounded text-center text-xs font-mono text-white focus:outline-none focus:border-indigo-500" />
+          </td>
+          <td class="px-3 py-2 text-center">
+            <input type="number" step="0.01" value="${item.fuelWaiver || ''}" placeholder="0.00" class="quick-fuel-input w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded text-center text-xs font-mono text-amber-400 focus:outline-none focus:border-indigo-500" />
+          </td>
+          <td class="px-3 py-2 text-center">
+            <input type="number" step="0.01" value="${item.refundAmount || ''}" placeholder="0.00" class="quick-ref-input w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded text-center text-xs font-mono text-emerald-400 focus:outline-none focus:border-indigo-500" />
+          </td>
+          <td class="px-3 py-2 text-right font-mono font-bold text-indigo-400">${cur}${eff.toFixed(2)}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+      const rows = tbody.querySelectorAll("tr[data-exp-id]");
+      rows.forEach(r => {
+        const id = r.getAttribute("data-exp-id");
+        const stmtVal = parseFloat(r.querySelector(".quick-stmt-input")?.value) || 0;
+        const fuelVal = parseFloat(r.querySelector(".quick-fuel-input")?.value) || 0;
+        const refVal = parseFloat(r.querySelector(".quick-ref-input")?.value) || 0;
+
+        const tx = appState.expenses.find(x => x.id === id);
+        if (tx) {
+          tx.statementAmount = stmtVal;
+          tx.fuelWaiver = fuelVal;
+          tx.refundAmount = refVal;
+        }
+      });
+
+      saveStateToStorage();
+      renderApp();
+      close();
+      alert("Statement reconciliation values saved successfully!");
+    });
   }
 }
 

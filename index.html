@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SpendWise - Card Expense Management & Statement Reconciliation</title>
+  <title>SpendWise - Card Expense Management & 24th Statement Reconciliation</title>
   
   <!-- Fonts & Tailwind CSS CDN -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,14 +51,14 @@
       <!-- Brand Logo -->
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-          <i data-lucide="credit-card" class="w-5 h-5 text-white"></i>
+          <i data-lucide="wallet-cards" class="w-5 h-5 text-white"></i>
         </div>
         <div>
           <div class="flex items-center gap-2">
             <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">SpendWise</span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">EXCEL PRO</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">24th CYCLE</span>
           </div>
-          <p class="text-[11px] text-slate-400 hidden sm:block">Kitkat & Rashu Expense Tracker</p>
+          <p class="text-[11px] text-slate-400 hidden sm:block">Kitkat & Rashu Card Manager</p>
         </div>
       </div>
 
@@ -104,7 +104,7 @@
         <!-- Add Expense CTA -->
         <button id="openAddExpenseBtn" class="flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl shadow-lg shadow-indigo-600/20 transition active:scale-95">
           <i data-lucide="plus" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Add Expense</span>
+          <span class="hidden sm:inline">Add Daily Spend</span>
         </button>
       </div>
     </div>
@@ -161,7 +161,7 @@
           <div class="text-2xl sm:text-3xl font-extrabold text-white font-mono tracking-tight" id="dashStatementTotal">₹0.00</div>
           <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-            <span>Raw billed statement amount</span>
+            <span>Raw billed on 24th statement</span>
           </div>
         </div>
 
@@ -216,55 +216,62 @@
 
       </div>
 
-      <!-- Center Row: Virtual Card & Expense Breakdown Chart -->
+      <!-- Center Row: 24th Statement Cycle Hub & Expense Breakdown Chart -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- Virtual Card Widget -->
-        <div class="card-glass p-6 rounded-2xl flex flex-col justify-between">
+        <!-- 24th Statement Cycle Hub (Replaces old card preview mockup) -->
+        <div class="card-glass p-6 rounded-2xl flex flex-col justify-between border border-slate-800">
           <div>
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-sm font-bold text-white uppercase tracking-wider">Active Card Details</h3>
-              <span class="badge bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Active</span>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-white uppercase tracking-wider">Statement Cycle</h3>
+                  <p class="text-[11px] text-indigo-400 font-semibold">Statement on 24th of every month</p>
+                </div>
+              </div>
+              <span class="badge bg-indigo-500/10 text-indigo-400 border-indigo-500/20">Monthly</span>
             </div>
 
-            <!-- Credit Card Visual -->
-            <div class="credit-card-preview h-44 rounded-2xl p-5 text-white shadow-xl flex flex-col justify-between overflow-hidden">
-              <div class="card-glass-glow"></div>
-              <div class="flex justify-between items-center z-10">
-                <span class="text-[11px] font-bold tracking-widest uppercase opacity-80">Primary Expense Card</span>
-                <i data-lucide="wifi" class="w-4 h-4 opacity-75"></i>
-              </div>
-              <div class="z-10 tracking-widest text-lg font-mono font-semibold">
-                •••• •••• •••• 8842
-              </div>
-              <div class="flex justify-between items-end z-10">
+            <!-- Workflow Explanation Cards -->
+            <div class="mt-4 space-y-2.5">
+              <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
                 <div>
-                  <p class="text-[9px] uppercase font-bold tracking-wider opacity-60">Card Holders</p>
-                  <p class="text-xs font-bold tracking-wide" id="dashCardHolders">KITKAT & RASHU</p>
+                  <h4 class="text-xs font-semibold text-white">Daily Spending Entry</h4>
+                  <p class="text-[11px] text-slate-400">Put your daily slip/bill spends immediately in the app.</p>
                 </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-indigo-950/30 border border-indigo-900/40 flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
                 <div>
-                  <p class="text-[9px] uppercase font-bold tracking-wider opacity-60">Valid Thru</p>
-                  <p class="text-xs font-mono font-medium">08/29</p>
+                  <h4 class="text-xs font-semibold text-indigo-200">On 24th: Add Statement & Surcharges</h4>
+                  <p class="text-[11px] text-slate-400">Mention the statement amount and fuel waivers after statement generates.</p>
                 </div>
-                <div class="w-10 h-6 bg-amber-400 rounded-md flex items-center justify-center font-bold text-[10px] text-slate-900 shadow">
-                  VISA
-                </div>
+              </div>
+            </div>
+
+            <!-- Cycle Tally Progress -->
+            <div class="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5 text-xs">
+              <div class="flex justify-between text-slate-400">
+                <span>Statement Reconciled</span>
+                <span class="font-bold text-emerald-400" id="dashCycleReconciledCount">0 of 0 updated</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div id="dashCycleProgressBar" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" style="width: 100%"></div>
               </div>
             </div>
           </div>
 
-          <!-- Quick Non-Card summary snippet -->
-          <div class="mt-5 pt-4 border-t border-slate-800/80 space-y-2 text-xs">
-            <div class="flex justify-between text-slate-400">
-              <span>Non-Card Expenses (Cash/UPI)</span>
-              <span class="font-bold text-white font-mono" id="dashNonCardSpend">₹0.00</span>
-            </div>
-            <div class="flex justify-between text-slate-400">
-              <span>Reconciliation Status</span>
-              <span class="text-emerald-400 font-semibold flex items-center gap-1">
-                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> 100% Reconciled
-              </span>
-            </div>
+          <!-- Quick Action Button for 24th statement entry -->
+          <div class="mt-5 pt-3 border-t border-slate-800 flex flex-col gap-2">
+            <button id="openQuickStatementModalBtn" class="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition flex items-center justify-center gap-2">
+              <i data-lucide="edit" class="w-4 h-4"></i>
+              <span>Quick 24th Statement Reconciler</span>
+            </button>
           </div>
         </div>
 
@@ -273,7 +280,7 @@
           <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div>
               <h3 class="text-sm font-bold text-white uppercase tracking-wider">Spending Distribution</h3>
-              <p class="text-xs text-slate-400">Category & channel distribution for selected month</p>
+              <p class="text-xs text-slate-400">Category & channel distribution for selected cycle</p>
             </div>
             <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700" id="dashSelectedMonthBadge">August 2026</span>
           </div>
@@ -306,8 +313,10 @@
                 <th class="px-5 py-3">Description</th>
                 <th class="px-5 py-3">Used By</th>
                 <th class="px-5 py-3">Type</th>
+                <th class="px-5 py-3 text-right">Slip (Bill)</th>
                 <th class="px-5 py-3 text-right">Statement Amt</th>
-                <th class="px-5 py-3 text-right">Effective Amt</th>
+                <th class="px-5 py-3 text-right font-bold text-indigo-400">Effective Amt</th>
+                <th class="px-5 py-3 text-center">Status</th>
               </tr>
             </thead>
             <tbody id="dashRecentTableBody" class="divide-y divide-slate-800/60 font-medium">
@@ -369,7 +378,7 @@
           </button>
           <button id="expenseAddBtn2" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow-lg shadow-indigo-600/20 transition flex items-center gap-1.5">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            <span>Add Expense</span>
+            <span>Add Spend</span>
           </button>
         </div>
 
@@ -419,25 +428,25 @@
         <div class="card-glass p-4 rounded-2xl border border-slate-800">
           <span class="text-[11px] font-semibold uppercase text-slate-400">Card Statement Total</span>
           <div class="text-xl font-bold font-mono text-white mt-1" id="tallyStatementTotal">₹0.00</div>
-          <span class="text-[10px] text-slate-500">Excel O5 formula</span>
+          <span class="text-[10px] text-slate-500">Billed on 24th statement</span>
         </div>
 
         <div class="card-glass p-4 rounded-2xl border border-slate-800">
           <span class="text-[11px] font-semibold uppercase text-slate-400">Fuel Waiver Credit</span>
           <div class="text-xl font-bold font-mono text-amber-400 mt-1" id="tallyFuelWaiver">₹0.00</div>
-          <span class="text-[10px] text-slate-500">Excel O6 formula</span>
+          <span class="text-[10px] text-slate-500">Surcharge waiver refund</span>
         </div>
 
         <div class="card-glass p-4 rounded-2xl border border-slate-800">
           <span class="text-[11px] font-semibold uppercase text-slate-400">Refunds Reversal</span>
           <div class="text-xl font-bold font-mono text-emerald-400 mt-1" id="tallyRefund">₹0.00</div>
-          <span class="text-[10px] text-slate-500">Excel O7 formula</span>
+          <span class="text-[10px] text-slate-500">Merchant reversals</span>
         </div>
 
         <div class="card-glass p-4 rounded-2xl border border-slate-800">
           <span class="text-[11px] font-semibold uppercase text-slate-400">Net Effective Spend</span>
           <div class="text-xl font-bold font-mono text-indigo-400 mt-1" id="tallyEffectiveSpend">₹0.00</div>
-          <span class="text-[10px] text-slate-500">Excel O4 formula</span>
+          <span class="text-[10px] text-slate-500">Net payable spend</span>
         </div>
 
         <div class="card-glass p-4 rounded-2xl border border-slate-800">
@@ -453,13 +462,17 @@
         <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800">
           <div>
             <h3 class="text-sm font-bold text-white uppercase tracking-wider">Statement Reconciliation Breakdown</h3>
-            <p class="text-xs text-slate-400">Comparison between Slip Bill, Billed Statement, Waivers & Net Variance</p>
+            <p class="text-xs text-slate-400">Slip Bill vs 24th Billed Statement, Surcharge Waivers & Net Variance</p>
           </div>
           
           <div class="flex items-center gap-2">
-            <button id="importStatementBtn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition">
+            <button id="openQuickStatementModalBtn2" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              <span>Update 24th Statement Values</span>
+            </button>
+            <button id="importStatementBtn" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-1.5 transition">
               <i data-lucide="file-up" class="w-3.5 h-3.5"></i>
-              <span>Import Statement</span>
+              <span>Import Statement File</span>
             </button>
           </div>
         </div>
@@ -475,7 +488,7 @@
                 <th class="px-4 py-3.5 text-right">Waiver / Refund</th>
                 <th class="px-4 py-3.5 text-right font-bold text-indigo-400">Effective Amount</th>
                 <th class="px-4 py-3.5 text-center">Tally Status</th>
-                <th class="px-4 py-3.5 text-right">Variance</th>
+                <th class="px-4 py-3.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody id="tallyTableBody" class="divide-y divide-slate-800/60 font-medium">
@@ -610,8 +623,8 @@
         <!-- General Settings Form -->
         <div class="card-glass p-6 rounded-2xl space-y-4">
           <div>
-            <h3 class="text-base font-bold text-white">Person & Profile Configuration</h3>
-            <p class="text-xs text-slate-400">Configure default names and currency</p>
+            <h3 class="text-base font-bold text-white">Person & Cycle Configuration</h3>
+            <p class="text-xs text-slate-400">Configure default names, currency and statement date</p>
           </div>
 
           <form id="settingsForm" class="space-y-4 pt-2">
@@ -625,9 +638,15 @@
               <input type="text" id="settingsPerson2" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-medium" />
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Currency Symbol</label>
-              <input type="text" id="settingsCurrency" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-medium" />
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Currency Symbol</label>
+                <input type="text" id="settingsCurrency" class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-medium" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Statement Date</label>
+                <input type="text" value="24th of every month" disabled class="w-full px-3.5 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-xs text-slate-400 font-medium cursor-not-allowed" />
+              </div>
             </div>
 
             <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white rounded-xl shadow transition">
@@ -674,16 +693,19 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: ADD / EDIT EXPENSE -->
+  <!-- MODAL: ADD / EDIT EXPENSE (Optimized for Daily Spend & 24th Update) -->
   <!-- ========================================================================= -->
   <div id="expenseModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
     <div class="card-glass bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl transform scale-95 transition-transform duration-200" id="expenseModalCard">
       
       <div class="flex items-center justify-between pb-4 border-b border-slate-800">
-        <h3 class="text-base font-bold text-white flex items-center gap-2" id="expenseModalTitle">
-          <i data-lucide="receipt" class="w-5 h-5 text-indigo-400"></i>
-          Add New Expense
-        </h3>
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2" id="expenseModalTitle">
+            <i data-lucide="receipt" class="w-5 h-5 text-indigo-400"></i>
+            Log Daily Expense
+          </h3>
+          <p class="text-[11px] text-slate-400">Enter your daily bill amount now. Statement details can be added on 24th.</p>
+        </div>
         <button id="closeExpenseModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -708,35 +730,19 @@
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Merchant / Description</label>
-          <input type="text" id="expenseDescInput" required placeholder="e.g. SMART CITY FUELS" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
+          <input type="text" id="expenseDescInput" required placeholder="e.g. SMART CITY FUELS, Petrol, Grocery..." class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Slip Amount (₹)</label>
-            <input type="number" step="0.01" id="expenseSlipInput" placeholder="0.00" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Statement Amount (₹)</label>
-            <input type="number" step="0.01" id="expenseStmtInput" placeholder="0.00" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Fuel Waiver (₹)</label>
-            <input type="number" step="0.01" id="expenseFuelInput" placeholder="0.00" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Refund Amount (₹)</label>
-            <input type="number" step="0.01" id="expenseRefundInput" placeholder="0.00" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
-          </div>
+        <!-- Primary Spend Amount (Slip Amount) -->
+        <div>
+          <label class="block text-[11px] font-semibold text-indigo-300 uppercase tracking-wider mb-1">Spend / Slip Amount (₹) *</label>
+          <input type="number" step="0.01" id="expenseSlipInput" required placeholder="Amount on physical bill / swiped" class="w-full px-3.5 py-2.5 bg-slate-800 border border-indigo-500/50 rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-indigo-400 font-mono" />
         </div>
 
         <div class="grid grid-cols-3 gap-3">
           <div>
             <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Used By</label>
-            <select id="expenseUsedByInput" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500">
+            <select id="expenseUsedByInput" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500 font-medium">
               <option value="Kitkat">Kitkat (100%)</option>
               <option value="Rashu">Rashu (100%)</option>
               <option value="Both" selected>Both (50/50)</option>
@@ -757,9 +763,35 @@
           </div>
         </div>
 
+        <!-- Collapsible / Statement Details Section (for 24th update) -->
+        <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="file-check" class="w-3.5 h-3.5 text-indigo-400"></i>
+              Statement Details (Mention on/after 24th)
+            </span>
+            <span class="text-[10px] text-slate-500">Optional for daily spend</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Statement Amt (₹)</label>
+              <input type="number" step="0.01" id="expenseStmtInput" placeholder="Billed on 24th" class="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Fuel Waiver (₹)</label>
+              <input type="number" step="0.01" id="expenseFuelInput" placeholder="Surcharge waiver" class="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Refund (₹)</label>
+              <input type="number" step="0.01" id="expenseRefundInput" placeholder="Reversal" class="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
+            </div>
+          </div>
+        </div>
+
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Remarks (Optional)</label>
-          <input type="text" id="expenseRemarksInput" placeholder="e.g. Cash received from mosiji" class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
+          <input type="text" id="expenseRemarksInput" placeholder="e.g. Bill reference, notes..." class="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500" />
         </div>
 
         <div class="pt-3 flex justify-end space-x-3 border-t border-slate-800">
@@ -767,6 +799,56 @@
           <button type="submit" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-600/30 transition active:scale-95">Save Expense</button>
         </div>
       </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: QUICK 24th STATEMENT RECONCILER (Batch edit for 24th) -->
+  <!-- ========================================================================= -->
+  <div id="quickStatementModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="card-glass bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col p-6 shadow-2xl transform scale-95 transition-transform duration-200" id="quickStatementModalCard">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800 shrink-0">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="edit-3" class="w-5 h-5 text-indigo-400"></i>
+            24th Statement Reconciliation Helper
+          </h3>
+          <p class="text-xs text-slate-400">Quickly enter the statement amounts and fuel surcharge waivers after receiving your statement on 24th.</p>
+        </div>
+        <button id="closeQuickStatementModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto my-4 flex-1 pr-1">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 uppercase text-[11px] text-slate-400 font-semibold sticky top-0 border-b border-slate-800 z-10">
+            <tr>
+              <th class="px-3 py-2.5">Date</th>
+              <th class="px-3 py-2.5">Merchant / Spend</th>
+              <th class="px-3 py-2.5 text-right">Logged Slip (₹)</th>
+              <th class="px-3 py-2.5 text-center">24th Statement Amount (₹)</th>
+              <th class="px-3 py-2.5 text-center">Fuel Waiver (₹)</th>
+              <th class="px-3 py-2.5 text-center">Refund (₹)</th>
+              <th class="px-3 py-2.5 text-right font-bold text-indigo-400">Effective (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="quickStatementTableBody" class="divide-y divide-slate-800 font-medium">
+            <!-- Dynamically populated with fast inline editable inputs -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+        <p class="text-xs text-slate-400">Changes update totals and person splits immediately.</p>
+        <div class="flex gap-2">
+          <button type="button" id="saveQuickStatementBtn" class="px-5 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-600/30 transition">
+            Save All Reconciliations
+          </button>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -879,10 +961,10 @@
   <!-- FOOTER -->
   <footer class="border-t border-slate-800 bg-slate-950 py-4 mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-500">
-      <p>© 2026 SpendWise — Exact Excel Reconciliation Model (Kitkat & Rashu v2)</p>
+      <p>© 2026 SpendWise — Statement Generated on 24th of Every Month (Kitkat & Rashu v2)</p>
       <div class="flex items-center space-x-4">
-        <span>Formula Matching: <b>100% Verified</b></span>
-        <span>Storage: <b>LocalStorage Active</b></span>
+        <span>Cycle: <b>25th to 24th</b></span>
+        <span>Reconciliation: <b>2-Step Flow Active</b></span>
       </div>
     </div>
   </footer>

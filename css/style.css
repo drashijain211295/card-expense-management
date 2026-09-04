@@ -32,29 +32,6 @@ body {
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
 }
 
-.card-glass-glow {
-  position: absolute;
-  top: -30%;
-  left: -20%;
-  width: 140%;
-  height: 140%;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-/* Credit Card Showcase */
-.credit-card-preview {
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.credit-card-preview:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.4);
-}
-
 /* Navigation Tabs */
 .nav-tab {
   display: flex;
