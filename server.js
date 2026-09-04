@@ -42,7 +42,7 @@ if (!fs.existsSync(DATA_DIR)) {
 let mongoClient = null;
 let db = null;
 let isMongoConnected = false;
-let mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/spendwise';
+let mongoUri = process.env.MONGODB_URI || 'mongodb+srv://drashijain211295_db_user:TAlFcYkMi67Wun8A@cluster0.fbeiqmc.mongodb.net/spendwise?retryWrites=true&w=majority&appName=Cluster0';
 
 // Server-Sent Events (SSE) active clients for real-time push
 const sseClients = new Set();
@@ -93,7 +93,11 @@ async function connectMongoDB(uri) {
     if (mongoClient) {
       await mongoClient.close().catch(() => {});
     }
-    mongoClient = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 3000 });
+    mongoClient = new MongoClient(mongoUri, { 
+      serverSelectionTimeoutMS: 5000,
+      tls: true,
+      tlsAllowInvalidCertificates: true
+    });
     await mongoClient.connect();
     db = mongoClient.db();
     isMongoConnected = true;
