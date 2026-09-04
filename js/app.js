@@ -130,6 +130,7 @@ function initEventListeners() {
   }
 
   // Modals Open/Close Setup
+  setupHeaderDropdowns();
   setupExpenseModal();
   setupUpiModal();
   setupPaymentModal();
@@ -138,10 +139,100 @@ function initEventListeners() {
   setupSettingsForm();
 }
 
+// Navigation & Add Spend Header Dropdowns
+function setupHeaderDropdowns() {
+  const navDropdownBtn = document.getElementById("navDropdownBtn");
+  const navDropdownMenu = document.getElementById("navDropdownMenu");
+  const navDropdownChevron = document.getElementById("navDropdownChevron");
+
+  const addDropdownBtn = document.getElementById("addDropdownBtn");
+  const addDropdownMenu = document.getElementById("addDropdownMenu");
+  const addDropdownChevron = document.getElementById("addDropdownChevron");
+
+  function toggleMenu(menu, chevron, show) {
+    if (!menu) return;
+    if (show) {
+      menu.classList.remove("hidden");
+      if (chevron) chevron.classList.add("rotate-180");
+      setTimeout(() => {
+        menu.classList.remove("opacity-0", "scale-95");
+        menu.classList.add("opacity-100", "scale-100");
+      }, 10);
+    } else {
+      if (chevron) chevron.classList.remove("rotate-180");
+      menu.classList.remove("opacity-100", "scale-100");
+      menu.classList.add("opacity-0", "scale-95");
+      setTimeout(() => {
+        menu.classList.add("hidden");
+      }, 150);
+    }
+  }
+
+  if (navDropdownBtn && navDropdownMenu) {
+    navDropdownBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isClosed = navDropdownMenu.classList.contains("hidden");
+      if (addDropdownMenu) toggleMenu(addDropdownMenu, addDropdownChevron, false);
+      toggleMenu(navDropdownMenu, navDropdownChevron, isClosed);
+    });
+  }
+
+  if (addDropdownBtn && addDropdownMenu) {
+    addDropdownBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isClosed = addDropdownMenu.classList.contains("hidden");
+      if (navDropdownMenu) toggleMenu(navDropdownMenu, navDropdownChevron, false);
+      toggleMenu(addDropdownMenu, addDropdownChevron, isClosed);
+    });
+  }
+
+  // Close menus on outside click
+  document.addEventListener("click", (e) => {
+    if (navDropdownMenu && !navDropdownMenu.contains(e.target) && !navDropdownBtn?.contains(e.target)) {
+      toggleMenu(navDropdownMenu, navDropdownChevron, false);
+    }
+    if (addDropdownMenu && !addDropdownMenu.contains(e.target) && !addDropdownBtn?.contains(e.target)) {
+      toggleMenu(addDropdownMenu, addDropdownChevron, false);
+    }
+  });
+
+  // Close add dropdown when clicking an action inside it
+  const openAddExp = document.getElementById("openAddExpenseBtn");
+  const openAddUpi = document.getElementById("openAddUpiBtn");
+  const openAddPay = document.getElementById("openAddPaymentDropdownBtn");
+  if (openAddExp) openAddExp.addEventListener("click", () => toggleMenu(addDropdownMenu, addDropdownChevron, false));
+  if (openAddUpi) openAddUpi.addEventListener("click", () => toggleMenu(addDropdownMenu, addDropdownChevron, false));
+  if (openAddPay) {
+    openAddPay.addEventListener("click", () => {
+      toggleMenu(addDropdownMenu, addDropdownChevron, false);
+    });
+  }
+}
+
+const TAB_META = {
+  dashboard: { label: "Dashboard", icon: "layout-dashboard" },
+  expenses: { label: "Card Expenses", icon: "credit-card" },
+  upi: { label: "UPI / Bank", icon: "smartphone" },
+  tally: { label: "Statement Tally", icon: "scale" },
+  payments: { label: "Payments & Advance", icon: "arrow-left-right" },
+  reports: { label: "Reports", icon: "pie-chart" },
+  settings: { label: "Settings", icon: "settings" }
+};
+
 function switchTab(tabName) {
   appState.currentTab = tabName;
 
-  // Update Nav Tab button styles
+  // Update Navigation Dropdown trigger button label & icon
+  const currentLabelEl = document.getElementById("navCurrentLabel");
+  const currentIconEl = document.getElementById("navCurrentIcon");
+  if (TAB_META[tabName]) {
+    if (currentLabelEl) currentLabelEl.innerText = TAB_META[tabName].label;
+    if (currentIconEl) {
+      currentIconEl.setAttribute("data-lucide", TAB_META[tabName].icon);
+    }
+  }
+
+  // Update Nav Dropdown & Tab button active styles
   document.querySelectorAll("[data-tab]").forEach(btn => {
     if (btn.getAttribute("data-tab") === tabName) {
       btn.classList.add("active");
@@ -149,6 +240,18 @@ function switchTab(tabName) {
       btn.classList.remove("active");
     }
   });
+
+  // Close Navigation Dropdown Menu after selection
+  const navDropdownMenu = document.getElementById("navDropdownMenu");
+  const navDropdownChevron = document.getElementById("navDropdownChevron");
+  if (navDropdownMenu && !navDropdownMenu.classList.contains("hidden")) {
+    if (navDropdownChevron) navDropdownChevron.classList.remove("rotate-180");
+    navDropdownMenu.classList.remove("opacity-100", "scale-100");
+    navDropdownMenu.classList.add("opacity-0", "scale-95");
+    setTimeout(() => {
+      navDropdownMenu.classList.add("hidden");
+    }, 150);
+  }
 
   // Switch visible sections
   const views = ["dashboard", "expenses", "upi", "tally", "payments", "reports", "settings"];
@@ -1418,7 +1521,8 @@ function setupPaymentModal() {
   const openBtns = [
     document.getElementById("quickRecordPaymentBtn"), 
     document.getElementById("openRecordPaymentModalBtn"),
-    document.getElementById("quickRecordAdvanceBtn")
+    document.getElementById("quickRecordAdvanceBtn"),
+    document.getElementById("openAddPaymentDropdownBtn")
   ];
   const closeBtn = document.getElementById("closePaymentModalBtn");
   const cancelBtn = document.getElementById("cancelPaymentModalBtn");
@@ -1452,6 +1556,11 @@ function setupPaymentModal() {
   const quickAdvBtn = document.getElementById("quickRecordAdvanceBtn");
   if (quickAdvBtn) {
     quickAdvBtn.addEventListener("click", () => open(true));
+  }
+
+  const dropdownAdvBtn = document.getElementById("openAddPaymentDropdownBtn");
+  if (dropdownAdvBtn) {
+    dropdownAdvBtn.addEventListener("click", () => open(true));
   }
 
   const payBtn1 = document.getElementById("quickRecordPaymentBtn");

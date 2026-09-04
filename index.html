@@ -63,39 +63,93 @@
         </div>
       </div>
 
-      <!-- Navigation Tabs (Desktop) -->
-      <nav class="hidden md:flex items-center space-x-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 text-xs shadow-inner">
-        <button data-tab="dashboard" class="nav-tab active">
-          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-          <span>Dashboard</span>
+      <!-- Navigation Dropdown Menu -->
+      <div class="relative" id="navDropdownContainer">
+        <button id="navDropdownBtn" class="flex items-center space-x-2 bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200/90 text-xs font-semibold text-slate-800 px-3.5 py-2 rounded-xl shadow-xs transition cursor-pointer">
+          <i id="navCurrentIcon" data-lucide="layout-dashboard" class="w-4 h-4 text-sky-600"></i>
+          <span id="navCurrentLabel">Dashboard</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" id="navDropdownChevron"></i>
         </button>
-        <button data-tab="expenses" class="nav-tab">
-          <i data-lucide="credit-card" class="w-4 h-4"></i>
-          <span>Card Expenses</span>
-        </button>
-        <button data-tab="upi" class="nav-tab">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          <span>UPI / Bank</span>
-        </button>
-        <button data-tab="tally" class="nav-tab">
-          <i data-lucide="scale" class="w-4 h-4"></i>
-          <span>Statement Tally</span>
-        </button>
-        <button data-tab="payments" class="nav-tab">
-          <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
-          <span>Payments & Advance</span>
-        </button>
-        <button data-tab="reports" class="nav-tab">
-          <i data-lucide="pie-chart" class="w-4 h-4"></i>
-          <span>Reports</span>
-        </button>
-        <button data-tab="settings" class="nav-tab">
-          <i data-lucide="settings" class="w-4 h-4"></i>
-          <span>Settings</span>
-        </button>
-      </nav>
 
-      <!-- Month Selector & Actions -->
+        <!-- Navigation Dropdown Menu Popup -->
+        <div id="navDropdownMenu" class="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-full mt-2 w-64 bg-white border border-[#e2eef7] rounded-2xl shadow-xl py-2 hidden z-50 transition-all duration-150 transform opacity-0 scale-95">
+          <div class="px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Select View</div>
+          
+          <button data-tab="dashboard" class="nav-dropdown-item w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition text-left cursor-pointer active">
+            <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-800">Dashboard</div>
+              <div class="text-[10px] text-slate-400">Overview & settlement</div>
+            </div>
+          </button>
+
+          <button data-tab="expenses" class="nav-dropdown-item w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition text-left cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+              <i data-lucide="credit-card" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-800">Card Expenses</div>
+              <div class="text-[10px] text-slate-400">Monthly slips & share splits</div>
+            </div>
+          </button>
+
+          <button data-tab="upi" class="nav-dropdown-item w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-pink-50 hover:text-pink-700 transition text-left cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center shrink-0">
+              <i data-lucide="smartphone" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-800">UPI / Bank</div>
+              <div class="text-[10px] text-slate-400">Non-card spends & due dates</div>
+            </div>
+          </button>
+
+          <button data-tab="tally" class="nav-dropdown-item w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition text-left cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+              <i data-lucide="scale" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-800">Statement Tally</div>
+              <div class="text-[10px] text-slate-400">24th statement reconciliation</div>
+            </div>
+          </button>
+
+          <button data-tab="payments" class="nav-dropdown-item w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition text-left cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+              <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-800">Payments & Advance</div>
+              <div class="text-[10px] text-slate-400">Received funds & contributions</div>
+            </div>
+          </button>
+
+          <button data-tab="reports" class="nav-dropdown-item w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition text-left cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+              <i data-lucide="pie-chart" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-800">Reports</div>
+              <div class="text-[10px] text-slate-400">Analytics & monthly trends</div>
+            </div>
+          </button>
+
+          <div class="my-1 border-t border-slate-100"></div>
+
+          <button data-tab="settings" class="nav-dropdown-item w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition text-left cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-slate-800">Settings</div>
+              <div class="text-[10px] text-slate-400">Names, due dates & Supabase</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Month Selector & Actions Dropdown -->
       <div class="flex items-center space-x-2 sm:space-x-3">
         <!-- Month Dropdown -->
         <div class="relative">
@@ -107,31 +161,55 @@
           <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
         </div>
 
-        <!-- Add Expense CTA -->
-        <div class="flex items-center gap-1.5">
-          <button id="openAddExpenseBtn" class="flex items-center space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95" title="Add Card Spend">
-            <i data-lucide="credit-card" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Add Card Spend</span>
+        <!-- Add Spend Dropdown -->
+        <div class="relative" id="addDropdownContainer">
+          <button id="addDropdownBtn" class="flex items-center space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl shadow-md shadow-sky-600/20 transition active:scale-95 cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Add Spend</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 opacity-80 transition-transform duration-200" id="addDropdownChevron"></i>
           </button>
-          <button id="openAddUpiBtn" class="flex items-center space-x-1.5 bg-pink-600 hover:bg-pink-500 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-pink-600/20 transition active:scale-95" title="Add UPI Spend">
-            <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Add UPI</span>
-          </button>
+
+          <!-- Add Spend Dropdown Popup -->
+          <div id="addDropdownMenu" class="absolute right-0 top-full mt-2 w-64 bg-white border border-[#e2eef7] rounded-2xl shadow-xl py-2 hidden z-50 transition-all duration-150 transform opacity-0 scale-95">
+            <div class="px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Log New Spend / Entry</div>
+
+            <button id="openAddExpenseBtn" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium text-slate-700 hover:bg-sky-50 hover:text-sky-700 transition text-left cursor-pointer">
+              <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                <i data-lucide="credit-card" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="font-bold text-slate-900">Card Spend</div>
+                <div class="text-[10px] text-slate-500">Log card slip or physical bill</div>
+              </div>
+            </button>
+
+            <button id="openAddUpiBtn" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-medium text-slate-700 hover:bg-pink-50 hover:text-pink-700 transition text-left cursor-pointer">
+              <div class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center shrink-0">
+                <i data-lucide="smartphone" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="font-bold text-slate-900">UPI / Bank Spend</div>
+                <div class="text-[10px] text-slate-500">Log UPI transfer or QR scan</div>
+              </div>
+            </button>
+
+            <div class="my-1 border-t border-slate-100"></div>
+
+            <button id="openAddPaymentDropdownBtn" class="w-full flex items-center gap-3 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition text-left cursor-pointer">
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <i data-lucide="hand-coins" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="font-bold text-slate-900">Record Advance</div>
+                <div class="text-[10px] text-slate-500">Log advance or payment received</div>
+              </div>
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
   </header>
-
-  <!-- MOBILE NAV BAR -->
-  <div class="md:hidden bg-white/95 border-b border-slate-200 px-4 py-2 flex items-center justify-between overflow-x-auto gap-2 text-xs shadow-xs">
-    <button data-tab="dashboard" class="nav-tab active text-xs whitespace-nowrap">Dashboard</button>
-    <button data-tab="expenses" class="nav-tab text-xs whitespace-nowrap">Card</button>
-    <button data-tab="upi" class="nav-tab text-xs whitespace-nowrap">UPI / Bank</button>
-    <button data-tab="tally" class="nav-tab text-xs whitespace-nowrap">Tally (24th)</button>
-    <button data-tab="payments" class="nav-tab text-xs whitespace-nowrap">Advance</button>
-    <button data-tab="reports" class="nav-tab text-xs whitespace-nowrap">Reports</button>
-    <button data-tab="settings" class="nav-tab text-xs whitespace-nowrap">Settings</button>
-  </div>
 
   <!-- MAIN CONTAINER -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
