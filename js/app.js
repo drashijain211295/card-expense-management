@@ -379,8 +379,13 @@ function renderDashboardView() {
   document.getElementById("settlementMainText").innerText = bannerMain;
   document.getElementById("settlementSubText").innerText = bannerSub;
 
-  // Recent Transactions Table in Dashboard
-  const recentSlice = monthTxs.slice(-5).reverse();
+  // Recent Transactions Table in Dashboard (sorted by date descending - newest first)
+  const sortedMonthTxs = [...monthTxs].sort((a, b) => {
+    const dateA = ExpenseCalculator.parseToISODate(a.date);
+    const dateB = ExpenseCalculator.parseToISODate(b.date);
+    return dateB.localeCompare(dateA);
+  });
+  const recentSlice = sortedMonthTxs.slice(0, 5);
   const recentTbody = document.getElementById("dashRecentTableBody");
 
   if (recentTbody) {
@@ -511,7 +516,11 @@ function renderExpensesView() {
   let totalP1 = 0;
   let totalP2 = 0;
 
-  tbody.innerHTML = filtered.map(item => {
+  const sorted = [...filtered].sort((a, b) => {
+    return ExpenseCalculator.parseToISODate(a.date).localeCompare(ExpenseCalculator.parseToISODate(b.date));
+  });
+
+  tbody.innerHTML = sorted.map(item => {
     const shares = ExpenseCalculator.calculateItemShares(item, appState.settings.person1, appState.settings.person2);
     
     totalSlip += parseFloat(item.slipAmount) || 0;
@@ -666,7 +675,11 @@ function renderUpiView() {
   let sumP1 = 0;
   let sumP2 = 0;
 
-  tbody.innerHTML = filtered.map(item => {
+  const sortedUpi = [...filtered].sort((a, b) => {
+    return ExpenseCalculator.parseToISODate(a.date).localeCompare(ExpenseCalculator.parseToISODate(b.date));
+  });
+
+  tbody.innerHTML = sortedUpi.map(item => {
     const settlementInfo = ExpenseCalculator.getUpiSettlementInfo(item, appState.settings);
     const shares = ExpenseCalculator.calculateUpiItemShares(item, p1, p2);
     
@@ -746,7 +759,11 @@ function renderTallyView() {
   document.getElementById("tallyEffectiveSpend").innerText = `${cur}${result.totalEffective.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("tallyVariance").innerText = `${cur}${Math.abs(result.variance).toFixed(2)}`;
 
-  tbody.innerHTML = result.allCardExpenses.map(item => {
+  const sortedTally = [...result.allCardExpenses].sort((a, b) => {
+    return ExpenseCalculator.parseToISODate(a.date).localeCompare(ExpenseCalculator.parseToISODate(b.date));
+  });
+
+  tbody.innerHTML = sortedTally.map(item => {
     const slip = parseFloat(item.slipAmount) || 0;
     const stmt = parseFloat(item.statementAmount) || 0;
     const fuel = parseFloat(item.fuelWaiver) || 0;
@@ -1388,7 +1405,11 @@ function setupQuickStatementModal() {
       return;
     }
 
-    tbody.innerHTML = monthExpenses.map(item => {
+    const sorted = [...monthExpenses].sort((a, b) => {
+      return ExpenseCalculator.parseToISODate(a.date).localeCompare(ExpenseCalculator.parseToISODate(b.date));
+    });
+
+    tbody.innerHTML = sorted.map(item => {
       const eff = ExpenseCalculator.calculateEffectiveAmount(item);
       const used = item.usedBy || 'Both';
       const p1 = appState.settings.person1 || "Kitkat";

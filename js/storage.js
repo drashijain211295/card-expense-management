@@ -35,7 +35,7 @@ const StorageManager = {
         }
       });
 
-      const DATA_VERSION = 'spendwise_v2.2_recycle_bin_sept_items';
+      const DATA_VERSION = 'spendwise_v2.3_sept_irctc_sorted';
       const currentVersion = localStorage.getItem('spendwise_version');
 
       if (currentVersion !== DATA_VERSION) {
@@ -495,6 +495,11 @@ const StorageManager = {
     const expenses = this.getExpenses();
     const settings = this.getSettings();
     const filtered = currentMonth === "ALL" ? expenses : expenses.filter(e => e.month === currentMonth);
+    const sorted = [...filtered].sort((a, b) => {
+      const dateA = typeof ExpenseCalculator !== 'undefined' ? ExpenseCalculator.parseToISODate(a.date) : a.date;
+      const dateB = typeof ExpenseCalculator !== 'undefined' ? ExpenseCalculator.parseToISODate(b.date) : b.date;
+      return String(dateA).localeCompare(String(dateB));
+    });
 
     const headers = [
       "Month",
@@ -513,7 +518,7 @@ const StorageManager = {
       "Remarks"
     ];
 
-    const rows = filtered.map(t => {
+    const rows = sorted.map(t => {
       const shares = ExpenseCalculator.calculateItemShares(t, settings.person1, settings.person2);
       return [
         `"${t.month}"`,
@@ -548,6 +553,11 @@ const StorageManager = {
     const upiList = this.getUpiExpenses();
     const settings = this.getSettings();
     const filtered = currentMonth === "ALL" ? upiList : upiList.filter(u => u.month === currentMonth);
+    const sorted = [...filtered].sort((a, b) => {
+      const dateA = typeof ExpenseCalculator !== 'undefined' ? ExpenseCalculator.parseToISODate(a.date) : a.date;
+      const dateB = typeof ExpenseCalculator !== 'undefined' ? ExpenseCalculator.parseToISODate(b.date) : b.date;
+      return String(dateA).localeCompare(String(dateB));
+    });
 
     const headers = [
       "Month",

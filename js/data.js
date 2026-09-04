@@ -859,6 +859,20 @@ const INITIAL_EXPENSES = [
     "paymentType": "Card",
     "category": "Shopping",
     "remarks": "September home items"
+  },
+  {
+    "id": "sep_9",
+    "month": "September 2026",
+    "date": "30 Aug 26",
+    "description": "IRCTC",
+    "slipAmount": 1245.5,
+    "statementAmount": 0,
+    "fuelWaiver": 0,
+    "refundAmount": 0,
+    "usedBy": "Both",
+    "paymentType": "Card",
+    "category": "Travel",
+    "remarks": "IRCTC Train Booking"
   }
 ];
 
@@ -1044,6 +1058,17 @@ const INITIAL_UPI_EXPENSES = [
     "paidBy": "Rashu",
     "category": "Shopping",
     "remarks": "September home decor"
+  },
+  {
+    "id": "upi_sep_3",
+    "month": "September 2026",
+    "date": "30 Aug 26",
+    "description": "IRCTC",
+    "amount": 1245.5,
+    "usedBy": "Both",
+    "paidBy": "Rashu",
+    "category": "Travel",
+    "remarks": "IRCTC Train Booking"
   }
 ];
 
