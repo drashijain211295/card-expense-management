@@ -19,12 +19,21 @@ let appState = {
 
 // Initialization on DOM Ready
 document.addEventListener("DOMContentLoaded", () => {
-  StorageManager.init();
+  StorageManager.init((status, data) => {
+    updateCloudStatusBadges();
+    if (status === 'connected' || status === 'realtime') {
+      loadStateFromStorage();
+      renderApp();
+    }
+  });
+
   loadStateFromStorage();
   initLucide();
   initEventListeners();
   populateCategoryDropdowns();
   populateMonthDropdown();
+  setupSupabaseConfigForm();
+  updateCloudStatusBadges();
   renderApp();
 });
 
@@ -39,7 +48,7 @@ function loadStateFromStorage() {
   appState.expenses = StorageManager.getExpenses();
   appState.payments = StorageManager.getPayments();
   appState.months = StorageManager.getMonths();
-  appState.currentMonth = appState.settings.defaultMonth || "August 2026";
+  appState.currentMonth = appState.settings.defaultMonth || "September 2026";
 }
 
 function saveStateToStorage() {
@@ -1176,7 +1185,156 @@ function setupSettingsForm() {
   }
 }
 
+// Supabase Cloud Configuration & Live Sync UI Handlers
+function setupSupabaseConfigForm() {
+  const form = document.getElementById("supabaseConfigForm");
+  const urlInput = document.getElementById("supabaseUrlInput");
+  const keyInput = document.getElementById("supabaseKeyInput");
+  const statusMsg = document.getElementById("supabaseStatusMsg");
+  const syncBtn = document.getElementById("syncLocalToCloudBtn");
+  const disconnectBtn = document.getElementById("disconnectCloudBtn");
+  const headerBadge = document.getElementById("headerCloudBadge");
+
+  if (headerBadge) {
+    headerBadge.addEventListener("click", () => {
+      switchTab("settings");
+      setTimeout(() => {
+        if (urlInput) urlInput.focus();
+      }, 100);
+    });
+  }
+
+  if (urlInput && keyInput && window.SupabaseService) {
+    const creds = window.SupabaseService.getCredentials();
+    if (creds.url) urlInput.value = creds.url;
+    if (creds.key) keyInput.value = creds.key;
+  }
+
+  const showMsg = (text, isSuccess) => {
+    if (!statusMsg) return;
+    statusMsg.classList.remove("hidden", "bg-emerald-950/40", "border-emerald-800/50", "text-emerald-300", "bg-red-950/40", "border-red-800/50", "text-red-300");
+    if (isSuccess) {
+      statusMsg.classList.add("bg-emerald-950/40", "border-emerald-800/50", "text-emerald-300");
+      statusMsg.innerHTML = `<span class="font-bold">✓ Success:</span> ${text}`;
+    } else {
+      statusMsg.classList.add("bg-red-950/40", "border-red-800/50", "text-red-300");
+      statusMsg.innerHTML = `<span class="font-bold">✗ Error:</span> ${text}`;
+    }
+  };
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const url = urlInput.value.trim();
+      const key = keyInput.value.trim();
+
+      if (!url || !key) {
+        showMsg("Please enter both Supabase Project URL and Anon Public Key.", false);
+        return;
+      }
+
+      showMsg("Testing connection to Supabase Cloud...", true);
+      const test = await window.SupabaseService.testConnection(url, key);
+
+      if (test.success) {
+        window.SupabaseService.saveCredentials(url, key);
+        window.SupabaseService.init();
+        showMsg("Connected successfully to Supabase! Syncing cloud data...", true);
+        
+        await StorageManager.initCloud((status) => {
+          updateCloudStatusBadges();
+          loadStateFromStorage();
+          renderApp();
+        });
+
+        updateCloudStatusBadges();
+        alert("🎉 Supabase Cloud Database Connected! Your expenses are now synced in real-time.");
+      } else {
+        showMsg(`Connection Failed: ${test.message}. Make sure you have created the tables using supabase_schema.sql.`, false);
+      }
+    });
+  }
+
+  if (syncBtn) {
+    syncBtn.addEventListener("click", async () => {
+      if (!window.SupabaseService || !window.SupabaseService.isConnected) {
+        alert("Please connect to Supabase first before syncing local data.");
+        return;
+      }
+
+      syncBtn.disabled = true;
+      syncBtn.innerText = "Syncing...";
+      const res = await window.SupabaseService.syncLocalToCloud(
+        appState.expenses,
+        appState.payments,
+        appState.months,
+        appState.settings
+      );
+      syncBtn.disabled = false;
+      syncBtn.innerHTML = `<i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-indigo-400"></i><span>Upload & Sync All Local Data to Cloud</span>`;
+      initLucide();
+
+      if (res.success) {
+        showMsg(res.message, true);
+        alert(res.message);
+      } else {
+        showMsg(res.message, false);
+        alert(res.message);
+      }
+    });
+  }
+
+  if (disconnectBtn) {
+    disconnectBtn.addEventListener("click", () => {
+      if (confirm("Disconnect from Supabase Cloud and revert to Local Storage mode?")) {
+        window.SupabaseService.saveCredentials('', '');
+        window.SupabaseService.client = null;
+        window.SupabaseService.isConnected = false;
+        if (urlInput) urlInput.value = '';
+        if (keyInput) keyInput.value = '';
+        updateCloudStatusBadges();
+        showMsg("Disconnected. SpendWise is now operating in Local Mode.", true);
+      }
+    });
+  }
+}
+
+// Update Cloud Status Badges in Header & Settings
+function updateCloudStatusBadges() {
+  const isCloud = window.SupabaseService && window.SupabaseService.isConnected;
+  
+  const headerDot = document.getElementById("headerCloudDot");
+  const headerText = document.getElementById("headerCloudText");
+  const headerBadge = document.getElementById("headerCloudBadge");
+  const settingsBadge = document.getElementById("settingsCloudStatusBadge");
+
+  if (isCloud) {
+    if (headerDot) headerDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+    if (headerText) {
+      headerText.innerText = "Cloud Synced";
+      headerText.className = "text-emerald-400";
+    }
+    if (headerBadge) headerBadge.className = "hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/40 transition cursor-pointer";
+    if (settingsBadge) {
+      settingsBadge.innerText = "🟢 Cloud Synced (Real-time)";
+      settingsBadge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+    }
+  } else {
+    if (headerDot) headerDot.className = "w-1.5 h-1.5 rounded-full bg-slate-400";
+    if (headerText) {
+      headerText.innerText = "Local Mode";
+      headerText.className = "text-slate-400";
+    }
+    if (headerBadge) headerBadge.className = "hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-600 transition cursor-pointer";
+    if (settingsBadge) {
+      settingsBadge.innerText = "🟡 Local Storage Mode";
+      settingsBadge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+    }
+  }
+}
+
 // Global scope helpers for onclick handlers
 window.editExpense = editExpense;
 window.deleteExpense = deleteExpense;
 window.deletePayment = deletePayment;
+window.updateCloudStatusBadges = updateCloudStatusBadges;
