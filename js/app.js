@@ -697,6 +697,59 @@ function setupExpenseModal() {
   const card = document.getElementById("expenseModalCard");
   const openBtns = [document.getElementById("openAddExpenseBtn"), document.getElementById("expenseAddBtn2")];
   const closeBtn = document.getElementById("closeExpenseModalBtn");
+// Date formatting helpers for calendar picker
+function parseToISODate(dateStr) {
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  
+  // Try DD-MM-YYYY or D-M-YYYY
+  const dmyMatch = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (dmyMatch) {
+    const d = dmyMatch[1].padStart(2, '0');
+    const m = dmyMatch[2].padStart(2, '0');
+    const y = dmyMatch[3];
+    return `${y}-${m}-${d}`;
+  }
+
+  // Try DD-MM-YY or D-M-YY
+  const dmyShortMatch = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2})$/);
+  if (dmyShortMatch) {
+    const d = dmyShortMatch[1].padStart(2, '0');
+    const m = dmyShortMatch[2].padStart(2, '0');
+    const y = "20" + dmyShortMatch[3];
+    return `${y}-${m}-${d}`;
+  }
+
+  // Try "07 Jul 26" or "24-Jul-26" or "07 Jul 2026"
+  const monthMap = { jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06", jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12" };
+  const textMatch = dateStr.match(/^(\d{1,2})[- ]([a-zA-Z]{3})[- ](\d{2,4})$/);
+  if (textMatch) {
+    const d = textMatch[1].padStart(2, '0');
+    const m = monthMap[textMatch[2].toLowerCase()] || "01";
+    let y = textMatch[3];
+    if (y.length === 2) y = "20" + y;
+    return `${y}-${m}-${d}`;
+  }
+
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatDisplayDate(dateStr) {
+  if (!dateStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [y, m, d] = dateStr.split('-');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const mName = months[parseInt(m, 10) - 1] || m;
+    return `${d} ${mName} ${y.slice(2)}`;
+  }
+  return dateStr;
+}
+
+function setupExpenseModal() {
+  const modal = document.getElementById("expenseModal");
+  const card = document.getElementById("expenseModalCard");
+  const openBtns = [document.getElementById("openAddExpenseBtn"), document.getElementById("expenseAddBtn2")];
+  const closeBtn = document.getElementById("closeExpenseModalBtn");
   const cancelBtn = document.getElementById("cancelExpenseModalBtn");
   const form = document.getElementById("expenseForm");
 
@@ -705,7 +758,7 @@ function setupExpenseModal() {
     form.reset();
     document.getElementById("editExpenseId").value = "";
     document.getElementById("expenseMonthInput").value = appState.currentMonth;
-    document.getElementById("expenseDateInput").value = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+    document.getElementById("expenseDateInput").value = new Date().toISOString().split('T')[0];
     modal.classList.remove("hidden");
     setTimeout(() => {
       modal.classList.remove("opacity-0");
@@ -731,7 +784,8 @@ function setupExpenseModal() {
     e.preventDefault();
     const id = document.getElementById("editExpenseId").value;
     const month = document.getElementById("expenseMonthInput").value;
-    const date = document.getElementById("expenseDateInput").value;
+    const rawDate = document.getElementById("expenseDateInput").value;
+    const date = formatDisplayDate(rawDate);
     const description = document.getElementById("expenseDescInput").value;
     const slipAmount = parseFloat(document.getElementById("expenseSlipInput").value) || 0;
     const statementAmount = parseFloat(document.getElementById("expenseStmtInput").value) || 0;
@@ -778,7 +832,7 @@ function editExpense(id) {
   document.getElementById("expenseModalTitle").innerText = "Edit / Update Statement Details";
   document.getElementById("editExpenseId").value = item.id;
   document.getElementById("expenseMonthInput").value = item.month;
-  document.getElementById("expenseDateInput").value = item.date;
+  document.getElementById("expenseDateInput").value = parseToISODate(item.date);
   document.getElementById("expenseDescInput").value = item.description;
   document.getElementById("expenseSlipInput").value = item.slipAmount || '';
   document.getElementById("expenseStmtInput").value = item.statementAmount || '';
@@ -923,7 +977,7 @@ function setupPaymentModal() {
   const open = (isAdvance = false) => {
     form.reset();
     document.getElementById("payMonthInput").value = appState.currentMonth;
-    document.getElementById("payDateInput").value = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+    document.getElementById("payDateInput").value = new Date().toISOString().split('T')[0];
     
     if (purposeSelect) {
       purposeSelect.value = isAdvance ? "Advance Received Beforehand" : "Monthly Share Settlement";
@@ -959,7 +1013,8 @@ function setupPaymentModal() {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const month = document.getElementById("payMonthInput").value;
-    const date = document.getElementById("payDateInput").value;
+    const rawDate = document.getElementById("payDateInput").value;
+    const date = formatDisplayDate(rawDate);
     const person = document.getElementById("payPersonInput").value;
     const amount = parseFloat(document.getElementById("payAmountInput").value) || 0;
     const purpose = document.getElementById("payPurposeInput").value;
