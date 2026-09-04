@@ -161,6 +161,27 @@ const ExpenseCalculator = {
     };
   },
 
+  // Sort months in chronological sequence (descending: newest first, e.g. Sep 2026 -> Aug 2026 -> Jul 2026)
+  sortMonthsChronologically(monthsArray, descending = true) {
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const uniqueMonths = Array.from(new Set((monthsArray || []).filter(Boolean)));
+
+    return uniqueMonths.sort((a, b) => {
+      const parse = (mStr) => {
+        const parts = String(mStr).trim().split(/\s+/);
+        const name = parts[0] || '';
+        const year = parseInt(parts[1], 10) || 2026;
+        const idx = monthNames.findIndex(m => m.toLowerCase().startsWith(name.toLowerCase().slice(0, 3)));
+        return year * 100 + (idx !== -1 ? idx : 0);
+      };
+
+      const valA = parse(a);
+      const valB = parse(b);
+
+      return descending ? (valB - valA) : (valA - valB);
+    });
+  },
+
   // Parse month string e.g. "August 2026"
   parseMonthName(monthStr) {
     if (!monthStr || monthStr === "ALL") return null;

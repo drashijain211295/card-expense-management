@@ -58,7 +58,7 @@ const StorageManager = {
       const storedMonths = this.getMonths();
       window.AVAILABLE_MONTHS.forEach(m => {
         if (!storedMonths.includes(m)) {
-          storedMonths.unshift(m);
+          storedMonths.push(m);
         }
       });
       this.saveMonths(storedMonths);
@@ -267,20 +267,29 @@ const StorageManager = {
   getMonths() {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY_MONTHS);
-      return data ? JSON.parse(data) : [...window.AVAILABLE_MONTHS];
+      const months = data ? JSON.parse(data) : [...window.AVAILABLE_MONTHS];
+      return typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically 
+        ? ExpenseCalculator.sortMonthsChronologically(months, true)
+        : months;
     } catch (e) {
-      return [...window.AVAILABLE_MONTHS];
+      return typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically 
+        ? ExpenseCalculator.sortMonthsChronologically(window.AVAILABLE_MONTHS, true)
+        : [...window.AVAILABLE_MONTHS];
     }
   },
 
   saveMonths(months) {
-    localStorage.setItem(this.STORAGE_KEY_MONTHS, JSON.stringify(months));
+    const sorted = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically 
+      ? ExpenseCalculator.sortMonthsChronologically(months, true)
+      : months;
+    localStorage.setItem(this.STORAGE_KEY_MONTHS, JSON.stringify(sorted));
   },
 
   addMonthIfNew(monthName) {
+    if (!monthName || monthName === "ALL") return;
     const months = this.getMonths();
     if (!months.includes(monthName)) {
-      months.unshift(monthName);
+      months.push(monthName);
       this.saveMonths(months);
       if (window.SupabaseService && window.SupabaseService.isConnected) {
         window.SupabaseService.insertMonth(monthName);

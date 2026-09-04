@@ -49,7 +49,10 @@ function loadStateFromStorage() {
   appState.expenses = StorageManager.getExpenses();
   appState.upiExpenses = StorageManager.getUpiExpenses();
   appState.payments = StorageManager.getPayments();
-  appState.months = StorageManager.getMonths();
+  const rawMonths = StorageManager.getMonths();
+  appState.months = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically
+    ? ExpenseCalculator.sortMonthsChronologically(rawMonths, true)
+    : rawMonths;
   // Always default to the latest active month on refresh
   if (appState.months && appState.months.length > 0) {
     appState.currentMonth = appState.months[0];
@@ -186,7 +189,11 @@ function populateMonthDropdown() {
 
   if (!globalMonthSelect) return;
 
-  const months = appState.months.length > 0 ? appState.months : ["September 2026", "August 2026", "July 2026"];
+  const rawMonths = appState.months.length > 0 ? appState.months : ["September 2026", "August 2026", "July 2026"];
+  const months = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically
+    ? ExpenseCalculator.sortMonthsChronologically(rawMonths, true)
+    : rawMonths;
+  appState.months = months;
 
   if (!appState.currentMonth || !months.includes(appState.currentMonth)) {
     appState.currentMonth = months[0];
@@ -1059,6 +1066,7 @@ function setupExpenseModal() {
 
     StorageManager.saveExpenseAsync(payload);
     StorageManager.addMonthIfNew(month);
+    appState.months = StorageManager.getMonths();
     renderApp();
     close();
   });
@@ -1216,6 +1224,7 @@ function setupUpiModal() {
 
     StorageManager.saveUpiExpenseAsync(payload);
     StorageManager.addMonthIfNew(month);
+    appState.months = StorageManager.getMonths();
     renderApp();
     close();
   });
@@ -1444,6 +1453,8 @@ function setupPaymentModal() {
 
     appState.payments.push(payload);
     StorageManager.savePaymentAsync(payload);
+    StorageManager.addMonthIfNew(month);
+    appState.months = StorageManager.getMonths();
     renderApp();
     close();
     alert(`Recorded ${appState.settings.currencySymbol || '₹'}${amount.toFixed(2)} received from ${person} for ${month}!`);
