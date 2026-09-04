@@ -1,0 +1,5 @@
+node_modules/
+extracted_xlsx/
+excel_dump.json
+.DS_Store
+Thumbs.db
