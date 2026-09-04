@@ -19,11 +19,18 @@ const StorageManager = {
       const storedExpenses = this.getExpenses();
       let hasChanges = false;
       
-      // Normalize dates in all stored expenses for consistent display
+      // Normalize dates and fuel waivers in all stored expenses for consistent display & accurate calculation
       storedExpenses.forEach(e => {
         const formatted = window.formatDisplayDate ? window.formatDisplayDate(e.date) : e.date;
         if (formatted && formatted !== e.date) {
           e.date = formatted;
+          hasChanges = true;
+        }
+
+        const isFuel = (e.category === 'Fuel') || /petrol|fuel|filling|fuels|sharma|misrod|kanta/i.test(e.description || '');
+        if (isFuel && (!e.fuelWaiver || e.fuelWaiver === 0) && e.slipAmount > 0 && e.statementAmount > e.slipAmount) {
+          e.fuelWaiver = parseFloat((e.statementAmount - e.slipAmount).toFixed(2));
+          e.category = 'Fuel';
           hasChanges = true;
         }
       });

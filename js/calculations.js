@@ -15,8 +15,15 @@ const ExpenseCalculator = {
   calculateEffectiveAmount(tx) {
     const slip = parseFloat(tx.slipAmount) || 0;
     const stmt = parseFloat(tx.statementAmount) || 0;
-    const fuel = parseFloat(tx.fuelWaiver) || 0;
+    let fuel = parseFloat(tx.fuelWaiver) || 0;
     const ref = parseFloat(tx.refundAmount) || 0;
+
+    // For fuel/petrol transactions: if fuel waiver is missing/0 but statement exceeds slip amount,
+    // the excess is the bank fuel surcharge. Auto-deduct so effective spend matches actual fuel price.
+    const isFuel = (tx.category === 'Fuel') || /petrol|fuel|filling|fuels|sharma|misrod|kanta/i.test(tx.description || '');
+    if (isFuel && fuel === 0 && slip > 0 && stmt > slip) {
+      fuel = stmt - slip;
+    }
 
     let base = 0;
     if (stmt > 0) {

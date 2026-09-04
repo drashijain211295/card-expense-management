@@ -73,7 +73,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -101,7 +101,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -129,7 +129,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -181,11 +181,11 @@ const INITIAL_EXPENSES = [
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 343.71,
     "statementAmount": 347.76,
-    "fuelWaiver": 0,
+    "fuelWaiver": 4.05,
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -195,7 +195,7 @@ const INITIAL_EXPENSES = [
     "description": "NIRMAL FILLING STATION",
     "slipAmount": 458,
     "statementAmount": 463.4,
-    "fuelWaiver": 0,
+    "fuelWaiver": 5.4,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
@@ -237,11 +237,11 @@ const INITIAL_EXPENSES = [
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 458,
     "statementAmount": 463.4,
-    "fuelWaiver": 1.58,
+    "fuelWaiver": 5.4,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -255,7 +255,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 1000,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -297,7 +297,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -311,7 +311,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -367,7 +367,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -395,7 +395,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -409,7 +409,7 @@ const INITIAL_EXPENSES = [
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -419,7 +419,7 @@ const INITIAL_EXPENSES = [
     "description": "UPI-NIRMAL FILLING STAT",
     "slipAmount": 115,
     "statementAmount": 115.93,
-    "fuelWaiver": 0,
+    "fuelWaiver": 0.93,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
@@ -559,7 +559,7 @@ const INITIAL_EXPENSES = [
     "description": "SHASHIKRISHAN FILLING",
     "slipAmount": 515.57,
     "statementAmount": 520.73,
-    "fuelWaiver": 0,
+    "fuelWaiver": 5.16,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
@@ -573,11 +573,11 @@ const INITIAL_EXPENSES = [
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 401,
     "statementAmount": 405.01,
-    "fuelWaiver": 0,
+    "fuelWaiver": 4.01,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -587,7 +587,7 @@ const INITIAL_EXPENSES = [
     "description": "AGARWAL AUTOMOTIVE PR4",
     "slipAmount": 515.56,
     "statementAmount": 520.72,
-    "fuelWaiver": 0,
+    "fuelWaiver": 5.16,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
@@ -615,11 +615,11 @@ const INITIAL_EXPENSES = [
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 2291,
     "statementAmount": 2318.03,
-    "fuelWaiver": 0,
+    "fuelWaiver": 27.03,
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -629,11 +629,11 @@ const INITIAL_EXPENSES = [
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 401,
     "statementAmount": 405.01,
-    "fuelWaiver": 0,
+    "fuelWaiver": 4.01,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -643,11 +643,11 @@ const INITIAL_EXPENSES = [
     "description": "SUDHIR SHARMA",
     "slipAmount": 1145.7,
     "statementAmount": 1157.15,
-    "fuelWaiver": 0,
+    "fuelWaiver": 11.45,
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -657,11 +657,11 @@ const INITIAL_EXPENSES = [
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 1718.55,
     "statementAmount": 1735.73,
-    "fuelWaiver": 0,
+    "fuelWaiver": 17.18,
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -671,11 +671,11 @@ const INITIAL_EXPENSES = [
     "description": "KANTA SHRAWAN MISROD",
     "slipAmount": 343.17,
     "statementAmount": 347.14,
-    "fuelWaiver": 0,
+    "fuelWaiver": 3.97,
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
-    "category": "General",
+    "category": "Fuel",
     "remarks": ""
   },
   {
@@ -685,7 +685,7 @@ const INITIAL_EXPENSES = [
     "description": "SHASHIKRISHAN FILLING",
     "slipAmount": 343,
     "statementAmount": 346.43,
-    "fuelWaiver": 0,
+    "fuelWaiver": 3.43,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",
@@ -699,7 +699,7 @@ const INITIAL_EXPENSES = [
     "description": "SMART CITY FUELS PR468",
     "slipAmount": 570.7,
     "statementAmount": 576.43,
-    "fuelWaiver": 0,
+    "fuelWaiver": 5.73,
     "refundAmount": 0,
     "usedBy": "Kitkat",
     "paymentType": "Card",
@@ -713,7 +713,7 @@ const INITIAL_EXPENSES = [
     "description": "SMART CITY FUELS PR468",
     "slipAmount": 570.7,
     "statementAmount": 576.41,
-    "fuelWaiver": 0,
+    "fuelWaiver": 5.71,
     "refundAmount": 0,
     "usedBy": "Rashu",
     "paymentType": "Card",

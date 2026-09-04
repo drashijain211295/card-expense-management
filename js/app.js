@@ -1026,6 +1026,28 @@ function setupExpenseModal() {
     if (e.target === modal) close();
   });
 
+  const slipEl = document.getElementById("expenseSlipInput");
+  const stmtEl = document.getElementById("expenseStmtInput");
+  const fuelEl = document.getElementById("expenseFuelInput");
+  const catEl = document.getElementById("expenseCategoryInput");
+  const descEl = document.getElementById("expenseDescInput");
+
+  const autoFillWaiver = () => {
+    if (!slipEl || !stmtEl || !fuelEl) return;
+    const slip = parseFloat(slipEl.value) || 0;
+    const stmt = parseFloat(stmtEl.value) || 0;
+    const cat = catEl ? catEl.value : '';
+    const desc = descEl ? descEl.value : '';
+    const isFuel = (cat === 'Fuel') || /petrol|fuel|filling|fuels|sharma|misrod|kanta/i.test(desc || '');
+    if (isFuel && slip > 0 && stmt > slip && (!fuelEl.value || parseFloat(fuelEl.value) === 0)) {
+      fuelEl.value = (stmt - slip).toFixed(2);
+    }
+  };
+
+  [slipEl, stmtEl, catEl, descEl].forEach(el => {
+    if (el) el.addEventListener("input", autoFillWaiver);
+  });
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const id = document.getElementById("editExpenseId").value;
@@ -1034,13 +1056,18 @@ function setupExpenseModal() {
     const date = formatDisplayDate(rawDate);
     const description = document.getElementById("expenseDescInput").value;
     const slipAmount = parseFloat(document.getElementById("expenseSlipInput").value) || 0;
-    const statementAmount = parseFloat(document.getElementById("expenseStmtInput").value) || 0;
-    const fuelWaiver = parseFloat(document.getElementById("expenseFuelInput").value) || 0;
+    let fuelWaiver = parseFloat(document.getElementById("expenseFuelInput").value) || 0;
     const refundAmount = parseFloat(document.getElementById("expenseRefundInput").value) || 0;
     const usedBy = document.getElementById("expenseUsedByInput").value;
     const paymentType = document.getElementById("expenseTypeInput").value;
     const category = document.getElementById("expenseCategoryInput").value;
     const remarks = document.getElementById("expenseRemarksInput").value;
+
+    // Auto calculate fuel waiver if left empty for fuel transactions
+    const isFuel = (category === 'Fuel') || /petrol|fuel|filling|fuels|sharma|misrod|kanta/i.test(description || '');
+    if (isFuel && fuelWaiver === 0 && slipAmount > 0 && statementAmount > slipAmount) {
+      fuelWaiver = parseFloat((statementAmount - slipAmount).toFixed(2));
+    }
 
     const payload = {
       id: id || `exp_${Date.now()}`,
@@ -1053,7 +1080,7 @@ function setupExpenseModal() {
       refundAmount,
       usedBy,
       paymentType,
-      category,
+      category: isFuel ? 'Fuel' : category,
       remarks
     };
 
