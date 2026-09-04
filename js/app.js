@@ -689,14 +689,6 @@ function renderReportsView() {
   }
 }
 
-// =============================================================================
-// MODALS & FORMS
-// =============================================================================
-function setupExpenseModal() {
-  const modal = document.getElementById("expenseModal");
-  const card = document.getElementById("expenseModalCard");
-  const openBtns = [document.getElementById("openAddExpenseBtn"), document.getElementById("expenseAddBtn2")];
-  const closeBtn = document.getElementById("closeExpenseModalBtn");
 // Date formatting helpers for calendar picker
 function parseToISODate(dateStr) {
   if (!dateStr) return new Date().toISOString().split('T')[0];
@@ -745,6 +737,9 @@ function formatDisplayDate(dateStr) {
   return dateStr;
 }
 
+// =============================================================================
+// MODALS & FORMS
+// =============================================================================
 function setupExpenseModal() {
   const modal = document.getElementById("expenseModal");
   const card = document.getElementById("expenseModalCard");
