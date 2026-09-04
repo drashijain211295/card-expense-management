@@ -35,12 +35,12 @@ const StorageManager = {
         }
       });
 
-      const DATA_VERSION = 'spendwise_v2.1_aug_reconciled';
+      const DATA_VERSION = 'spendwise_v2.2_recycle_bin_sept_items';
       const currentVersion = localStorage.getItem('spendwise_version');
 
       if (currentVersion !== DATA_VERSION) {
-        // Sync verified initial expenses (fixes August statement line items and fuel waivers)
-        window.INITIAL_EXPENSES.forEach(initExp => {
+        // Sync verified initial expenses without losing any user custom expenses
+        (window.INITIAL_EXPENSES || []).forEach(initExp => {
           const idx = storedExpenses.findIndex(e => e.id === initExp.id);
           if (idx !== -1) {
             storedExpenses[idx] = { ...initExp };
@@ -51,7 +51,7 @@ const StorageManager = {
         hasChanges = true;
         localStorage.setItem('spendwise_version', DATA_VERSION);
       } else {
-        window.INITIAL_EXPENSES.forEach(initExp => {
+        (window.INITIAL_EXPENSES || []).forEach(initExp => {
           if (!storedExpenses.some(e => e.id === initExp.id)) {
             storedExpenses.push(initExp);
             hasChanges = true;
@@ -70,7 +70,10 @@ const StorageManager = {
         const storedUpi = this.getUpiExpenses();
         let upiChanges = false;
         (window.INITIAL_UPI_EXPENSES || []).forEach(initUpi => {
-          if (!storedUpi.some(u => u.id === initUpi.id)) {
+          const idx = storedUpi.findIndex(u => u.id === initUpi.id);
+          if (idx !== -1) {
+            storedUpi[idx] = { ...initUpi, ...storedUpi[idx] };
+          } else {
             storedUpi.push(initUpi);
             upiChanges = true;
           }
@@ -179,8 +182,13 @@ const StorageManager = {
   },
 
   async deleteExpenseAsync(id) {
-    const expenses = this.getExpenses().filter(x => x.id !== id);
-    this.saveExpenses(expenses);
+    const expenses = this.getExpenses();
+    const item = expenses.find(x => x.id === id);
+    if (item) {
+      this.moveToTrash('Card', item);
+    }
+    const filtered = expenses.filter(x => x.id !== id);
+    this.saveExpenses(filtered);
 
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.deleteExpense(id);
@@ -220,8 +228,13 @@ const StorageManager = {
   },
 
   async deleteUpiExpenseAsync(id) {
-    const upiList = this.getUpiExpenses().filter(x => x.id !== id);
-    this.saveUpiExpenses(upiList);
+    const upiList = this.getUpiExpenses();
+    const item = upiList.find(x => x.id === id);
+    if (item) {
+      this.moveToTrash('UPI', item);
+    }
+    const filtered = upiList.filter(x => x.id !== id);
+    this.saveUpiExpenses(filtered);
 
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.deleteUpiExpense(id);
@@ -261,12 +274,113 @@ const StorageManager = {
   },
 
   async deletePaymentAsync(id) {
-    const payments = this.getPayments().filter(p => p.id !== id);
-    this.savePayments(payments);
+    const payments = this.getPayments();
+    const item = payments.find(p => p.id === id);
+    if (item) {
+      this.moveToTrash('Payment', item);
+    }
+    const filtered = payments.filter(p => p.id !== id);
+    this.savePayments(filtered);
 
     if (window.SupabaseService && window.SupabaseService.isConnected) {
       await window.SupabaseService.deletePayment(id);
     }
+  },
+
+  // ==========================================
+  // TRASH / RECYCLE BIN (DELETED ITEMS)
+  // ==========================================
+  getTrash() {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY_TRASH);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error("Failed to read trash from storage", e);
+      return [];
+    }
+  },
+
+  saveTrash(trashList) {
+    localStorage.setItem(this.STORAGE_KEY_TRASH, JSON.stringify(trashList || []));
+  },
+
+  moveToTrash(type, item) {
+    if (!item) return null;
+    const trash = this.getTrash();
+    const trashEntry = {
+      trashId: `trash_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      type: type, // 'Card' | 'UPI' | 'Payment'
+      deletedAt: new Date().toISOString(),
+      item: { ...item }
+    };
+    trash.unshift(trashEntry);
+    this.saveTrash(trash);
+    return trashEntry;
+  },
+
+  restoreFromTrash(trashId) {
+    const trash = this.getTrash();
+    const entryIndex = trash.findIndex(t => t.trashId === trashId);
+    if (entryIndex === -1) return null;
+
+    const entry = trash[entryIndex];
+    trash.splice(entryIndex, 1);
+    this.saveTrash(trash);
+
+    // Restore to appropriate collection
+    if (entry.type === 'Card') {
+      const expenses = this.getExpenses();
+      if (!expenses.some(e => e.id === entry.item.id)) {
+        expenses.push(entry.item);
+        this.saveExpenses(expenses);
+      }
+    } else if (entry.type === 'UPI') {
+      const upiList = this.getUpiExpenses();
+      if (!upiList.some(u => u.id === entry.item.id)) {
+        upiList.push(entry.item);
+        this.saveUpiExpenses(upiList);
+      }
+    } else if (entry.type === 'Payment') {
+      const payments = this.getPayments();
+      if (!payments.some(p => p.id === entry.item.id)) {
+        payments.push(entry.item);
+        this.savePayments(payments);
+      }
+    }
+
+    return entry;
+  },
+
+  restoreAllTrash() {
+    const trash = this.getTrash();
+    const expenses = this.getExpenses();
+    const upiList = this.getUpiExpenses();
+    const payments = this.getPayments();
+
+    trash.forEach(entry => {
+      if (entry.type === 'Card') {
+        if (!expenses.some(e => e.id === entry.item.id)) expenses.push(entry.item);
+      } else if (entry.type === 'UPI') {
+        if (!upiList.some(u => u.id === entry.item.id)) upiList.push(entry.item);
+      } else if (entry.type === 'Payment') {
+        if (!payments.some(p => p.id === entry.item.id)) payments.push(entry.item);
+      }
+    });
+
+    this.saveExpenses(expenses);
+    this.saveUpiExpenses(upiList);
+    this.savePayments(payments);
+    this.saveTrash([]);
+    return trash.length;
+  },
+
+  emptyTrash() {
+    this.saveTrash([]);
+  },
+
+  deleteFromTrashPermanently(trashId) {
+    const trash = this.getTrash().filter(t => t.trashId !== trashId);
+    this.saveTrash(trash);
   },
 
   // ==========================================

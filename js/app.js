@@ -136,6 +136,7 @@ function initEventListeners() {
   setupImportModal();
   setupQuickStatementModal();
   setupSettingsForm();
+  setupTrashListeners();
 }
 
 function switchTab(tabName) {
@@ -151,7 +152,7 @@ function switchTab(tabName) {
   });
 
   // Switch visible sections
-  const views = ["dashboard", "expenses", "upi", "tally", "payments", "reports", "settings"];
+  const views = ["dashboard", "expenses", "upi", "tally", "payments", "reports", "settings", "trash"];
   views.forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) {
@@ -176,6 +177,8 @@ function switchTab(tabName) {
     renderPaymentsView();
   } else if (tabName === "dashboard") {
     renderDashboardView();
+  } else if (tabName === "trash") {
+    renderTrashView();
   }
 
   initLucide();
@@ -239,6 +242,7 @@ function populateCategoryDropdowns() {
 function renderApp() {
   populateMonthDropdown();
   updateHeaderLabels();
+  updateTrashCountBadge();
   renderDashboardView();
   renderExpensesView();
   renderUpiView();
@@ -246,6 +250,9 @@ function renderApp() {
   renderPaymentsView();
   if (appState.currentTab === "reports") {
     renderReportsView();
+  }
+  if (appState.currentTab === "trash") {
+    renderTrashView();
   }
   initLucide();
 }
@@ -1812,3 +1819,189 @@ window.editUpiExpense = editUpiExpense;
 window.deleteUpiExpense = deleteUpiExpense;
 window.deletePayment = deletePayment;
 window.updateCloudStatusBadges = updateCloudStatusBadges;
+
+// =============================================================================
+// TRASH & RECYCLE BIN VIEW (RESTORE DELETED ENTRIES)
+// =============================================================================
+let currentTrashFilter = 'ALL';
+
+function updateTrashCountBadge() {
+  const trash = typeof StorageManager !== 'undefined' && StorageManager.getTrash ? StorageManager.getTrash() : [];
+  const badge = document.getElementById("trashCountBadge");
+  if (badge) {
+    if (trash.length > 0) {
+      badge.innerText = trash.length;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
+
+  const cAll = document.getElementById("trashCountAll");
+  const cCard = document.getElementById("trashCountCard");
+  const cUpi = document.getElementById("trashCountUpi");
+  const cPay = document.getElementById("trashCountPay");
+
+  if (cAll) cAll.innerText = trash.length;
+  if (cCard) cCard.innerText = trash.filter(t => t.type === 'Card').length;
+  if (cUpi) cUpi.innerText = trash.filter(t => t.type === 'UPI').length;
+  if (cPay) cPay.innerText = trash.filter(t => t.type === 'Payment').length;
+
+  const restoreAllBtn = document.getElementById("restoreAllTrashBtn");
+  const emptyBtn = document.getElementById("emptyTrashBtn");
+  if (restoreAllBtn) restoreAllBtn.disabled = trash.length === 0;
+  if (emptyBtn) emptyBtn.disabled = trash.length === 0;
+}
+
+function renderTrashView() {
+  updateTrashCountBadge();
+  const tbody = document.getElementById("trashTableBody");
+  const emptyState = document.getElementById("trashEmptyState");
+  if (!tbody) return;
+
+  const trash = typeof StorageManager !== 'undefined' && StorageManager.getTrash ? StorageManager.getTrash() : [];
+  const search = (document.getElementById("trashSearchInput")?.value || "").toLowerCase().trim();
+
+  let filtered = trash;
+  if (currentTrashFilter !== 'ALL') {
+    filtered = filtered.filter(t => t.type === currentTrashFilter);
+  }
+  if (search) {
+    filtered = filtered.filter(t => {
+      const it = t.item || {};
+      const str = `${it.description || ''} ${it.month || ''} ${it.notes || ''} ${it.usedBy || ''} ${it.paidBy || ''} ${it.person || ''}`.toLowerCase();
+      return str.includes(search);
+    });
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = "";
+    if (emptyState) emptyState.classList.remove("hidden");
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add("hidden");
+
+  const cur = appState.settings.currencySymbol || "₹";
+
+  tbody.innerHTML = filtered.map(t => {
+    const it = t.item || {};
+    const typeBadge = t.type === 'Card'
+      ? '<span class="badge bg-sky-50 text-sky-700 border-sky-200">💳 Card</span>'
+      : (t.type === 'UPI'
+        ? '<span class="badge bg-pink-50 text-pink-700 border-pink-200">📱 UPI</span>'
+        : '<span class="badge bg-amber-50 text-amber-700 border-amber-200">💸 Payment</span>');
+
+    const desc = it.description || it.notes || (t.type === 'Payment' ? `${it.person} Contribution` : 'Unnamed');
+    let amt = 0;
+    if (t.type === 'Card') amt = parseFloat(it.slipAmount) || parseFloat(it.statementAmount) || 0;
+    else if (t.type === 'UPI') amt = parseFloat(it.amount) || 0;
+    else if (t.type === 'Payment') amt = parseFloat(it.amount) || 0;
+
+    const usedOrPaid = it.usedBy ? `Used by: ${it.usedBy}` : (it.paidBy ? `Paid by: ${it.paidBy}` : (it.person ? `By: ${it.person}` : '-'));
+    
+    // Format deleted date
+    let delTimeStr = '';
+    if (t.deletedAt) {
+      const d = new Date(t.deletedAt);
+      delTimeStr = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    return `
+      <tr class="table-row-hover transition">
+        <td class="px-4 py-3">${typeBadge}</td>
+        <td class="px-4 py-3 text-slate-500 whitespace-nowrap">${formatDisplayDate(it.date)}</td>
+        <td class="px-4 py-3 text-slate-700 font-semibold whitespace-nowrap">${it.month || '-'}</td>
+        <td class="px-4 py-3 font-semibold text-slate-900">
+          ${desc}
+          ${it.remarks ? `<div class="text-[10px] text-slate-500 font-normal mt-0.5">${it.remarks}</div>` : ''}
+        </td>
+        <td class="px-4 py-3 text-right font-mono font-bold text-slate-900">${cur}${amt.toFixed(2)}</td>
+        <td class="px-4 py-3 text-center text-slate-600">${usedOrPaid}</td>
+        <td class="px-4 py-3 text-slate-400 text-[11px] whitespace-nowrap">${delTimeStr}</td>
+        <td class="px-4 py-3 text-right whitespace-nowrap space-x-1.5">
+          <button onclick="restoreTrashItem('${t.trashId}')" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition text-xs font-semibold inline-flex items-center gap-1 active:scale-95" title="Restore back to app">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Restore</span>
+          </button>
+          <button onclick="deleteTrashPermanently('${t.trashId}')" class="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Delete forever">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  initLucide();
+}
+
+function restoreTrashItem(trashId) {
+  const restored = StorageManager.restoreFromTrash(trashId);
+  if (restored) {
+    appState.expenses = StorageManager.getExpenses();
+    appState.upiExpenses = StorageManager.getUpiExpenses();
+    appState.payments = StorageManager.getPayments();
+    renderApp();
+    renderTrashView();
+  }
+}
+
+function deleteTrashPermanently(trashId) {
+  if (confirm("Delete this item permanently? This cannot be undone.")) {
+    StorageManager.deleteFromTrashPermanently(trashId);
+    renderTrashView();
+  }
+}
+
+function setupTrashListeners() {
+  const restoreAllBtn = document.getElementById("restoreAllTrashBtn");
+  if (restoreAllBtn) {
+    restoreAllBtn.addEventListener("click", () => {
+      const count = StorageManager.restoreAllTrash();
+      if (count > 0) {
+        appState.expenses = StorageManager.getExpenses();
+        appState.upiExpenses = StorageManager.getUpiExpenses();
+        appState.payments = StorageManager.getPayments();
+        renderApp();
+        renderTrashView();
+        alert(`Successfully restored ${count} item(s) back to active records!`);
+      }
+    });
+  }
+
+  const emptyBtn = document.getElementById("emptyTrashBtn");
+  if (emptyBtn) {
+    emptyBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to permanently empty the trash? All deleted items will be erased.")) {
+        StorageManager.emptyTrash();
+        renderTrashView();
+      }
+    });
+  }
+
+  const searchInput = document.getElementById("trashSearchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      renderTrashView();
+    });
+  }
+
+  const filterBtns = document.querySelectorAll(".trash-filter-btn");
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => {
+        b.classList.remove("bg-white", "text-slate-900", "shadow-xs", "font-semibold");
+        b.classList.add("text-slate-600");
+      });
+      btn.classList.add("bg-white", "text-slate-900", "shadow-xs", "font-semibold");
+      btn.classList.remove("text-slate-600");
+      currentTrashFilter = btn.getAttribute("data-trash-filter") || 'ALL';
+      renderTrashView();
+    });
+  });
+}
+
+window.restoreTrashItem = restoreTrashItem;
+window.deleteTrashPermanently = deleteTrashPermanently;
+window.renderTrashView = renderTrashView;
+window.updateTrashCountBadge = updateTrashCountBadge;

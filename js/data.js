@@ -831,6 +831,34 @@ const INITIAL_EXPENSES = [
     "paymentType": "Card",
     "category": "Fuel",
     "remarks": "Awaiting 24th Sep Statement"
+  },
+  {
+    "id": "sep_7",
+    "month": "September 2026",
+    "date": "28 Aug 26",
+    "description": "DMart",
+    "slipAmount": 1850,
+    "statementAmount": 0,
+    "fuelWaiver": 0,
+    "refundAmount": 0,
+    "usedBy": "Both",
+    "paymentType": "Card",
+    "category": "Shopping",
+    "remarks": "September grocery & home essentials"
+  },
+  {
+    "id": "sep_8",
+    "month": "September 2026",
+    "date": "29 Aug 26",
+    "description": "DIY Store",
+    "slipAmount": 950,
+    "statementAmount": 0,
+    "fuelWaiver": 0,
+    "refundAmount": 0,
+    "usedBy": "Both",
+    "paymentType": "Card",
+    "category": "Shopping",
+    "remarks": "September home items"
   }
 ];
 
@@ -994,6 +1022,28 @@ const INITIAL_UPI_EXPENSES = [
     "paidBy": "Rashu",
     "category": "Shopping",
     "remarks": ""
+  },
+  {
+    "id": "upi_sep_1",
+    "month": "September 2026",
+    "date": "28 Aug 26",
+    "description": "DMart",
+    "amount": 1850,
+    "usedBy": "Both",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": "September grocery & home essentials"
+  },
+  {
+    "id": "upi_sep_2",
+    "month": "September 2026",
+    "date": "29 Aug 26",
+    "description": "DIY Mirror & Items",
+    "amount": 950,
+    "usedBy": "Both",
+    "paidBy": "Rashu",
+    "category": "Shopping",
+    "remarks": "September home decor"
   }
 ];
 

@@ -93,6 +93,11 @@
           <i data-lucide="settings" class="w-4 h-4"></i>
           <span>Settings</span>
         </button>
+        <button data-tab="trash" class="nav-tab relative">
+          <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+          <span>Trash</span>
+          <span id="trashCountBadge" class="hidden text-[10px] px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 font-bold ml-1">0</span>
+        </button>
       </nav>
 
       <!-- Month Selector & Actions -->
@@ -131,6 +136,7 @@
     <button data-tab="payments" class="nav-tab text-xs whitespace-nowrap">Advance</button>
     <button data-tab="reports" class="nav-tab text-xs whitespace-nowrap">Reports</button>
     <button data-tab="settings" class="nav-tab text-xs whitespace-nowrap">Settings</button>
+    <button data-tab="trash" class="nav-tab text-xs whitespace-nowrap text-rose-600">Trash</button>
   </div>
 
   <!-- MAIN CONTAINER -->
@@ -912,6 +918,89 @@
             <p class="text-[11px] text-slate-500">Run <code class="text-sky-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">supabase_schema.sql</code> in your Supabase SQL Editor first.</p>
           </div>
         </form>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW: TRASH & RECYCLE BIN (DELETED ENTRIES) -->
+    <!-- ========================================================================= -->
+    <section id="view-trash" class="space-y-6 hidden">
+      
+      <!-- Trash Header & Summary Banner -->
+      <div class="card-glass p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">Deleted Entries & Recycle Bin</h2>
+              <p class="text-xs text-slate-500">Deleted card expenses, UPI spends, and payments are stored here. You can safely restore them back anytime.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trash Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="restoreAllTrashBtn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Restore All Items</span>
+          </button>
+          <button id="emptyTrashBtn" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold rounded-xl border border-rose-200 transition flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
+            <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+            <span>Empty Trash</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Trash Filters & Search -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <!-- Type Filter Buttons -->
+        <div class="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-medium" id="trashTypeFilters">
+          <button data-trash-filter="ALL" class="trash-filter-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs font-semibold transition">All (<span id="trashCountAll">0</span>)</button>
+          <button data-trash-filter="Card" class="trash-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Card (<span id="trashCountCard">0</span>)</button>
+          <button data-trash-filter="UPI" class="trash-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">UPI (<span id="trashCountUpi">0</span>)</button>
+          <button data-trash-filter="Payment" class="trash-filter-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Payments (<span id="trashCountPay">0</span>)</button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative max-w-xs w-full">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="trashSearchInput" placeholder="Search deleted items..." class="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs" />
+        </div>
+      </div>
+
+      <!-- Trash Table -->
+      <div class="card-glass rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-50 uppercase text-[11px] text-slate-500 font-bold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3">Type</th>
+                <th class="px-4 py-3">Original Date</th>
+                <th class="px-4 py-3">Month</th>
+                <th class="px-4 py-3">Description / Note</th>
+                <th class="px-4 py-3 text-right">Amount (₹)</th>
+                <th class="px-4 py-3 text-center">Used / Paid By</th>
+                <th class="px-4 py-3 text-slate-500">Deleted When</th>
+                <th class="px-4 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="trashTableBody" class="divide-y divide-slate-100 font-medium">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="trashEmptyState" class="hidden py-12 px-4 text-center">
+          <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+            <i data-lucide="trash-2" class="w-6 h-6"></i>
+          </div>
+          <h4 class="text-sm font-bold text-slate-700">Trash is empty</h4>
+          <p class="text-xs text-slate-400 mt-1">No deleted entries found. Items deleted anywhere in the app will appear here for safe recovery.</p>
+        </div>
       </div>
 
     </section>
