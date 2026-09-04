@@ -71,6 +71,11 @@ const ReconciliationEngine = {
     const totalStatement = cardExpenses.reduce((sum, e) => sum + (parseFloat(e.statementAmount) || 0), 0);
     const totalFuelWaiver = cardExpenses.reduce((sum, e) => sum + (parseFloat(e.fuelWaiver) || 0), 0);
     const totalRefund = cardExpenses.reduce((sum, e) => sum + (parseFloat(e.refundAmount) || 0), 0);
+    const totalRefundOnCard = cardExpenses.reduce((sum, e) => {
+      const isCard = (e.refundType || "Card").toLowerCase() === "card";
+      return sum + (isCard ? (parseFloat(e.refundAmount) || 0) : 0);
+    }, 0);
+    const totalRefundCash = totalRefund - totalRefundOnCard;
     const totalEffective = cardExpenses.reduce((sum, e) => sum + ExpenseCalculator.calculateEffectiveAmount(e), 0);
 
     return {
@@ -83,8 +88,10 @@ const ReconciliationEngine = {
       totalStatement,
       totalFuelWaiver,
       totalRefund,
+      totalRefundOnCard,
+      totalRefundCash,
       totalEffective,
-      variance: (totalStatement - totalFuelWaiver - totalRefund) - totalEffective
+      variance: (totalStatement - totalFuelWaiver - totalRefundOnCard) - (totalEffective + totalRefundCash)
     };
   }
 };

@@ -79,14 +79,27 @@ const ExpenseCalculator = {
     let cardStatementTotal = 0;
     let cardFuelWaiverTotal = 0;
     let cardRefundTotal = 0;
+    let cardRefundOnCardTotal = 0;
+    let cardRefundCashTotal = 0;
     let cardEffectiveSpend = 0;
     let person1CardShare = 0;
     let person2CardShare = 0;
 
     cardExpenses.forEach(tx => {
-      cardStatementTotal += parseFloat(tx.statementAmount) || 0;
-      cardFuelWaiverTotal += parseFloat(tx.fuelWaiver) || 0;
-      cardRefundTotal += parseFloat(tx.refundAmount) || 0;
+      const stmt = parseFloat(tx.statementAmount) || 0;
+      const fuel = parseFloat(tx.fuelWaiver) || 0;
+      const ref = parseFloat(tx.refundAmount) || 0;
+      const isCardRefund = (tx.refundType || "Card").toLowerCase() === "card";
+
+      cardStatementTotal += stmt;
+      cardFuelWaiverTotal += fuel;
+      cardRefundTotal += ref;
+
+      if (isCardRefund) {
+        cardRefundOnCardTotal += ref;
+      } else {
+        cardRefundCashTotal += ref;
+      }
 
       const shares = this.calculateItemShares(tx, person1, person2);
       cardEffectiveSpend += shares.effectiveAmount;
@@ -95,7 +108,8 @@ const ExpenseCalculator = {
     });
 
     const cardStatementGross = cardStatementTotal;
-    const cardStatementNet = Math.max(0, cardStatementGross - cardFuelWaiverTotal - cardRefundTotal);
+    // Card refunds directly reduce the credit card statement balance; cash refunds do not
+    const cardStatementNet = Math.max(0, cardStatementGross - cardFuelWaiverTotal - cardRefundOnCardTotal);
 
     // 2. 💳 Non-Card Expenses
     let nonCardTotalSpend = 0;
@@ -131,7 +145,7 @@ const ExpenseCalculator = {
 
     // Statement difference (Statement total vs recorded slip / effective total)
     const totalSlipRecorded = monthExpenses.reduce((sum, e) => sum + (parseFloat(e.slipAmount) || 0), 0);
-    const statementDifference = cardStatementGross - cardEffectiveSpend - cardFuelWaiverTotal - cardRefundTotal;
+    const statementDifference = cardStatementGross - cardEffectiveSpend - cardFuelWaiverTotal - cardRefundOnCardTotal;
 
     return {
       month: currentMonth,
@@ -144,6 +158,8 @@ const ExpenseCalculator = {
       cardStatementTotal: cardStatementNet,
       cardFuelWaiverTotal: cardFuelWaiverTotal,
       cardRefundTotal: cardRefundTotal,
+      cardRefundOnCardTotal: cardRefundOnCardTotal,
+      cardRefundCashTotal: cardRefundCashTotal,
       cardEffectiveSpend: cardEffectiveSpend,
       person1CardShare: person1CardShare,
       person2CardShare: person2CardShare,

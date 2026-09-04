@@ -999,7 +999,7 @@
             <span class="text-[10px] text-amber-700 font-semibold">Editable anytime from app</span>
           </div>
 
-          <div class="grid grid-cols-3 gap-2.5">
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
             <div>
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Statement Amt (₹)</label>
               <input type="number" step="0.01" id="expenseStmtInput" placeholder="Billed on 24th" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
@@ -1011,6 +1011,13 @@
             <div>
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Refund (₹)</label>
               <input type="number" step="0.01" id="expenseRefundInput" placeholder="Reversal" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Refund Mode</label>
+              <select id="expenseRefundTypeInput" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-sky-500 font-medium shadow-xs">
+                <option value="Card">Credited to Card (Deducts from Card Statement)</option>
+                <option value="Cash">Cash / UPI (Does NOT deduct from Statement)</option>
+              </select>
             </div>
           </div>
         </div>

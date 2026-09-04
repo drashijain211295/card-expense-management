@@ -293,10 +293,10 @@ function renderDashboardView() {
   
   const stmtSub = document.getElementById("dashStatementSubtext");
   if (stmtSub) {
-    if (summary.cardFuelWaiverTotal > 0 || summary.cardRefundTotal > 0) {
+    if (summary.cardFuelWaiverTotal > 0 || summary.cardRefundOnCardTotal > 0) {
       const parts = [];
       if (summary.cardFuelWaiverTotal > 0) parts.push(`-${cur}${summary.cardFuelWaiverTotal.toFixed(2)} waiver`);
-      if (summary.cardRefundTotal > 0) parts.push(`-${cur}${summary.cardRefundTotal.toFixed(2)} refund`);
+      if (summary.cardRefundOnCardTotal > 0) parts.push(`-${cur}${summary.cardRefundOnCardTotal.toFixed(2)} card refund`);
       stmtSub.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span><span>Net Billed (${cur}${summary.cardStatementGross.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} debits ${parts.join(' ')})</span>`;
     } else {
       stmtSub.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span><span>Net billed on 24th statement</span>`;
@@ -305,7 +305,14 @@ function renderDashboardView() {
 
   document.getElementById("dashEffectiveSpend").innerText = `${cur}${summary.cardEffectiveSpend.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashFuelWaiverBadge").innerText = `-${cur}${summary.cardFuelWaiverTotal.toFixed(2)} Fuel Waiver`;
-  document.getElementById("dashRefundBadge").innerText = `-${cur}${summary.cardRefundTotal.toFixed(2)} Refund`;
+  
+  let refundLabel = `-${cur}${summary.cardRefundTotal.toFixed(2)} Refund`;
+  if (summary.cardRefundCashTotal > 0 && summary.cardRefundOnCardTotal > 0) {
+    refundLabel = `-${cur}${summary.cardRefundTotal.toFixed(2)} Refund (${cur}${summary.cardRefundOnCardTotal.toFixed(0)} Card + ${cur}${summary.cardRefundCashTotal.toFixed(0)} Cash)`;
+  } else if (summary.cardRefundCashTotal > 0) {
+    refundLabel = `-${cur}${summary.cardRefundCashTotal.toFixed(2)} Cash Refund`;
+  }
+  document.getElementById("dashRefundBadge").innerText = refundLabel;
 
   document.getElementById("dashPerson1Share").innerText = `${cur}${summary.person1TotalExpenseShare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   document.getElementById("dashPerson1Paid").innerText = `${cur}${summary.person1Paid.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -517,8 +524,9 @@ function renderExpensesView() {
         </td>
         <td class="px-4 py-3 text-right font-mono text-slate-700">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-900 font-medium">${item.statementAmount ? `${cur}${item.statementAmount.toFixed(2)}` : `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-1.5 py-0.5 rounded font-medium">Pending 24th</span>`}</td>
-        <td class="px-4 py-3 text-right font-mono text-amber-600 font-bold">${item.fuelWaiver ? `${cur}${item.fuelWaiver.toFixed(2)}` : '-'}</td>
-        <td class="px-4 py-3 text-right font-mono text-teal-600 font-bold">${item.refundAmount ? `${cur}${item.refundAmount.toFixed(2)}` : '-'}</td>
+        <td class="px-4 py-3 text-right font-mono text-teal-600 font-bold whitespace-nowrap">
+          ${item.refundAmount ? `${cur}${item.refundAmount.toFixed(2)}${(item.refundType || 'Card').toLowerCase() === 'cash' ? ' <span class="text-[9px] px-1 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-sans" title="Cash/UPI Refund (Not on Card Statement)">Cash</span>' : ''}` : '-'}
+        </td>
         <td class="px-4 py-3 text-center">
           <span class="badge ${getPersonBadgeClass(item.usedBy)}">${item.usedBy}</span>
         </td>
@@ -1018,6 +1026,9 @@ function setupExpenseModal() {
     document.getElementById("editExpenseId").value = "";
     document.getElementById("expenseMonthInput").value = appState.currentMonth;
     document.getElementById("expenseDateInput").value = new Date().toISOString().split('T')[0];
+    if (document.getElementById("expenseRefundTypeInput")) {
+      document.getElementById("expenseRefundTypeInput").value = "Card";
+    }
     modal.classList.remove("hidden");
     setTimeout(() => {
       modal.classList.remove("opacity-0");
@@ -1073,6 +1084,7 @@ function setupExpenseModal() {
     const fuelValRaw = document.getElementById("expenseFuelInput").value.trim();
     let fuelWaiver = fuelValRaw !== '' ? (parseFloat(fuelValRaw) || 0) : null;
     const refundAmount = parseFloat(document.getElementById("expenseRefundInput").value) || 0;
+    const refundType = document.getElementById("expenseRefundTypeInput") ? document.getElementById("expenseRefundTypeInput").value : "Card";
     const usedBy = document.getElementById("expenseUsedByInput").value;
     const paymentType = document.getElementById("expenseTypeInput").value;
     const category = document.getElementById("expenseCategoryInput").value;
@@ -1097,6 +1109,7 @@ function setupExpenseModal() {
       statementAmount,
       fuelWaiver,
       refundAmount,
+      refundType,
       usedBy,
       paymentType,
       category: isFuel ? 'Fuel' : category,
@@ -1131,6 +1144,9 @@ function editExpense(id) {
   document.getElementById("expenseStmtInput").value = item.statementAmount || '';
   document.getElementById("expenseFuelInput").value = item.fuelWaiver || '';
   document.getElementById("expenseRefundInput").value = item.refundAmount || '';
+  if (document.getElementById("expenseRefundTypeInput")) {
+    document.getElementById("expenseRefundTypeInput").value = item.refundType || 'Card';
+  }
   document.getElementById("expenseUsedByInput").value = item.usedBy || 'Both';
   document.getElementById("expenseTypeInput").value = item.paymentType || 'Card';
   document.getElementById("expenseCategoryInput").value = item.category || 'General';
