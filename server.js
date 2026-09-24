@@ -17,6 +17,7 @@ const path = require('path');
 const os = require('os');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
+const { INITIAL_EXPENSES, INITIAL_UPI_EXPENSES, INITIAL_PAYMENTS, DEFAULT_SETTINGS, AVAILABLE_MONTHS } = require('./js/data.js');
 
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
@@ -64,11 +65,11 @@ function readLocalDb() {
   try {
     if (!fs.existsSync(DB_FILE)) {
       const initial = {
-        expenses: [],
-        upiExpenses: [],
-        payments: [],
-        settings: { person1: 'Kitkat', person2: 'Rashu', currencySymbol: '₹', statementDay: 24, paymentDueDay: 13 },
-        months: ['September 2026', 'August 2026', 'July 2026'],
+        expenses: INITIAL_EXPENSES || [],
+        upiExpenses: INITIAL_UPI_EXPENSES || [],
+        payments: INITIAL_PAYMENTS || [],
+        settings: DEFAULT_SETTINGS || { person1: 'Kitkat', person2: 'Rashu', currencySymbol: '₹', statementDay: 24, paymentDueDay: 13 },
+        months: AVAILABLE_MONTHS || ['September 2026', 'August 2026', 'July 2026'],
         trash: [],
         deletedIds: []
       };
@@ -76,10 +77,18 @@ function readLocalDb() {
       return initial;
     }
     const raw = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed.expenses || parsed.expenses.length === 0) {
+      parsed.expenses = INITIAL_EXPENSES || [];
+      parsed.upiExpenses = INITIAL_UPI_EXPENSES || [];
+      parsed.payments = INITIAL_PAYMENTS || [];
+      parsed.settings = parsed.settings && Object.keys(parsed.settings).length > 0 ? parsed.settings : (DEFAULT_SETTINGS || {});
+      parsed.months = parsed.months && parsed.months.length > 0 ? parsed.months : (AVAILABLE_MONTHS || []);
+    }
+    return parsed;
   } catch (err) {
     console.error('Error reading local db.json:', err);
-    return { expenses: [], upiExpenses: [], payments: [], settings: {}, months: [], trash: [], deletedIds: [] };
+    return { expenses: INITIAL_EXPENSES || [], upiExpenses: INITIAL_UPI_EXPENSES || [], payments: INITIAL_PAYMENTS || [], settings: DEFAULT_SETTINGS || {}, months: AVAILABLE_MONTHS || [], trash: [], deletedIds: [] };
   }
 }
 
@@ -166,20 +175,43 @@ app.post('/api/config/mongo', async (req, res) => {
 app.get('/api/data', async (req, res) => {
   try {
     if (isMongoConnected && db) {
-      const expenses = await db.collection('expenses').find({}).toArray();
-      const upiExpenses = await db.collection('upi_expenses').find({}).toArray();
-      const payments = await db.collection('payments').find({}).toArray();
-      const settingsDoc = await db.collection('settings').findOne({ _id: 'global_config' });
-      const monthsDocs = await db.collection('months').find({}).toArray();
+      let expenses = await db.collection('expenses').find({}).toArray();
+      let upiExpenses = await db.collection('upi_expenses').find({}).toArray();
+      let payments = await db.collection('payments').find({}).toArray();
+      let settingsDoc = await db.collection('settings').findOne({ _id: 'global_config' });
+      let monthsDocs = await db.collection('months').find({}).toArray();
       const trash = await db.collection('trash').find({}).toArray();
       const deletedDocs = await db.collection('deleted_ids').find({}).toArray();
+
+      // Auto-seed if database is brand new / empty
+      if (!expenses || expenses.length === 0) {
+        console.log('🌱 Auto-seeding MongoDB with initial baseline dataset...');
+        for (const exp of INITIAL_EXPENSES) {
+          await db.collection('expenses').replaceOne({ id: exp.id }, exp, { upsert: true });
+        }
+        for (const upi of INITIAL_UPI_EXPENSES) {
+          await db.collection('upi_expenses').replaceOne({ id: upi.id }, upi, { upsert: true });
+        }
+        for (const pay of INITIAL_PAYMENTS) {
+          await db.collection('payments').replaceOne({ id: pay.id }, pay, { upsert: true });
+        }
+        await db.collection('settings').replaceOne({ _id: 'global_config' }, { _id: 'global_config', value: DEFAULT_SETTINGS }, { upsert: true });
+        for (const m of AVAILABLE_MONTHS) {
+          await db.collection('months').replaceOne({ name: m }, { name: m }, { upsert: true });
+        }
+        expenses = INITIAL_EXPENSES;
+        upiExpenses = INITIAL_UPI_EXPENSES;
+        payments = INITIAL_PAYMENTS;
+        settingsDoc = { value: DEFAULT_SETTINGS };
+        monthsDocs = AVAILABLE_MONTHS.map(m => ({ name: m }));
+      }
 
       res.json({
         expenses: expenses.map(e => { delete e._id; return e; }),
         upiExpenses: upiExpenses.map(u => { delete u._id; return u; }),
         payments: payments.map(p => { delete p._id; return p; }),
-        settings: settingsDoc ? settingsDoc.value : null,
-        months: monthsDocs.map(m => m.name),
+        settings: settingsDoc ? settingsDoc.value : DEFAULT_SETTINGS,
+        months: monthsDocs.length > 0 ? monthsDocs.map(m => m.name) : AVAILABLE_MONTHS,
         trash: trash.map(t => { delete t._id; return t; }),
         deletedIds: deletedDocs.map(d => d.id)
       });
@@ -188,8 +220,9 @@ app.get('/api/data', async (req, res) => {
       res.json(localData);
     }
   } catch (err) {
-    console.error('Error in GET /api/data:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Error in GET /api/data (fallback to local):', err.message);
+    const localData = readLocalDb();
+    res.json(localData);
   }
 });
 

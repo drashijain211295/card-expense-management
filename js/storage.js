@@ -130,11 +130,11 @@ const StorageManager = {
 
     // 2. Start Node/MongoDB Server API sync & Server-Sent Events (SSE) listener
     if (typeof this.initServerSync === 'function') {
-      this.initServerSync(onCloudSyncCallback);
+      this.initServerSync(onSyncCallback);
     }
 
     // 3. Initialize Supabase Cloud Connection in background
-    this.initCloud(onCloudSyncCallback);
+    this.initCloud(onSyncCallback);
   },
 
   // ==========================================
@@ -212,18 +212,19 @@ const StorageManager = {
   },
 
   mergeServerData(serverData) {
+    if (!serverData) return;
     const deletedIds = Array.from(new Set([...this.getDeletedIds(), ...(serverData.deletedIds || [])]));
     this.saveDeletedIds(deletedIds);
 
-    if (serverData.expenses && Array.isArray(serverData.expenses)) {
+    if (serverData.expenses && Array.isArray(serverData.expenses) && serverData.expenses.length > 0) {
       const validExpenses = serverData.expenses.filter(e => !deletedIds.includes(e.id));
       this.saveExpenses(validExpenses);
     }
-    if (serverData.upiExpenses && Array.isArray(serverData.upiExpenses)) {
+    if (serverData.upiExpenses && Array.isArray(serverData.upiExpenses) && serverData.upiExpenses.length > 0) {
       const validUpi = serverData.upiExpenses.filter(u => !deletedIds.includes(u.id));
       this.saveUpiExpenses(validUpi);
     }
-    if (serverData.payments && Array.isArray(serverData.payments)) {
+    if (serverData.payments && Array.isArray(serverData.payments) && serverData.payments.length > 0) {
       const validPayments = serverData.payments.filter(p => !deletedIds.includes(p.id));
       this.savePayments(validPayments);
     }
