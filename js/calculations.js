@@ -265,6 +265,65 @@ const ExpenseCalculator = {
     };
   },
 
+  // Calculate the cycle date range (e.g. 25 Aug 26 to 24 Sep 26)
+  getCycleRange(monthStr, settings = {}) {
+    const info = this.parseMonthName(monthStr);
+    if (!info) return null;
+
+    const stmtDay = parseInt(settings.statementDay, 10) || 24;
+    const startDay = stmtDay === 31 ? 1 : (stmtDay + 1);
+
+    // Start date is previous month (stmtDay + 1)
+    const startDateObj = new Date(info.year, info.monthIndex - 1, startDay);
+    const startDateISO = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`;
+
+    // End date is current cycle month stmtDay
+    const endDateObj = new Date(info.year, info.monthIndex, stmtDay);
+    const endDateISO = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`;
+
+    return {
+      startDateISO,
+      endDateISO,
+      formattedStart: this.formatDisplayDate(startDateISO),
+      formattedEnd: this.formatDisplayDate(endDateISO),
+      rangeText: `${this.formatDisplayDate(startDateISO)} to ${this.formatDisplayDate(endDateISO)}`
+    };
+  },
+
+  // Determine which cycle month a transaction belongs to based on transaction date
+  // e.g. If statementDay is 24, a transaction on 24th/25th Sep belongs to "October 2026" cycle
+  getCycleForDate(dateStr, statementDay = 24) {
+    const iso = this.parseToISODate(dateStr);
+    if (!iso) return "September 2026";
+
+    const [yStr, mStr, dStr] = iso.split('-');
+    const year = parseInt(yStr, 10);
+    const month = parseInt(mStr, 10) - 1; // 0-11
+    const day = parseInt(dStr, 10);
+    const stmtDay = parseInt(statementDay, 10) || 24;
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    // On or after statement cutoff day (>= statementDay), transaction belongs to next cycle
+    if (day >= stmtDay) {
+      const targetDate = new Date(year, month + 1, 1);
+      return `${monthNames[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
+    } else {
+      const targetDate = new Date(year, month, 1);
+      return `${monthNames[targetDate.getMonth()]} ${targetDate.getFullYear()}`;
+    }
+  },
+
+  // Get next month cycle name after given month
+  getNextCycleMonthName(monthStr) {
+    const info = this.parseMonthName(monthStr);
+    if (info) return info.nextMonthName;
+    const now = new Date();
+    const nextDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return `${monthNames[nextDate.getMonth()]} ${nextDate.getFullYear()}`;
+  },
+
   // Determine settlement month for a UPI expense based on its date & entered month
   getUpiSettlementInfo(item, settings = {}) {
     const enteredMonth = item.month || "August 2026";

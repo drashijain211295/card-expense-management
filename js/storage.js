@@ -92,6 +92,9 @@ const StorageManager = {
       this.saveMonths(storedMonths);
     }
 
+    // Always ensure current calendar month & upcoming month (by 23rd) exist
+    this.ensureCurrentAndUpcomingMonths(this.getSettings());
+
     // 2. Initialize Cloud Connection in background if credentials exist
     this.initCloud(onCloudSyncCallback);
   },
@@ -425,7 +428,7 @@ const StorageManager = {
   },
 
   addMonthIfNew(monthName) {
-    if (!monthName || monthName === "ALL") return;
+    if (!monthName || monthName === "ALL" || monthName === "__NEW_MONTH__") return;
     const months = this.getMonths();
     if (!months.includes(monthName)) {
       months.push(monthName);
@@ -434,6 +437,52 @@ const StorageManager = {
         window.SupabaseService.insertMonth(monthName);
       }
     }
+  },
+
+  removeMonth(monthName) {
+    if (!monthName) return;
+    let months = this.getMonths();
+    months = months.filter(m => m !== monthName);
+    this.saveMonths(months);
+  },
+
+  // Automatically ensures current month and next month (if day >= 23) exist
+  ensureCurrentAndUpcomingMonths(settings = {}) {
+    const stmtDay = parseInt(settings.statementDay, 10) || 24;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthIdx = now.getMonth();
+    const currentDay = now.getDate();
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    const currentMonthName = `${monthNames[currentMonthIdx]} ${currentYear}`;
+    const nextDate = new Date(currentYear, currentMonthIdx + 1, 1);
+    const nextMonthName = `${monthNames[nextDate.getMonth()]} ${nextDate.getFullYear()}`;
+
+    const months = this.getMonths();
+    let changed = false;
+
+    // Ensure current calendar month is always present
+    if (!months.includes(currentMonthName)) {
+      months.push(currentMonthName);
+      changed = true;
+    }
+
+    // By 23rd of each month (or if day >= 23 or day >= stmtDay - 1), automatically add the upcoming month
+    if (currentDay >= 23 || currentDay >= (stmtDay - 1)) {
+      if (!months.includes(nextMonthName)) {
+        months.push(nextMonthName);
+        changed = true;
+        if (window.SupabaseService && window.SupabaseService.isConnected) {
+          window.SupabaseService.insertMonth(nextMonthName);
+        }
+      }
+    }
+
+    if (changed) {
+      this.saveMonths(months);
+    }
+    return this.getMonths();
   },
 
   resetToExcelData() {

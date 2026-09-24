@@ -102,14 +102,21 @@
 
       <!-- Month Selector & Actions -->
       <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-        <!-- Month Dropdown -->
-        <div class="relative">
-          <select id="globalMonthSelect" class="bg-white border border-slate-300 text-xs font-semibold text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 pr-7 sm:pr-8 appearance-none focus:outline-none focus:border-sky-500 cursor-pointer shadow-xs hover:border-slate-400">
-            <option value="September 2026" selected>September 2026</option>
-            <option value="August 2026">August 2026</option>
-            <option value="July 2026">July 2026</option>
-          </select>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        <!-- Month Dropdown & Add Month Button -->
+        <div class="flex items-center gap-1">
+          <div class="relative">
+            <select id="globalMonthSelect" class="bg-white border border-slate-300 text-xs font-semibold text-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 pr-7 sm:pr-8 appearance-none focus:outline-none focus:border-sky-500 cursor-pointer shadow-xs hover:border-slate-400" title="Select Statement Month">
+              <option value="October 2026">October 2026</option>
+              <option value="September 2026" selected>September 2026</option>
+              <option value="August 2026">August 2026</option>
+              <option value="July 2026">July 2026</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          </div>
+          <button id="openAddMonthBtn" class="p-1.5 sm:py-2 sm:px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-300 transition flex items-center gap-1 shadow-xs hover:border-slate-400 active:scale-95" title="Add New Month Cycle / Automatically created by 23rd">
+            <i data-lucide="calendar-plus" class="w-3.5 h-3.5 text-sky-600"></i>
+            <span class="hidden lg:inline text-[11px] font-semibold">+ Month</span>
+          </button>
         </div>
 
         <!-- Add Expense CTA -->
@@ -868,6 +875,44 @@
 
       </div>
 
+      <!-- Billing Cycles & Months Manager Card -->
+      <div class="card-glass p-6 rounded-2xl space-y-4 border border-slate-200/80 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="calendar-range" class="w-5 h-5 text-sky-600"></i>
+              Billing Cycles & Statement Months
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Manage active statement cycles. SpendWise automatically generates the new upcoming month on the 23rd of every month.</p>
+          </div>
+          <button id="settingsAddMonthBtn" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-sky-600/20 transition flex items-center gap-1.5 self-start sm:self-auto">
+            <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i>
+            <span>Add New Month Cycle</span>
+          </button>
+        </div>
+
+        <!-- Automatic Generation Rule Notice -->
+        <div class="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 text-xs text-sky-900 flex items-start gap-3">
+          <div class="w-7 h-7 rounded-lg bg-sky-100 flex items-center justify-center text-sky-600 shrink-0 mt-0.5">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+          </div>
+          <div class="space-y-1">
+            <div class="font-bold">Auto-Creation on 23rd of Each Month Active</div>
+            <div class="text-[11px] text-sky-800 leading-relaxed">
+              Every month by the <b>23rd</b>, SpendWise automatically prepares the new upcoming billing month cycle (e.g. on 23rd/24th Sep, <b>October</b> becomes available) so you can seamlessly log new credit card, UPI, and advance transactions for the incoming cycle.
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Months List -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Available Statement Cycles</label>
+          <div id="settingsMonthsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            <!-- Populated dynamically by app.js -->
+          </div>
+        </div>
+      </div>
+
       <!-- Supabase Cloud Database Configuration Card -->
       <div class="card-glass p-6 rounded-2xl space-y-4 border border-sky-200/90 bg-gradient-to-b from-sky-50/40 to-white shadow-xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
@@ -1379,6 +1424,101 @@
         <div class="flex justify-end space-x-3 pt-2">
           <button type="button" id="cancelImportModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition">Close</button>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD NEW MONTH CYCLE -->
+  <!-- ========================================================================= -->
+  <div id="addMonthModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+    <div class="card-glass bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-200 text-slate-800" id="addMonthModalCard">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+        <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="calendar-plus" class="w-5 h-5 text-sky-600"></i>
+          Add New Month Cycle
+        </h3>
+        <button id="closeAddMonthModalBtn" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-4">
+        
+        <!-- Quick 1-Click Suggestion Card -->
+        <div id="quickSuggestedMonthCard" class="p-3.5 rounded-xl bg-gradient-to-r from-sky-50 to-pink-50 border border-sky-200/80 flex items-center justify-between gap-3">
+          <div>
+            <div class="text-[10px] uppercase font-bold text-sky-700 tracking-wider">Next Recommended Cycle</div>
+            <div id="suggestedMonthLabel" class="text-sm font-bold text-slate-900 mt-0.5">October 2026</div>
+          </div>
+          <button id="quickAddSuggestedMonthBtn" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg shadow-sm transition active:scale-95 whitespace-nowrap flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add Now</span>
+          </button>
+        </div>
+
+        <form id="addMonthForm" class="space-y-4">
+          <div class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Or Pick Custom Month & Year</div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Month</label>
+              <select id="newMonthNameSelect" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs font-medium">
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October" selected>October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Year</label>
+              <select id="newMonthYearSelect" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs font-medium">
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+                <option value="2028">2028</option>
+                <option value="2029">2029</option>
+                <option value="2030">2030</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Live Cycle Info Preview Box -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Billing Period:</span>
+              <span id="previewCycleRangeText" class="font-semibold text-slate-800 font-mono">25 Sep 26 to 24 Oct 26</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Statement Cutoff:</span>
+              <span id="previewStmtDateText" class="font-semibold text-sky-700 font-mono">24 Oct 2026</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-slate-500">Card Due Date:</span>
+              <span id="previewDueDateText" class="font-semibold text-pink-700 font-mono">13 Nov 2026</span>
+            </div>
+          </div>
+
+          <div class="pt-2 flex justify-end space-x-3 border-t border-slate-200">
+            <button type="button" id="cancelAddMonthModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition">Cancel</button>
+            <button type="submit" class="px-5 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md shadow-sky-600/30 transition active:scale-95 flex items-center gap-1.5">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>Add & Select Month</span>
+            </button>
+          </div>
+        </form>
+
       </div>
 
     </div>

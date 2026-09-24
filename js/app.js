@@ -49,12 +49,24 @@ function loadStateFromStorage() {
   appState.expenses = StorageManager.getExpenses();
   appState.upiExpenses = StorageManager.getUpiExpenses();
   appState.payments = StorageManager.getPayments();
+  
+  // Ensure current month and upcoming month (by 23rd) exist
+  StorageManager.ensureCurrentAndUpcomingMonths(appState.settings);
+
   const rawMonths = StorageManager.getMonths();
   appState.months = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically
     ? ExpenseCalculator.sortMonthsChronologically(rawMonths, true)
     : rawMonths;
-  // Always default to the latest active month on refresh
-  if (appState.months && appState.months.length > 0) {
+  
+  // Automatically select the active cycle matching today's date if valid, otherwise latest month
+  const todayISO = new Date().toISOString().split('T')[0];
+  const todayCycle = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.getCycleForDate
+    ? ExpenseCalculator.getCycleForDate(todayISO, appState.settings.statementDay || 24)
+    : null;
+
+  if (todayCycle && appState.months.includes(todayCycle)) {
+    appState.currentMonth = todayCycle;
+  } else if (appState.months && appState.months.length > 0) {
     appState.currentMonth = appState.months[0];
   } else {
     appState.currentMonth = "September 2026";
@@ -83,10 +95,31 @@ function initEventListeners() {
   const globalMonthSelect = document.getElementById("globalMonthSelect");
   if (globalMonthSelect) {
     globalMonthSelect.addEventListener("change", (e) => {
+      if (e.target.value === "__NEW_MONTH__") {
+        if (typeof openAddMonthModal === 'function') {
+          openAddMonthModal();
+        }
+        globalMonthSelect.value = appState.currentMonth;
+        return;
+      }
       appState.currentMonth = e.target.value;
       renderApp();
     });
   }
+
+  // Intercept __NEW_MONTH__ option in modal month selects
+  [document.getElementById("expenseMonthInput"), document.getElementById("upiMonthInput"), document.getElementById("payMonthInput")].forEach(sel => {
+    if (sel) {
+      sel.addEventListener("change", (e) => {
+        if (e.target.value === "__NEW_MONTH__") {
+          if (typeof openAddMonthModal === 'function') {
+            openAddMonthModal();
+          }
+          sel.value = appState.currentMonth;
+        }
+      });
+    }
+  });
 
   // Expense Search & Filters
   const searchInput = document.getElementById("expenseSearchInput");
@@ -133,6 +166,7 @@ function initEventListeners() {
   setupExpenseModal();
   setupUpiModal();
   setupPaymentModal();
+  setupAddMonthModal();
   setupImportModal();
   setupQuickStatementModal();
   setupSettingsForm();
@@ -177,6 +211,8 @@ function switchTab(tabName) {
     renderPaymentsView();
   } else if (tabName === "dashboard") {
     renderDashboardView();
+  } else if (tabName === "settings") {
+    renderSettingsView();
   } else if (tabName === "trash") {
     renderTrashView();
   }
@@ -202,20 +238,23 @@ function populateMonthDropdown() {
     appState.currentMonth = months[0];
   }
 
-  const optionsHTML = months.map(m => `<option value="${m}" ${m === appState.currentMonth ? "selected" : ""}>${m}</option>`).join("");
-  globalMonthSelect.innerHTML = optionsHTML;
+  const monthOptionsHTML = months.map(m => `<option value="${m}" ${m === appState.currentMonth ? "selected" : ""}>${m}</option>`).join("");
+  const addOptionHTML = `<option value="__NEW_MONTH__" class="font-bold text-sky-700 bg-sky-50">➕ Add New Month...</option>`;
+  const fullOptionsHTML = monthOptionsHTML + addOptionHTML;
+
+  globalMonthSelect.innerHTML = fullOptionsHTML;
   globalMonthSelect.value = appState.currentMonth;
   
   if (expenseMonthInput) {
-    expenseMonthInput.innerHTML = optionsHTML;
+    expenseMonthInput.innerHTML = fullOptionsHTML;
     expenseMonthInput.value = appState.currentMonth;
   }
   if (upiMonthInput) {
-    upiMonthInput.innerHTML = optionsHTML;
+    upiMonthInput.innerHTML = fullOptionsHTML;
     upiMonthInput.value = appState.currentMonth;
   }
   if (payMonthInput) {
-    payMonthInput.innerHTML = optionsHTML;
+    payMonthInput.innerHTML = fullOptionsHTML;
     payMonthInput.value = appState.currentMonth;
   }
 }
@@ -903,22 +942,29 @@ function renderReportsView() {
     });
   }
 
-  // Month-Over-Month Chart (July vs August)
+  // Month-Over-Month Multi-Cycle Chart
   const monthCtx = document.getElementById("monthlyTrendChart");
   if (monthCtx) {
     if (appState.monthlyTrendChart) appState.monthlyTrendChart.destroy();
 
-    const julSum = ExpenseCalculator.calculateMonthSummary(appState.expenses, appState.payments, "July 2026", appState.settings);
-    const augSum = ExpenseCalculator.calculateMonthSummary(appState.expenses, appState.payments, "August 2026", appState.settings);
+    const chronologicalMonths = ExpenseCalculator.sortMonthsChronologically(appState.months, false); // Oldest to newest (left to right)
+    const cardSpends = [];
+    const stmtBilled = [];
+
+    chronologicalMonths.forEach(m => {
+      const sum = ExpenseCalculator.calculateMonthSummary(appState.expenses, appState.payments, m, appState.settings);
+      cardSpends.push(sum.cardEffectiveSpend);
+      stmtBilled.push(sum.cardStatementTotal);
+    });
 
     appState.monthlyTrendChart = new Chart(monthCtx.getContext("2d"), {
       type: "line",
       data: {
-        labels: ["July 2026", "August 2026"],
+        labels: chronologicalMonths,
         datasets: [
           {
             label: 'Effective Card Spend',
-            data: [julSum.cardEffectiveSpend, augSum.cardEffectiveSpend],
+            data: cardSpends,
             borderColor: '#0284c7',
             backgroundColor: 'rgba(2, 132, 199, 0.10)',
             fill: true,
@@ -927,7 +973,7 @@ function renderReportsView() {
           },
           {
             label: 'Statement Billed',
-            data: [julSum.cardStatementTotal, augSum.cardStatementTotal],
+            data: stmtBilled,
             borderColor: '#ec4899',
             borderDash: [5, 5],
             fill: false,
@@ -1044,12 +1090,37 @@ function setupExpenseModal() {
   const cancelBtn = document.getElementById("cancelExpenseModalBtn");
   const form = document.getElementById("expenseForm");
 
+  const autoDetectExpenseCycle = () => {
+    const rawDate = document.getElementById("expenseDateInput")?.value;
+    if (!rawDate) return;
+    const cycleMonth = ExpenseCalculator.getCycleForDate(rawDate, appState.settings.statementDay || 24);
+    if (cycleMonth) {
+      StorageManager.addMonthIfNew(cycleMonth);
+      appState.months = StorageManager.getMonths();
+      populateMonthDropdown();
+      const monthInput = document.getElementById("expenseMonthInput");
+      if (monthInput) monthInput.value = cycleMonth;
+    }
+  };
+
   const open = () => {
     document.getElementById("expenseModalTitle").innerText = "Log Daily Expense";
     form.reset();
     document.getElementById("editExpenseId").value = "";
-    document.getElementById("expenseMonthInput").value = appState.currentMonth;
-    document.getElementById("expenseDateInput").value = new Date().toISOString().split('T')[0];
+    const todayISO = new Date().toISOString().split('T')[0];
+    document.getElementById("expenseDateInput").value = todayISO;
+    
+    // Auto-detect matching statement cycle for today (e.g. 24th/25th Sep -> October 2026)
+    const cycleMonth = ExpenseCalculator.getCycleForDate(todayISO, appState.settings.statementDay || 24);
+    if (cycleMonth) {
+      StorageManager.addMonthIfNew(cycleMonth);
+      appState.months = StorageManager.getMonths();
+      populateMonthDropdown();
+      document.getElementById("expenseMonthInput").value = cycleMonth;
+    } else {
+      document.getElementById("expenseMonthInput").value = appState.currentMonth;
+    }
+
     if (document.getElementById("expenseRefundTypeInput")) {
       document.getElementById("expenseRefundTypeInput").value = "Card";
     }
@@ -1059,6 +1130,11 @@ function setupExpenseModal() {
       card.classList.remove("scale-95");
     }, 10);
   };
+
+  const dateEl = document.getElementById("expenseDateInput");
+  if (dateEl) {
+    dateEl.addEventListener("change", autoDetectExpenseCycle);
+  }
 
   const close = () => {
     modal.classList.add("opacity-0");
@@ -1234,11 +1310,35 @@ function setupUpiModal() {
     dateInput.addEventListener("change", updateNotice);
   }
 
+  const autoDetectUpiCycle = () => {
+    const rawDate = document.getElementById("upiDateInput")?.value;
+    if (!rawDate) return;
+    const cycleMonth = ExpenseCalculator.getCycleForDate(rawDate, appState.settings.statementDay || 24);
+    if (cycleMonth) {
+      StorageManager.addMonthIfNew(cycleMonth);
+      appState.months = StorageManager.getMonths();
+      populateMonthDropdown();
+      const monthInput = document.getElementById("upiMonthInput");
+      if (monthInput) monthInput.value = cycleMonth;
+    }
+  };
+
   const open = () => {
     form.reset();
     document.getElementById("editUpiId").value = "";
-    document.getElementById("upiMonthInput").value = appState.currentMonth;
-    document.getElementById("upiDateInput").value = new Date().toISOString().split('T')[0];
+    const todayISO = new Date().toISOString().split('T')[0];
+    document.getElementById("upiDateInput").value = todayISO;
+    
+    // Auto-detect matching statement cycle for today
+    const cycleMonth = ExpenseCalculator.getCycleForDate(todayISO, appState.settings.statementDay || 24);
+    if (cycleMonth) {
+      StorageManager.addMonthIfNew(cycleMonth);
+      appState.months = StorageManager.getMonths();
+      populateMonthDropdown();
+      document.getElementById("upiMonthInput").value = cycleMonth;
+    } else {
+      document.getElementById("upiMonthInput").value = appState.currentMonth;
+    }
     
     // Set default usedBy and paidBy
     const usedBySelect = document.getElementById("upiUsedByInput");
@@ -1255,6 +1355,13 @@ function setupUpiModal() {
       if (descInput) descInput.focus();
     }, 10);
   };
+
+  if (dateInput) {
+    dateInput.addEventListener("change", () => {
+      autoDetectUpiCycle();
+      updateNotice();
+    });
+  }
 
   const close = () => {
     modal.classList.add("opacity-0");
@@ -1483,10 +1590,34 @@ function setupPaymentModal() {
   const purposeSelect = document.getElementById("payPurposeInput");
   const amountInput = document.getElementById("payAmountInput");
 
+  const autoDetectPaymentCycle = () => {
+    const rawDate = document.getElementById("payDateInput")?.value;
+    if (!rawDate) return;
+    const cycleMonth = ExpenseCalculator.getCycleForDate(rawDate, appState.settings.statementDay || 24);
+    if (cycleMonth) {
+      StorageManager.addMonthIfNew(cycleMonth);
+      appState.months = StorageManager.getMonths();
+      populateMonthDropdown();
+      const monthInput = document.getElementById("payMonthInput");
+      if (monthInput) monthInput.value = cycleMonth;
+    }
+  };
+
   const open = (isAdvance = false) => {
     form.reset();
-    document.getElementById("payMonthInput").value = appState.currentMonth;
-    document.getElementById("payDateInput").value = new Date().toISOString().split('T')[0];
+    const todayISO = new Date().toISOString().split('T')[0];
+    document.getElementById("payDateInput").value = todayISO;
+    
+    // Auto-detect matching statement cycle for today
+    const cycleMonth = ExpenseCalculator.getCycleForDate(todayISO, appState.settings.statementDay || 24);
+    if (cycleMonth) {
+      StorageManager.addMonthIfNew(cycleMonth);
+      appState.months = StorageManager.getMonths();
+      populateMonthDropdown();
+      document.getElementById("payMonthInput").value = cycleMonth;
+    } else {
+      document.getElementById("payMonthInput").value = appState.currentMonth;
+    }
     
     if (purposeSelect) {
       purposeSelect.value = isAdvance ? "Advance Received Beforehand" : "Monthly Share Settlement";
@@ -1499,6 +1630,11 @@ function setupPaymentModal() {
       if (amountInput) amountInput.focus();
     }, 10);
   };
+
+  const payDateEl = document.getElementById("payDateInput");
+  if (payDateEl) {
+    payDateEl.addEventListener("change", autoDetectPaymentCycle);
+  }
 
   const close = () => {
     modal.classList.add("opacity-0");
@@ -1682,6 +1818,177 @@ function setupSettingsForm() {
       }
     });
   }
+}
+
+// =============================================================================
+// ADD NEW MONTH CYCLE MODAL & MONTH MANAGEMENT
+// =============================================================================
+let openAddMonthModal = null;
+
+function setupAddMonthModal() {
+  const modal = document.getElementById("addMonthModal");
+  const card = document.getElementById("addMonthModalCard");
+  const openBtns = [
+    document.getElementById("openAddMonthBtn"),
+    document.getElementById("settingsAddMonthBtn")
+  ];
+  const closeBtn = document.getElementById("closeAddMonthModalBtn");
+  const cancelBtn = document.getElementById("cancelAddMonthModalBtn");
+  const form = document.getElementById("addMonthForm");
+  const quickBtn = document.getElementById("quickAddSuggestedMonthBtn");
+  const suggestedLabel = document.getElementById("suggestedMonthLabel");
+
+  const monthSelect = document.getElementById("newMonthNameSelect");
+  const yearSelect = document.getElementById("newMonthYearSelect");
+
+  const rangeEl = document.getElementById("previewCycleRangeText");
+  const stmtEl = document.getElementById("previewStmtDateText");
+  const dueEl = document.getElementById("previewDueDateText");
+
+  const updatePreview = () => {
+    const m = monthSelect?.value || "October";
+    const y = yearSelect?.value || "2026";
+    const monthStr = `${m} ${y}`;
+
+    const cycleInfo = ExpenseCalculator.getCycleDates(monthStr, appState.settings);
+    const rangeInfo = ExpenseCalculator.getCycleRange(monthStr, appState.settings);
+
+    if (rangeEl && rangeInfo) rangeEl.innerText = rangeInfo.rangeText;
+    if (stmtEl && cycleInfo) stmtEl.innerText = cycleInfo.formattedStmtDate;
+    if (dueEl && cycleInfo) dueEl.innerText = cycleInfo.formattedDueDate;
+  };
+
+  const getSuggestedMonth = () => {
+    const latestExisting = appState.months && appState.months.length > 0 ? appState.months[0] : "September 2026";
+    return ExpenseCalculator.getNextCycleMonthName(latestExisting);
+  };
+
+  const open = () => {
+    const suggested = getSuggestedMonth();
+    if (suggestedLabel) suggestedLabel.innerText = suggested;
+
+    const parts = suggested.split(" ");
+    if (monthSelect && parts[0]) monthSelect.value = parts[0];
+    if (yearSelect && parts[1]) yearSelect.value = parts[1];
+
+    updatePreview();
+
+    modal.classList.remove("hidden");
+    setTimeout(() => {
+      modal.classList.remove("opacity-0");
+      card.classList.remove("scale-95");
+    }, 10);
+  };
+
+  openAddMonthModal = open;
+  window.openAddMonthModal = open;
+
+  const close = () => {
+    modal.classList.add("opacity-0");
+    card.classList.add("scale-95");
+    setTimeout(() => modal.classList.add("hidden"), 200);
+    populateMonthDropdown();
+  };
+
+  openBtns.forEach(btn => {
+    if (btn) btn.addEventListener("click", open);
+  });
+
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  if (cancelBtn) cancelBtn.addEventListener("click", close);
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) close();
+  });
+
+  if (monthSelect) monthSelect.addEventListener("change", updatePreview);
+  if (yearSelect) yearSelect.addEventListener("change", updatePreview);
+
+  // Quick 1-click add suggested month
+  if (quickBtn) {
+    quickBtn.addEventListener("click", () => {
+      const suggested = getSuggestedMonth();
+      addNewMonthAndActivate(suggested);
+      close();
+    });
+  }
+
+  // Form submit custom month & year
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const m = monthSelect.value;
+      const y = yearSelect.value;
+      const monthStr = `${m} ${y}`;
+      addNewMonthAndActivate(monthStr);
+      close();
+    });
+  }
+}
+
+function addNewMonthAndActivate(monthStr) {
+  if (!monthStr || monthStr === "ALL" || monthStr === "__NEW_MONTH__") return;
+  StorageManager.addMonthIfNew(monthStr);
+  appState.months = StorageManager.getMonths();
+  appState.currentMonth = monthStr;
+  renderApp();
+  alert(`✓ Statement Month "${monthStr}" created and selected! You can now log expenses for this cycle.`);
+}
+
+function selectMonthAndSwitch(monthName) {
+  if (!monthName || monthName === "ALL") return;
+  appState.currentMonth = monthName;
+  renderApp();
+}
+window.selectMonthAndSwitch = selectMonthAndSwitch;
+
+// Render billing cycles list in Settings tab
+function renderSettingsView() {
+  const listEl = document.getElementById("settingsMonthsList");
+  if (!listEl) return;
+
+  const curMonth = appState.currentMonth;
+  const stmtDay = appState.settings.statementDay || 24;
+  const now = new Date();
+  const currentCycleForToday = ExpenseCalculator.getCycleForDate(now.toISOString().split('T')[0], stmtDay);
+
+  listEl.innerHTML = appState.months.map(m => {
+    const range = ExpenseCalculator.getCycleRange(m, appState.settings);
+    const cardCount = appState.expenses.filter(e => e.month === m).length;
+    const upiCount = appState.upiExpenses.filter(u => u.month === m).length;
+    const isSelected = m === curMonth;
+    const isCurrentActiveCycle = m === currentCycleForToday;
+
+    let badgeHtml = '';
+    if (isSelected) {
+      badgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 border border-sky-300">Selected</span>`;
+    } else if (isCurrentActiveCycle) {
+      badgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-300">Active Cycle</span>`;
+    }
+
+    return `
+      <div class="p-3.5 rounded-xl border ${isSelected ? 'border-sky-400 bg-sky-50/50 shadow-xs ring-1 ring-sky-400' : 'border-slate-200 bg-white shadow-xs'} flex flex-col justify-between gap-2.5 transition">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-sky-600"></i>
+            ${m}
+          </span>
+          ${badgeHtml}
+        </div>
+        <div class="text-[11px] text-slate-500 font-mono">
+          ${range ? range.rangeText : ''}
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
+          <span class="text-slate-500">${cardCount} Card · ${upiCount} UPI</span>
+          <button onclick="selectMonthAndSwitch('${m}')" class="text-sky-600 hover:text-sky-800 font-semibold hover:underline cursor-pointer">
+            ${isSelected ? 'Active View' : 'Select Month →'}
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  initLucide();
 }
 
 // Supabase Cloud Configuration & Live Sync UI Handlers
