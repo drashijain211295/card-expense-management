@@ -6,7 +6,7 @@
 
 // Application State
 let appState = {
-  currentMonth: "August 2026",
+  currentMonth: localStorage.getItem("spendwise_selected_month") || "September 2026",
   currentTab: "dashboard",
   settings: {},
   expenses: [],
@@ -22,7 +22,8 @@ let appState = {
 document.addEventListener("DOMContentLoaded", () => {
   StorageManager.init((status, data) => {
     updateCloudStatusBadges();
-    if (status === 'connected' || status === 'realtime') {
+    updateMongoStatusBadge();
+    if (status === 'connected' || status === 'realtime' || status === 'server_connected') {
       loadStateFromStorage();
       renderApp();
     }
@@ -33,8 +34,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initEventListeners();
   populateCategoryDropdowns();
   populateMonthDropdown();
+  setupMongoConfigForm();
   setupSupabaseConfigForm();
   updateCloudStatusBadges();
+  updateMongoStatusBadge();
   renderApp();
 });
 
@@ -57,14 +60,15 @@ function loadStateFromStorage() {
   appState.months = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.sortMonthsChronologically
     ? ExpenseCalculator.sortMonthsChronologically(rawMonths, true)
     : rawMonths;
-  
-  // Automatically select the active cycle matching today's date if valid, otherwise latest month
+  const savedMonth = localStorage.getItem("spendwise_selected_month");
   const todayISO = new Date().toISOString().split('T')[0];
   const todayCycle = typeof ExpenseCalculator !== 'undefined' && ExpenseCalculator.getCycleForDate
     ? ExpenseCalculator.getCycleForDate(todayISO, appState.settings.statementDay || 24)
     : null;
 
-  if (todayCycle && appState.months.includes(todayCycle)) {
+  if (savedMonth && (savedMonth === "ALL" || appState.months.includes(savedMonth))) {
+    appState.currentMonth = savedMonth;
+  } else if (todayCycle && appState.months.includes(todayCycle)) {
     appState.currentMonth = todayCycle;
   } else if (appState.months && appState.months.length > 0) {
     appState.currentMonth = appState.months[0];
@@ -103,6 +107,7 @@ function initEventListeners() {
         return;
       }
       appState.currentMonth = e.target.value;
+      localStorage.setItem("spendwise_selected_month", appState.currentMonth);
       renderApp();
     });
   }
@@ -234,28 +239,34 @@ function populateMonthDropdown() {
     : rawMonths;
   appState.months = months;
 
-  if (!appState.currentMonth || !months.includes(appState.currentMonth)) {
+  const savedMonth = localStorage.getItem("spendwise_selected_month");
+  if (savedMonth && (savedMonth === "ALL" || months.includes(savedMonth))) {
+    appState.currentMonth = savedMonth;
+  } else if (!appState.currentMonth || (!months.includes(appState.currentMonth) && appState.currentMonth !== "ALL")) {
     appState.currentMonth = months[0];
   }
 
-  const monthOptionsHTML = months.map(m => `<option value="${m}" ${m === appState.currentMonth ? "selected" : ""}>${m}</option>`).join("");
-  const addOptionHTML = `<option value="__NEW_MONTH__" class="font-bold text-sky-700 bg-sky-50">➕ Add New Month...</option>`;
-  const fullOptionsHTML = monthOptionsHTML + addOptionHTML;
+  const selectOptions = ["ALL", ...months];
+  const globalOptionsHTML = selectOptions.map(m => {
+    const label = m === "ALL" ? "All Months Combined" : m;
+    return `<option value="${m}" ${m === appState.currentMonth ? "selected" : ""}>${label}</option>`;
+  }).join("") + `<option value="__NEW_MONTH__" class="font-bold text-sky-700 bg-sky-50">➕ Add New Month...</option>`;
 
-  globalMonthSelect.innerHTML = fullOptionsHTML;
+  globalMonthSelect.innerHTML = globalOptionsHTML;
   globalMonthSelect.value = appState.currentMonth;
   
+  const formOptionsHTML = months.map(m => `<option value="${m}">${m}</option>`).join("") + `<option value="__NEW_MONTH__" class="font-bold text-sky-700 bg-sky-50">➕ Add New Month...</option>`;
   if (expenseMonthInput) {
-    expenseMonthInput.innerHTML = fullOptionsHTML;
-    expenseMonthInput.value = appState.currentMonth;
+    expenseMonthInput.innerHTML = formOptionsHTML;
+    expenseMonthInput.value = appState.currentMonth === "ALL" ? months[0] : appState.currentMonth;
   }
   if (upiMonthInput) {
-    upiMonthInput.innerHTML = fullOptionsHTML;
-    upiMonthInput.value = appState.currentMonth;
+    upiMonthInput.innerHTML = formOptionsHTML;
+    upiMonthInput.value = appState.currentMonth === "ALL" ? months[0] : appState.currentMonth;
   }
   if (payMonthInput) {
-    payMonthInput.innerHTML = fullOptionsHTML;
-    payMonthInput.value = appState.currentMonth;
+    payMonthInput.innerHTML = formOptionsHTML;
+    payMonthInput.value = appState.currentMonth === "ALL" ? months[0] : appState.currentMonth;
   }
 }
 
@@ -579,6 +590,7 @@ function renderExpensesView() {
         </td>
         <td class="px-4 py-3 text-right font-mono text-slate-700">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-slate-900 font-medium">${item.statementAmount ? `${cur}${item.statementAmount.toFixed(2)}` : `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-1.5 py-0.5 rounded font-medium">Pending 24th</span>`}</td>
+        <td class="px-4 py-3 text-right font-mono text-amber-600 font-bold whitespace-nowrap">${item.fuelWaiver ? `${cur}${item.fuelWaiver.toFixed(2)}` : '-'}</td>
         <td class="px-4 py-3 text-right font-mono text-teal-600 font-bold whitespace-nowrap">
           ${item.refundAmount ? `${cur}${item.refundAmount.toFixed(2)}${(item.refundType || 'Card').toLowerCase() === 'cash' ? ' <span class="text-[9px] px-1 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 font-sans" title="Cash/UPI Refund (Not on Card Statement)">Cash</span>' : ''}` : '-'}
         </td>
@@ -2140,6 +2152,79 @@ function updateCloudStatusBadges() {
   }
 }
 
+// Update MongoDB Status Badge
+async function updateMongoStatusBadge() {
+  const settingsBadge = document.getElementById("settingsMongoStatusBadge");
+  if (!settingsBadge) return;
+  try {
+    const res = await fetch("/api/status").catch(() => null);
+    if (res && res.ok) {
+      const data = await res.json();
+      if (data.isMongoConnected) {
+        settingsBadge.innerText = "🟢 MongoDB Connected (Live)";
+        settingsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300";
+      } else {
+        settingsBadge.innerText = "🟡 Server Active (data/db.json)";
+        settingsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300";
+      }
+    } else {
+      settingsBadge.innerText = "⚪ Offline / Browser Mode";
+      settingsBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-300";
+    }
+  } catch (e) {
+    settingsBadge.innerText = "⚪ Offline";
+  }
+}
+
+function setupMongoConfigForm() {
+  const form = document.getElementById("mongoConfigForm");
+  const input = document.getElementById("mongoUriInput");
+  const msg = document.getElementById("mongoStatusMsg");
+  updateMongoStatusBadge();
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const uri = input?.value?.trim();
+      if (!uri) return;
+
+      const saveBtn = document.getElementById("saveMongoUriBtn");
+      if (saveBtn) saveBtn.innerText = "Connecting...";
+
+      try {
+        const res = await fetch("/api/config/mongo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uri })
+        });
+        const data = await res.json();
+        if (saveBtn) saveBtn.innerHTML = `<i data-lucide="plug-zap" class="w-3.5 h-3.5"></i><span>Connect Mongo</span>`;
+        initLucide();
+
+        if (msg) {
+          msg.classList.remove("hidden");
+          if (data.success) {
+            msg.className = "p-3 rounded-xl text-xs font-medium border bg-emerald-50 border-emerald-200 text-emerald-800";
+            msg.innerText = "✅ " + data.message;
+          } else {
+            msg.className = "p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800";
+            msg.innerText = "⚠️ " + data.message;
+          }
+        }
+        updateMongoStatusBadge();
+      } catch (err) {
+        if (saveBtn) saveBtn.innerHTML = `<i data-lucide="plug-zap" class="w-3.5 h-3.5"></i><span>Connect Mongo</span>`;
+        initLucide();
+        if (msg) {
+          msg.classList.remove("hidden");
+          msg.className = "p-3 rounded-xl text-xs font-medium border bg-red-50 border-red-200 text-red-800";
+          msg.innerText = "⚠️ Connection error: " + err.message;
+        }
+      }
+    });
+  }
+}
+
 // Global scope helpers for onclick handlers
 window.editExpense = editExpense;
 window.deleteExpense = deleteExpense;
@@ -2147,6 +2232,7 @@ window.editUpiExpense = editUpiExpense;
 window.deleteUpiExpense = deleteUpiExpense;
 window.deletePayment = deletePayment;
 window.updateCloudStatusBadges = updateCloudStatusBadges;
+window.updateMongoStatusBadge = updateMongoStatusBadge;
 
 // =============================================================================
 // TRASH & RECYCLE BIN VIEW (RESTORE DELETED ENTRIES)

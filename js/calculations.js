@@ -67,9 +67,9 @@ const ExpenseCalculator = {
     const person1 = settings.person1 || "Kitkat";
     const person2 = settings.person2 || "Rashu";
 
-    // Filter for the selected month
-    const monthExpenses = allExpenses.filter(e => e.month === currentMonth);
-    const monthPayments = allPayments.filter(p => p.month === currentMonth);
+    // Filter for the selected month (or ALL)
+    const monthExpenses = currentMonth === "ALL" ? allExpenses : allExpenses.filter(e => e.month === currentMonth);
+    const monthPayments = currentMonth === "ALL" ? allPayments : allPayments.filter(p => p.month === currentMonth);
 
     // Differentiate Card vs Non-Card
     const cardExpenses = monthExpenses.filter(e => (e.paymentType || "Card").toLowerCase() !== "non-card");
