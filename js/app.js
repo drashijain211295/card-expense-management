@@ -1094,7 +1094,11 @@ function formatDisplayDate(dateStr) {
 function setupExpenseModal() {
   const modal = document.getElementById("expenseModal");
   const card = document.getElementById("expenseModalCard");
-  const openBtns = [document.getElementById("openAddExpenseBtn"), document.getElementById("expenseAddBtn2")];
+  const openBtns = [
+    document.getElementById("openAddExpenseBtn"), 
+    document.getElementById("expenseAddBtn2"),
+    document.getElementById("mobileAddExpenseBtn")
+  ];
   const closeBtn = document.getElementById("closeExpenseModalBtn");
   const cancelBtn = document.getElementById("cancelExpenseModalBtn");
   const form = document.getElementById("expenseForm");
@@ -1286,7 +1290,8 @@ function setupUpiModal() {
   const card = document.getElementById("upiModalCard");
   const openBtns = [
     document.getElementById("openAddUpiBtn"),
-    document.getElementById("openAddUpiBtn2")
+    document.getElementById("openAddUpiBtn2"),
+    document.getElementById("mobileAddUpiBtn")
   ];
   const closeBtn = document.getElementById("closeUpiModalBtn");
   const cancelBtn = document.getElementById("cancelUpiModalBtn");
@@ -1591,7 +1596,8 @@ function setupPaymentModal() {
   const openBtns = [
     document.getElementById("quickRecordPaymentBtn"), 
     document.getElementById("openRecordPaymentModalBtn"),
-    document.getElementById("quickRecordAdvanceBtn")
+    document.getElementById("quickRecordAdvanceBtn"),
+    document.getElementById("mobileAddPaymentBtn")
   ];
   const closeBtn = document.getElementById("closePaymentModalBtn");
   const cancelBtn = document.getElementById("cancelPaymentModalBtn");
