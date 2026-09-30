@@ -125,6 +125,12 @@ const StorageManager = {
       this.saveMonths(storedMonths);
     }
 
+    // Clean up any legacy Supabase config from localStorage
+    try {
+      localStorage.removeItem('spendwise_supabase_url');
+      localStorage.removeItem('spendwise_supabase_key');
+    } catch (e) {}
+
     // Always ensure current calendar month & upcoming month (by 23rd) exist
     this.ensureCurrentAndUpcomingMonths(this.getSettings());
 
@@ -132,9 +138,6 @@ const StorageManager = {
     if (typeof this.initServerSync === 'function') {
       this.initServerSync(onSyncCallback);
     }
-
-    // 3. Initialize Supabase Cloud Connection in background
-    this.initCloud(onSyncCallback);
   },
 
   // ==========================================
@@ -181,6 +184,10 @@ const StorageManager = {
 
   connectServerSSE(onSyncCallback) {
     if (typeof window.EventSource === 'undefined') return;
+    // On Vercel, serverless functions don't support persistent SSE; polling interval handles real-time sync cleanly
+    if (window.location && window.location.hostname && window.location.hostname.includes('vercel.app')) {
+      return;
+    }
     try {
       if (this.eventSource) this.eventSource.close();
       this.eventSource = new EventSource('/api/events');
@@ -188,7 +195,6 @@ const StorageManager = {
       this.eventSource.onmessage = async (e) => {
         try {
           const payload = JSON.parse(e.data);
-          console.log('⚡ Server Realtime Push Received:', payload.type);
           if (payload.type !== 'connected') {
             // Re-fetch latest server state & re-render app
             const res = await fetch('/api/data').catch(() => null);
@@ -204,10 +210,12 @@ const StorageManager = {
       };
 
       this.eventSource.onerror = (e) => {
-        // Silent reconnect attempt
+        if (this.eventSource) {
+          this.eventSource.close();
+        }
       };
     } catch (e) {
-      console.warn('SSE connection warning:', e);
+      // Silent error handler
     }
   },
 
@@ -257,67 +265,6 @@ const StorageManager = {
       }).catch(() => null);
     } catch (e) {
       // Ignore background sync errors
-    }
-  },
-
-  // ==========================================
-  // SUPABASE CLOUD CONNECTION
-  // ==========================================
-  async initCloud(onCloudSyncCallback) {
-    if (typeof SupabaseService === 'undefined') return;
-
-    const initialized = SupabaseService.init();
-    if (!initialized) {
-      if (typeof onCloudSyncCallback === 'function') onCloudSyncCallback('local');
-      return;
-    }
-
-    try {
-      const cloudExpenses = await SupabaseService.fetchExpenses();
-      const cloudUpi = await SupabaseService.fetchUpiExpenses();
-      const cloudPayments = await SupabaseService.fetchPayments();
-      const cloudSettings = await SupabaseService.fetchSettings();
-      const cloudMonths = await SupabaseService.fetchMonths();
-
-      const deletedIds = this.getDeletedIds();
-
-      if (cloudExpenses && cloudExpenses.length > 0) {
-        const filteredExpenses = cloudExpenses.filter(e => !deletedIds.includes(e.id));
-        this.saveExpenses(filteredExpenses);
-        if (cloudUpi && cloudUpi.length > 0) {
-          const filteredUpi = cloudUpi.filter(u => !deletedIds.includes(u.id));
-          this.saveUpiExpenses(filteredUpi);
-        }
-        if (cloudPayments) {
-          const filteredPay = cloudPayments.filter(p => !deletedIds.includes(p.id));
-          this.savePayments(filteredPay);
-        }
-        if (cloudSettings) this.saveSettings(cloudSettings);
-        if (cloudMonths && cloudMonths.length > 0) this.saveMonths(cloudMonths);
-        console.log(`☁️ Synced ${filteredExpenses.length} card expenses & ${cloudUpi ? cloudUpi.length : 0} UPI spends from Supabase Cloud`);
-      } else if (cloudExpenses && cloudExpenses.length === 0) {
-        console.log('☁️ Supabase is empty. Seeding baseline data to Cloud...');
-        await SupabaseService.syncLocalToCloud(
-          this.getExpenses(),
-          this.getPayments(),
-          this.getMonths(),
-          this.getSettings(),
-          this.getUpiExpenses()
-        );
-      }
-
-      SupabaseService.subscribeToRealtime((table, payload) => {
-        if (typeof onCloudSyncCallback === 'function') {
-          onCloudSyncCallback('realtime', { table, payload });
-        }
-      });
-
-      if (typeof onCloudSyncCallback === 'function') {
-        onCloudSyncCallback('connected');
-      }
-    } catch (e) {
-      console.warn('Could not sync with Supabase cloud on boot:', e);
-      if (typeof onCloudSyncCallback === 'function') onCloudSyncCallback('error', e);
     }
   },
 
@@ -384,11 +331,6 @@ const StorageManager = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(expense)
     }).catch(() => null);
-
-    // Push to Supabase Cloud if configured
-    if (window.SupabaseService && window.SupabaseService.isConnected) {
-      await window.SupabaseService.upsertExpense(expense);
-    }
   },
 
   async deleteExpenseAsync(id) {
@@ -403,11 +345,6 @@ const StorageManager = {
 
     // Server API DELETE
     fetch(`/api/expense/${id}`, { method: 'DELETE' }).catch(() => null);
-
-    // Supabase Cloud DELETE
-    if (window.SupabaseService && window.SupabaseService.isConnected) {
-      await window.SupabaseService.deleteExpense(id);
-    }
   },
 
   // ==========================================
@@ -446,10 +383,6 @@ const StorageManager = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(expense)
     }).catch(() => null);
-
-    if (window.SupabaseService && window.SupabaseService.isConnected) {
-      await window.SupabaseService.upsertUpiExpense(expense);
-    }
   },
 
   async deleteUpiExpenseAsync(id) {
@@ -463,10 +396,6 @@ const StorageManager = {
     this.saveUpiExpenses(filtered);
 
     fetch(`/api/upi/${id}`, { method: 'DELETE' }).catch(() => null);
-
-    if (window.SupabaseService && window.SupabaseService.isConnected) {
-      await window.SupabaseService.deleteUpiExpense(id);
-    }
   },
 
   // ==========================================
@@ -505,10 +434,6 @@ const StorageManager = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payment)
     }).catch(() => null);
-
-    if (window.SupabaseService && window.SupabaseService.isConnected) {
-      await window.SupabaseService.upsertPayment(payment);
-    }
   },
 
   async deletePaymentAsync(id) {
@@ -522,10 +447,6 @@ const StorageManager = {
     this.savePayments(filtered);
 
     fetch(`/api/payment/${id}`, { method: 'DELETE' }).catch(() => null);
-
-    if (window.SupabaseService && window.SupabaseService.isConnected) {
-      await window.SupabaseService.deletePayment(id);
-    }
   },
 
   // ==========================================
@@ -620,13 +541,6 @@ const StorageManager = {
     trash.forEach(entry => {
       if (entry.item && entry.item.id) {
         this.recordDeletedId(entry.item.id);
-        
-        // Permanent deletion from Supabase Cloud
-        if (window.SupabaseService && window.SupabaseService.isConnected) {
-          if (entry.type === 'Card') window.SupabaseService.deleteExpense(entry.item.id);
-          if (entry.type === 'UPI') window.SupabaseService.deleteUpiExpense(entry.item.id);
-          if (entry.type === 'Payment') window.SupabaseService.deletePayment(entry.item.id);
-        }
       }
     });
 
@@ -642,13 +556,6 @@ const StorageManager = {
     
     if (entry && entry.item && entry.item.id) {
       this.recordDeletedId(entry.item.id);
-
-      // Cloud deletion
-      if (window.SupabaseService && window.SupabaseService.isConnected) {
-        if (entry.type === 'Card') await window.SupabaseService.deleteExpense(entry.item.id);
-        if (entry.type === 'UPI') await window.SupabaseService.deleteUpiExpense(entry.item.id);
-        if (entry.type === 'Payment') await window.SupabaseService.deletePayment(entry.item.id);
-      }
     }
 
     const filtered = trash.filter(t => t.trashId !== trashId);
@@ -679,10 +586,6 @@ const StorageManager = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings)
     }).catch(() => null);
-
-    if (window.SupabaseService && window.SupabaseService.isConnected) {
-      window.SupabaseService.saveSettings(settings);
-    }
   },
 
   getMonths() {
@@ -712,9 +615,6 @@ const StorageManager = {
     if (!months.includes(monthName)) {
       months.push(monthName);
       this.saveMonths(months);
-      if (window.SupabaseService && window.SupabaseService.isConnected) {
-        window.SupabaseService.insertMonth(monthName);
-      }
     }
   },
 
@@ -752,9 +652,6 @@ const StorageManager = {
       if (!months.includes(nextMonthName)) {
         months.push(nextMonthName);
         changed = true;
-        if (window.SupabaseService && window.SupabaseService.isConnected) {
-          window.SupabaseService.insertMonth(nextMonthName);
-        }
       }
     }
 

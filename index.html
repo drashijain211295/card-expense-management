@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SpendWise - Card Expense Management & 24th Statement Reconciliation</title>
   
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💳</text></svg>" />
+  
   <!-- Fonts & Tailwind CSS CDN -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,8 +19,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- SheetJS (xlsx) for in-browser Excel/CSV import & export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Supabase Cloud JS Client (100% Free PostgreSQL & Realtime Sync) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <link rel="stylesheet" href="css/style.css" />
   <script>
@@ -944,58 +944,6 @@
         </form>
       </div>
 
-      <!-- Supabase Cloud Database Configuration Card -->
-      <div class="card-glass p-6 rounded-2xl space-y-4 border border-sky-200/90 bg-gradient-to-b from-sky-50/40 to-white shadow-xs">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                <i data-lucide="cloud" class="w-5 h-5 text-sky-600"></i>
-                Supabase Cloud Database & Live Sync (100% Free)
-              </h3>
-              <span id="settingsCloudStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">Local Mode</span>
-            </div>
-            <p class="text-xs text-slate-500 mt-0.5">Sync transactions seamlessly in real-time across your phone, laptop, and Vercel live website.</p>
-          </div>
-          <a href="https://supabase.com/dashboard" target="_blank" rel="noopener" class="text-[11px] text-sky-600 hover:text-sky-800 font-semibold flex items-center gap-1 self-start sm:self-auto">
-            <span>Open Supabase Dashboard</span>
-            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-          </a>
-        </div>
-
-        <form id="supabaseConfigForm" class="space-y-4 pt-1">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Supabase Project URL</label>
-              <input type="url" id="supabaseUrlInput" placeholder="https://your-project.supabase.co" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">Supabase Anon / Public Key</label>
-              <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
-            </div>
-          </div>
-
-          <div id="supabaseStatusMsg" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
-
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div class="flex flex-wrap gap-2">
-              <button type="submit" id="saveSupabaseConfigBtn" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white rounded-xl shadow-md shadow-sky-600/20 transition flex items-center gap-1.5">
-                <i data-lucide="plug-zap" class="w-3.5 h-3.5"></i>
-                <span>Test & Save Connection</span>
-              </button>
-              <button type="button" id="syncLocalToCloudBtn" class="px-4 py-2 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 rounded-xl border border-slate-300 shadow-xs transition flex items-center gap-1.5">
-                <i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-sky-600"></i>
-                <span>Upload & Sync All Local Data to Cloud</span>
-              </button>
-              <button type="button" id="disconnectCloudBtn" class="px-3 py-2 bg-red-50 hover:bg-red-100 text-xs font-semibold text-red-700 rounded-xl border border-red-200 shadow-xs transition">
-                Disconnect
-              </button>
-            </div>
-            <p class="text-[11px] text-slate-500">Run <code class="text-sky-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">supabase_schema.sql</code> in your Supabase SQL Editor first.</p>
-          </div>
-        </form>
-      </div>
-
     </section>
 
     <!-- ========================================================================= -->
@@ -1569,8 +1517,6 @@
   <!-- App Scripts -->
   <script src="js/data.js"></script>
   <script src="js/calculations.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/supabase.js"></script>
   <script src="js/reconciliation.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/app.js"></script>
