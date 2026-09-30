@@ -1050,92 +1050,92 @@
         </button>
       </div>
 
-      <form id="expenseForm" class="mt-4 space-y-4 modal-body overflow-y-auto flex-1 pr-1">
+      <form id="expenseForm" class="mt-4 space-y-4 modal-body overflow-y-auto flex-1 pr-1 w-full max-w-full">
         <input type="hidden" id="editExpenseId" />
         
-        <div class="grid grid-cols-2 gap-3">
-          <div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Month Cycle</label>
-            <select id="expenseMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
+            <select id="expenseMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs truncate">
               <option value="August 2026">August 2026</option>
               <option value="July 2026">July 2026</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Transaction Date</label>
             <input type="date" id="expenseDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
           </div>
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Merchant / Description</label>
           <input type="text" id="expenseDescInput" required placeholder="e.g. SMART CITY FUELS, Petrol, Grocery..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs" />
         </div>
 
         <!-- Primary Spend Amount (Slip Amount) -->
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-sky-700 uppercase tracking-wider mb-1">Spend / Slip Amount (₹) *</label>
           <input type="number" step="0.01" id="expenseSlipInput" required placeholder="Amount on physical bill / swiped" class="w-full px-3.5 py-2.5 bg-white border border-sky-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:border-sky-600 font-mono shadow-xs" />
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
-          <div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Used By</label>
-            <select id="expenseUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 font-medium shadow-xs">
+            <select id="expenseUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 font-medium shadow-xs truncate">
               <option value="Kitkat">Kitkat (100%)</option>
               <option value="Rashu">Rashu (100%)</option>
               <option value="Both" selected>Both (50/50)</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Payment Type</label>
-            <select id="expenseTypeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
+            <select id="expenseTypeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs truncate">
               <option value="Card">Card</option>
               <option value="Non-Card">Non-Card</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Category</label>
-            <select id="expenseCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
+            <select id="expenseCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs truncate">
               <!-- Dynamically populated -->
             </select>
           </div>
         </div>
 
         <!-- Statement, Fuel Surcharge Waiver & Reversal Section -->
-        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3 min-w-0">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
               <i data-lucide="file-check" class="w-3.5 h-3.5 text-sky-600"></i>
-              Bank Statement & Fuel Surcharge Waiver
+              Bank Statement & Fuel Waiver
             </span>
-            <span class="text-[10px] text-amber-700 font-semibold">Editable anytime from app</span>
+            <span class="text-[10px] text-amber-700 font-semibold">Editable anytime</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
-            <div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div class="min-w-0">
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Statement Amt (₹)</label>
               <input type="number" step="0.01" id="expenseStmtInput" placeholder="Billed on 24th" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Fuel Waiver (₹)</label>
               <input type="number" step="0.01" id="expenseFuelInput" placeholder="Surcharge waiver" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Refund (₹)</label>
               <input type="number" step="0.01" id="expenseRefundInput" placeholder="Reversal" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-sky-500 font-mono shadow-xs" />
             </div>
-            <div>
+            <div class="min-w-0">
               <label class="block text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Refund Mode</label>
-              <select id="expenseRefundTypeInput" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-sky-500 font-medium shadow-xs">
-                <option value="Card">Credited to Card (Deducts from Card Statement)</option>
-                <option value="Cash">Cash / UPI (Does NOT deduct from Statement)</option>
+              <select id="expenseRefundTypeInput" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-sky-500 font-medium shadow-xs truncate">
+                <option value="Card">Card Credit (Deducts)</option>
+                <option value="Cash">Cash / UPI (Separate)</option>
               </select>
             </div>
           </div>
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Remarks (Optional)</label>
           <input type="text" id="expenseRemarksInput" placeholder="e.g. Bill reference, notes..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs" />
         </div>
@@ -1168,65 +1168,65 @@
         </button>
       </div>
 
-      <form id="upiForm" class="mt-4 space-y-4 modal-body overflow-y-auto flex-1 pr-1">
+      <form id="upiForm" class="mt-4 space-y-4 modal-body overflow-y-auto flex-1 pr-1 w-full max-w-full">
         <input type="hidden" id="editUpiId" />
         
-        <div class="grid grid-cols-2 gap-3">
-          <div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Month Cycle</label>
-            <select id="upiMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs">
+            <select id="upiMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs truncate">
               <option value="September 2026">September 2026</option>
               <option value="August 2026">August 2026</option>
               <option value="July 2026">July 2026</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Date</label>
             <input type="date" id="upiDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs" />
           </div>
         </div>
 
         <!-- Dynamic Card Due Date Settlement Notice -->
-        <div id="upiDueDateHelperNotice" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2">
+        <div id="upiDueDateHelperNotice" class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2 min-w-0">
           <i data-lucide="info" class="w-4 h-4 text-pink-600 shrink-0"></i>
-          <span id="upiDueDateHelperText">Loading due date settlement rule...</span>
+          <span id="upiDueDateHelperText" class="truncate">Loading due date settlement rule...</span>
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Item / Description *</label>
           <input type="text" id="upiDescInput" required placeholder="e.g. Diy Mirror, Car service, Grocery..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-pink-500 shadow-xs" />
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-pink-700 uppercase tracking-wider mb-1">UPI Amount (₹) *</label>
           <input type="number" step="0.01" id="upiAmountInput" required placeholder="Amount paid via UPI" class="w-full px-3.5 py-2.5 bg-white border border-pink-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:border-pink-500 font-mono shadow-xs" />
         </div>
 
-        <div class="grid grid-cols-3 gap-3">
-          <div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Used By</label>
-            <select id="upiUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 font-medium shadow-xs">
+            <select id="upiUsedByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 font-medium shadow-xs truncate">
               <option value="Kitkat">Kitkat (100%)</option>
               <option value="Rashu">Rashu (100%)</option>
               <option value="Both" selected>Both (50/50)</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Paid By</label>
-            <select id="upiPaidByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 font-medium shadow-xs">
+            <select id="upiPaidByInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 font-medium shadow-xs truncate">
               <option value="Rashu" selected>Rashu</option>
               <option value="Kitkat">Kitkat</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Category</label>
-            <select id="upiCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs">
+            <select id="upiCategoryInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-pink-500 shadow-xs truncate">
               <!-- Populated via JS -->
             </select>
           </div>
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Remarks (Optional)</label>
           <input type="text" id="upiRemarksInput" placeholder="e.g. GooglePay reference, notes..." class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-pink-500 shadow-xs" />
         </div>
@@ -1310,47 +1310,47 @@
         </button>
       </div>
 
-      <form id="paymentForm" class="mt-4 space-y-4 modal-body overflow-y-auto flex-1 pr-1">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
+      <form id="paymentForm" class="mt-4 space-y-4 modal-body overflow-y-auto flex-1 pr-1 w-full max-w-full">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Month Cycle</label>
-            <select id="payMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
+            <select id="payMonthInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs truncate">
               <option value="August 2026">August 2026</option>
               <option value="July 2026">July 2026</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Payment Date</label>
             <input type="date" id="payDateInput" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs" />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Received From</label>
-            <select id="payPersonInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
+            <select id="payPersonInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs truncate">
               <option value="Kitkat">Kitkat</option>
               <option value="Rashu">Rashu</option>
             </select>
           </div>
-          <div>
+          <div class="min-w-0">
             <label class="block text-[11px] font-semibold text-sky-700 uppercase tracking-wider mb-1">Amount Received (₹) *</label>
             <input type="number" step="0.01" id="payAmountInput" required placeholder="e.g. 10000.00" class="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-sky-500 shadow-xs" />
           </div>
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Type / Purpose</label>
-          <select id="payPurposeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
+          <select id="payPurposeInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs truncate">
             <option value="Advance Received Beforehand">Advance Received Beforehand (Pre-payment)</option>
             <option value="Monthly Share Settlement">Monthly Share Settlement</option>
             <option value="Part Payment / Transfer">Part Payment / Transfer</option>
           </select>
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Payment Method</label>
-          <select id="payMethodInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs">
+          <select id="payMethodInput" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-sky-500 shadow-xs truncate">
             <option value="UPI">UPI</option>
             <option value="Bank Transfer">Bank Transfer (NEFT/IMPS)</option>
             <option value="Cash">Cash</option>
@@ -1358,7 +1358,7 @@
           </select>
         </div>
 
-        <div>
+        <div class="min-w-0">
           <label class="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">Notes / Description (Optional)</label>
           <input type="text" id="payNotesInput" placeholder="e.g. Got 10000 in advance for this cycle" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs" />
         </div>
@@ -1388,7 +1388,7 @@
         </button>
       </div>
 
-      <div class="mt-4 space-y-4 text-xs text-slate-600 modal-body overflow-y-auto flex-1 pr-1">
+      <div class="mt-4 space-y-4 text-xs text-slate-600 modal-body overflow-y-auto flex-1 pr-1 w-full max-w-full">
         <p>Upload your Credit Card statement (Excel .xlsx or CSV) to automatically parse transactions into SpendWise.</p>
         
         <div class="border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-sky-50/40 hover:border-sky-400 rounded-2xl p-6 text-center transition cursor-pointer" id="dropZone">
@@ -1411,10 +1411,10 @@
   <!-- ========================================================================= -->
   <!-- MODAL: ADD NEW MONTH CYCLE -->
   <!-- ========================================================================= -->
-  <div id="addMonthModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
-    <div class="card-glass bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-200 text-slate-800" id="addMonthModalCard">
+  <div id="addMonthModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden opacity-0 transition-opacity duration-200 modal-overlay">
+    <div class="card-glass bg-white border border-slate-200 rounded-2xl w-full max-w-md p-5 sm:p-6 shadow-2xl transform scale-95 transition-transform duration-200 text-slate-800 modal-card max-h-[92vh] flex flex-col my-auto" id="addMonthModalCard">
       
-      <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200 shrink-0">
         <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="calendar-plus" class="w-5 h-5 text-sky-600"></i>
           Add New Month Cycle
@@ -1424,15 +1424,15 @@
         </button>
       </div>
 
-      <div class="mt-4 space-y-4">
+      <div class="mt-4 space-y-4 modal-body overflow-y-auto flex-1 pr-1 w-full max-w-full">
         
         <!-- Quick 1-Click Suggestion Card -->
-        <div id="quickSuggestedMonthCard" class="p-3.5 rounded-xl bg-gradient-to-r from-sky-50 to-pink-50 border border-sky-200/80 flex items-center justify-between gap-3">
-          <div>
+        <div id="quickSuggestedMonthCard" class="p-3.5 rounded-xl bg-gradient-to-r from-sky-50 to-pink-50 border border-sky-200/80 flex items-center justify-between gap-3 min-w-0">
+          <div class="min-w-0">
             <div class="text-[10px] uppercase font-bold text-sky-700 tracking-wider">Next Recommended Cycle</div>
-            <div id="suggestedMonthLabel" class="text-sm font-bold text-slate-900 mt-0.5">October 2026</div>
+            <div id="suggestedMonthLabel" class="text-sm font-bold text-slate-900 mt-0.5 truncate">October 2026</div>
           </div>
-          <button id="quickAddSuggestedMonthBtn" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg shadow-sm transition active:scale-95 whitespace-nowrap flex items-center gap-1">
+          <button id="quickAddSuggestedMonthBtn" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-lg shadow-sm transition active:scale-95 whitespace-nowrap flex items-center gap-1 shrink-0">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add Now</span>
           </button>
@@ -1441,10 +1441,10 @@
         <form id="addMonthForm" class="space-y-4">
           <div class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Or Pick Custom Month & Year</div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-slate-600 mb-1">Month</label>
-              <select id="newMonthNameSelect" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs font-medium">
+              <select id="newMonthNameSelect" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs font-medium truncate">
                 <option value="January">January</option>
                 <option value="February">February</option>
                 <option value="March">March</option>
@@ -1460,9 +1460,9 @@
               </select>
             </div>
 
-            <div>
+            <div class="min-w-0">
               <label class="block text-xs font-medium text-slate-600 mb-1">Year</label>
-              <select id="newMonthYearSelect" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs font-medium">
+              <select id="newMonthYearSelect" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-xs font-medium truncate">
                 <option value="2025">2025</option>
                 <option value="2026" selected>2026</option>
                 <option value="2027">2027</option>
@@ -1474,10 +1474,10 @@
           </div>
 
           <!-- Live Cycle Info Preview Box -->
-          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 min-w-0">
             <div class="flex items-center justify-between text-[11px]">
               <span class="text-slate-500">Billing Period:</span>
-              <span id="previewCycleRangeText" class="font-semibold text-slate-800 font-mono">25 Sep 26 to 24 Oct 26</span>
+              <span id="previewCycleRangeText" class="font-semibold text-slate-800 font-mono truncate">25 Sep 26 to 24 Oct 26</span>
             </div>
             <div class="flex items-center justify-between text-[11px]">
               <span class="text-slate-500">Statement Cutoff:</span>
@@ -1489,7 +1489,7 @@
             </div>
           </div>
 
-          <div class="pt-2 flex justify-end space-x-3 border-t border-slate-200">
+          <div class="pt-2 flex justify-end space-x-3 border-t border-slate-200 modal-footer sticky bottom-0 bg-white z-10">
             <button type="button" id="cancelAddMonthModalBtn" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition">Cancel</button>
             <button type="submit" class="px-5 py-2 text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-md shadow-sky-600/30 transition active:scale-95 flex items-center gap-1.5">
               <i data-lucide="plus-circle" class="w-4 h-4"></i>

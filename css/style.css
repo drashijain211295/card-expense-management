@@ -30,6 +30,7 @@ html, body {
   overflow-x: hidden;
   box-sizing: border-box;
   -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
 }
 
 *, *::before, *::after {
@@ -155,24 +156,31 @@ main {
 /* Mobile & iPhone Modal Optimization */
 .modal-overlay {
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-card {
-  max-height: 92vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   width: 100%;
-  max-width: min(32rem, calc(100vw - 1.5rem));
+  max-width: calc(100vw - 1.5rem);
   margin: auto;
+  box-sizing: border-box;
 }
 
 .modal-body {
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   flex: 1;
+  max-width: 100%;
 }
 
 .modal-footer {
@@ -183,7 +191,14 @@ main {
   padding-top: 0.75rem;
 }
 
-/* Prevent auto-zoom on mobile inputs when tapping */
+/* Input, Select & Grid safety containment */
+input, select, textarea {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Prevent auto-zoom and sizing distortion on mobile inputs when tapping */
 @media screen and (max-width: 768px) {
   input[type="text"],
   input[type="number"],
