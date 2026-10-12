@@ -211,3 +211,39 @@ input, select, textarea {
     font-size: 16px !important;
   }
 }
+
+/* Batch Statement Edit Mode Styles */
+.batch-edit-input {
+  transition: all 0.15s ease-in-out;
+}
+
+.batch-edit-input:focus {
+  outline: none;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+  background-color: #fdfdfe !important;
+}
+
+.batch-edit-active-row {
+  background-color: rgba(238, 242, 255, 0.45) !important;
+}
+
+.batch-edit-active-row:hover {
+  background-color: rgba(238, 242, 255, 0.75) !important;
+}
+
+#batchEditBanner {
+  animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

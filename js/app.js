@@ -8,6 +8,7 @@
 let appState = {
   currentMonth: localStorage.getItem("spendwise_selected_month") || "September 2026",
   currentTab: "dashboard",
+  isBatchEditMode: false,
   settings: {},
   expenses: [],
   upiExpenses: [],
@@ -23,8 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
   StorageManager.init((status, data) => {
     updateMongoStatusBadge();
     if (status === 'connected' || status === 'realtime' || status === 'server_connected') {
-      loadStateFromStorage();
-      renderApp();
+      if (!appState.isBatchEditMode) {
+        loadStateFromStorage();
+        renderApp();
+      }
     }
   });
 
@@ -153,6 +156,37 @@ function initEventListeners() {
   if (exportCsvBtn) {
     exportCsvBtn.addEventListener("click", () => {
       StorageManager.exportExpensesCSV(appState.currentMonth);
+    });
+  }
+
+  // Batch Statement Edit Mode (Edit all in 1 go)
+  const batchStatementEditBtn = document.getElementById("batchStatementEditBtn");
+  if (batchStatementEditBtn) {
+    batchStatementEditBtn.addEventListener("click", () => {
+      appState.isBatchEditMode = !appState.isBatchEditMode;
+      renderExpensesView();
+    });
+  }
+
+  const cancelBatchEditBtn = document.getElementById("cancelBatchEditBtn");
+  if (cancelBatchEditBtn) {
+    cancelBatchEditBtn.addEventListener("click", () => {
+      appState.isBatchEditMode = false;
+      renderExpensesView();
+    });
+  }
+
+  const batchFillSlipBtn = document.getElementById("batchFillSlipBtn");
+  if (batchFillSlipBtn) {
+    batchFillSlipBtn.addEventListener("click", () => {
+      autoFillBatchPendingWithSlip();
+    });
+  }
+
+  const saveBatchEditBtn = document.getElementById("saveBatchEditBtn");
+  if (saveBatchEditBtn) {
+    saveBatchEditBtn.addEventListener("click", () => {
+      saveBatchStatementEdits();
     });
   }
 
@@ -543,6 +577,26 @@ function renderExpensesView() {
     return matchesSearch && matchesPerson && matchesCat && matchesType;
   });
 
+  const batchBanner = document.getElementById("batchEditBanner");
+  const batchBtn = document.getElementById("batchStatementEditBtn");
+  const batchMonthBadge = document.getElementById("batchEditMonthBadge");
+  if (batchBanner) {
+    if (appState.isBatchEditMode) {
+      batchBanner.classList.remove("hidden");
+      if (batchMonthBadge) batchMonthBadge.innerText = appState.currentMonth === "ALL" ? "All Months" : appState.currentMonth;
+      if (batchBtn) {
+        batchBtn.className = "px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold text-white rounded-xl shadow-xs transition flex items-center gap-1.5 ring-2 ring-indigo-400";
+        batchBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Editing in 1 Go</span>`;
+      }
+    } else {
+      batchBanner.classList.add("hidden");
+      if (batchBtn) {
+        batchBtn.className = "px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold text-indigo-700 rounded-xl border border-indigo-200/80 shadow-xs transition flex items-center gap-1.5";
+        batchBtn.innerHTML = `<i data-lucide="edit-3" class="w-3.5 h-3.5 text-indigo-600"></i><span>Edit All in 1 Go</span>`;
+      }
+    }
+  }
+
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
@@ -567,8 +621,12 @@ function renderExpensesView() {
     return ExpenseCalculator.parseToISODate(a.date).localeCompare(ExpenseCalculator.parseToISODate(b.date));
   });
 
+  const isBatch = appState.isBatchEditMode;
+  const p1 = appState.settings.person1 || "Kitkat";
+  const p2 = appState.settings.person2 || "Rashu";
+
   tbody.innerHTML = sorted.map(item => {
-    const shares = ExpenseCalculator.calculateItemShares(item, appState.settings.person1, appState.settings.person2);
+    const shares = ExpenseCalculator.calculateItemShares(item, p1, p2);
     
     totalSlip += parseFloat(item.slipAmount) || 0;
     totalStmt += parseFloat(item.statementAmount) || 0;
@@ -577,6 +635,46 @@ function renderExpensesView() {
     totalEffective += shares.effectiveAmount;
     totalP1 += shares.person1Share;
     totalP2 += shares.person2Share;
+
+    if (isBatch) {
+      return `
+        <tr data-exp-id="${item.id}" class="batch-edit-active-row transition border-b border-indigo-100/60">
+          <td class="px-3 py-2 text-slate-500 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
+          <td class="px-3 py-2 font-semibold text-slate-900">
+            ${item.description}
+            ${item.remarks ? `<div class="text-[10px] text-slate-500 font-normal mt-0.5">${item.remarks}</div>` : ''}
+          </td>
+          <td class="px-3 py-2 text-right font-mono text-slate-700 font-medium">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
+          <td class="px-2 py-1.5 text-right">
+            <input type="number" step="0.01" data-field="statementAmount" data-id="${item.id}" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="batch-edit-input batch-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900" />
+          </td>
+          <td class="px-2 py-1.5 text-right">
+            <input type="number" step="0.01" data-field="fuelWaiver" data-id="${item.id}" value="${item.fuelWaiver || ''}" placeholder="0.00" class="batch-edit-input batch-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600" />
+          </td>
+          <td class="px-2 py-1.5 text-right">
+            <input type="number" step="0.01" data-field="refundAmount" data-id="${item.id}" value="${item.refundAmount || ''}" placeholder="0.00" class="batch-edit-input batch-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600" />
+          </td>
+          <td class="px-2 py-1.5 text-center">
+            <select data-field="usedBy" data-id="${item.id}" class="batch-edit-input batch-usedby-select px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800">
+              <option value="${p1}" ${item.usedBy === p1 ? 'selected' : ''}>${p1}</option>
+              <option value="${p2}" ${item.usedBy === p2 ? 'selected' : ''}>${p2}</option>
+              <option value="Both" ${item.usedBy === 'Both' ? 'selected' : ''}>Both</option>
+            </select>
+          </td>
+          <td class="px-3 py-2 text-center">
+            <span class="badge ${item.paymentType === 'Non-Card' ? 'bg-pink-50 text-pink-700 border-pink-200' : 'bg-sky-50 text-sky-700 border-sky-200'}">${item.paymentType}</span>
+          </td>
+          <td class="px-3 py-2 text-right font-mono font-bold text-sky-700 batch-effective-cell" data-id="${item.id}">${cur}${shares.effectiveAmount.toFixed(2)}</td>
+          <td class="px-3 py-2 text-right font-mono font-semibold text-sky-700 batch-p1-cell" data-id="${item.id}">${cur}${shares.person1Share.toFixed(2)}</td>
+          <td class="px-3 py-2 text-right font-mono font-semibold text-pink-700 batch-p2-cell" data-id="${item.id}">${cur}${shares.person2Share.toFixed(2)}</td>
+          <td class="px-3 py-2 text-center whitespace-nowrap">
+            <span class="text-[10px] text-indigo-600 font-semibold px-2 py-1 bg-indigo-50/80 rounded-md border border-indigo-100 flex items-center gap-1 justify-center">
+              <i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> Edit
+            </span>
+          </td>
+        </tr>
+      `;
+    }
 
     return `
       <tr class="table-row-hover transition">
@@ -617,7 +715,7 @@ function renderExpensesView() {
       <tr>
         <td colspan="2" class="px-4 py-3.5 text-left uppercase text-[11px] tracking-wider text-slate-700 font-bold">Total (${filtered.length} items)</td>
         <td class="px-4 py-3.5 text-right font-mono text-slate-800">${cur}${totalSlip.toFixed(2)}</td>
-        <td class="px-4 py-3.5 text-right font-mono text-slate-900">${cur}${totalStmt.toFixed(2)}</td>
+        <td class="px-4 py-3.5 text-right font-mono text-slate-900 font-bold">${cur}${totalStmt.toFixed(2)}</td>
         <td class="px-4 py-3.5 text-right font-mono text-amber-600 font-bold">${cur}${totalFuel.toFixed(2)}</td>
         <td class="px-4 py-3.5 text-right font-mono text-teal-600 font-bold">${cur}${totalRefund.toFixed(2)}</td>
         <td colspan="2"></td>
@@ -629,7 +727,218 @@ function renderExpensesView() {
     `;
   }
 
+  if (isBatch) {
+    attachBatchInputListeners();
+  }
+
   initLucide();
+}
+
+function attachBatchInputListeners() {
+  const tbody = document.getElementById("expensesTableBody");
+  if (!tbody) return;
+
+  const inputs = tbody.querySelectorAll(".batch-edit-input");
+  inputs.forEach(input => {
+    input.addEventListener("input", handleBatchInputChange);
+    input.addEventListener("change", handleBatchInputChange);
+  });
+}
+
+function handleBatchInputChange(e) {
+  const row = e.target.closest("tr[data-exp-id]");
+  if (!row) return;
+
+  const id = row.getAttribute("data-exp-id");
+  const item = appState.expenses.find(x => x.id === id);
+  if (!item) return;
+
+  const p1 = appState.settings.person1 || "Kitkat";
+  const p2 = appState.settings.person2 || "Rashu";
+  const cur = appState.settings.currencySymbol || "₹";
+
+  const stmtInput = row.querySelector('[data-field="statementAmount"]');
+  const fuelInput = row.querySelector('[data-field="fuelWaiver"]');
+  const refInput = row.querySelector('[data-field="refundAmount"]');
+  const usedSelect = row.querySelector('[data-field="usedBy"]');
+
+  const stmtVal = stmtInput ? (parseFloat(stmtInput.value) || 0) : 0;
+  const fuelVal = fuelInput ? (parseFloat(fuelInput.value) || 0) : 0;
+  const refVal = refInput ? (parseFloat(refInput.value) || 0) : 0;
+  const usedVal = usedSelect ? usedSelect.value : (item.usedBy || "Both");
+
+  const tempItem = {
+    ...item,
+    statementAmount: stmtVal,
+    fuelWaiver: fuelVal,
+    refundAmount: refVal,
+    usedBy: usedVal
+  };
+
+  const shares = ExpenseCalculator.calculateItemShares(tempItem, p1, p2);
+
+  const effCell = row.querySelector(".batch-effective-cell");
+  const p1Cell = row.querySelector(".batch-p1-cell");
+  const p2Cell = row.querySelector(".batch-p2-cell");
+
+  if (effCell) effCell.innerText = `${cur}${shares.effectiveAmount.toFixed(2)}`;
+  if (p1Cell) p1Cell.innerText = `${cur}${shares.person1Share.toFixed(2)}`;
+  if (p2Cell) p2Cell.innerText = `${cur}${shares.person2Share.toFixed(2)}`;
+
+  updateBatchFooterTotals();
+}
+
+function updateBatchFooterTotals() {
+  const tbody = document.getElementById("expensesTableBody");
+  const tfoot = document.getElementById("expensesTableFooter");
+  if (!tbody || !tfoot) return;
+
+  const cur = appState.settings.currencySymbol || "₹";
+  const rows = tbody.querySelectorAll("tr[data-exp-id]");
+  let totalSlip = 0, totalStmt = 0, totalFuel = 0, totalRefund = 0, totalEffective = 0, totalP1 = 0, totalP2 = 0;
+
+  rows.forEach(r => {
+    const id = r.getAttribute("data-exp-id");
+    const item = appState.expenses.find(x => x.id === id);
+    if (!item) return;
+
+    const stmtVal = parseFloat(r.querySelector('[data-field="statementAmount"]')?.value) || 0;
+    const fuelVal = parseFloat(r.querySelector('[data-field="fuelWaiver"]')?.value) || 0;
+    const refVal = parseFloat(r.querySelector('[data-field="refundAmount"]')?.value) || 0;
+    const usedVal = r.querySelector('[data-field="usedBy"]')?.value || item.usedBy || "Both";
+
+    const shares = ExpenseCalculator.calculateItemShares({
+      ...item,
+      statementAmount: stmtVal,
+      fuelWaiver: fuelVal,
+      refundAmount: refVal,
+      usedBy: usedVal
+    }, appState.settings.person1, appState.settings.person2);
+
+    totalSlip += parseFloat(item.slipAmount) || 0;
+    totalStmt += stmtVal;
+    totalFuel += fuelVal;
+    totalRefund += refVal;
+    totalEffective += shares.effectiveAmount;
+    totalP1 += shares.person1Share;
+    totalP2 += shares.person2Share;
+  });
+
+  tfoot.innerHTML = `
+    <tr>
+      <td colspan="2" class="px-4 py-3.5 text-left uppercase text-[11px] tracking-wider text-slate-700 font-bold">Total (${rows.length} items)</td>
+      <td class="px-4 py-3.5 text-right font-mono text-slate-800">${cur}${totalSlip.toFixed(2)}</td>
+      <td class="px-4 py-3.5 text-right font-mono text-slate-900 font-bold">${cur}${totalStmt.toFixed(2)}</td>
+      <td class="px-4 py-3.5 text-right font-mono text-amber-600 font-bold">${cur}${totalFuel.toFixed(2)}</td>
+      <td class="px-4 py-3.5 text-right font-mono text-teal-600 font-bold">${cur}${totalRefund.toFixed(2)}</td>
+      <td colspan="2"></td>
+      <td class="px-4 py-3.5 text-right font-mono font-bold text-sky-800">${cur}${totalEffective.toFixed(2)}</td>
+      <td class="px-4 py-3.5 text-right font-mono font-bold text-sky-700">${cur}${totalP1.toFixed(2)}</td>
+      <td class="px-4 py-3.5 text-right font-mono font-bold text-pink-700">${cur}${totalP2.toFixed(2)}</td>
+      <td></td>
+    </tr>
+  `;
+}
+
+function autoFillBatchPendingWithSlip() {
+  const tbody = document.getElementById("expensesTableBody");
+  if (!tbody) return;
+
+  const rows = tbody.querySelectorAll("tr[data-exp-id]");
+  let count = 0;
+  rows.forEach(r => {
+    const id = r.getAttribute("data-exp-id");
+    const item = appState.expenses.find(x => x.id === id);
+    const stmtInput = r.querySelector('[data-field="statementAmount"]');
+    if (item && stmtInput) {
+      const val = parseFloat(stmtInput.value) || 0;
+      if (val === 0 && (item.slipAmount || 0) > 0) {
+        stmtInput.value = item.slipAmount.toFixed(2);
+        stmtInput.dispatchEvent(new Event('input', { bubbles: true }));
+        count++;
+      }
+    }
+  });
+
+  showToast(`Auto-filled ${count} pending items with their slip amount.`);
+}
+
+function saveBatchStatementEdits() {
+  const tbody = document.getElementById("expensesTableBody");
+  if (!tbody) return;
+
+  const rows = tbody.querySelectorAll("tr[data-exp-id]");
+  let count = 0;
+
+  rows.forEach(r => {
+    const id = r.getAttribute("data-exp-id");
+    const item = appState.expenses.find(x => x.id === id);
+    if (!item) return;
+
+    const stmtInput = r.querySelector('[data-field="statementAmount"]');
+    const fuelInput = r.querySelector('[data-field="fuelWaiver"]');
+    const refInput = r.querySelector('[data-field="refundAmount"]');
+    const usedSelect = r.querySelector('[data-field="usedBy"]');
+
+    const newStmt = stmtInput ? (parseFloat(stmtInput.value) || 0) : item.statementAmount;
+    const newFuel = fuelInput ? (parseFloat(fuelInput.value) || 0) : item.fuelWaiver;
+    const newRef = refInput ? (parseFloat(refInput.value) || 0) : item.refundAmount;
+    const newUsed = usedSelect ? usedSelect.value : item.usedBy;
+
+    if (item.statementAmount !== newStmt || item.fuelWaiver !== newFuel || item.refundAmount !== newRef || item.usedBy !== newUsed) {
+      item.statementAmount = newStmt;
+      item.fuelWaiver = newFuel;
+      item.refundAmount = newRef;
+      item.usedBy = newUsed;
+      count++;
+    }
+  });
+
+  // Save to LocalStorage and push full sync to MongoDB server
+  StorageManager.saveExpenses(appState.expenses);
+  if (typeof StorageManager.pushFullSyncToServer === 'function') {
+    StorageManager.pushFullSyncToServer();
+  }
+
+  appState.isBatchEditMode = false;
+  renderApp();
+  showToast(`✅ Saved ${count} statement updates to database!`);
+}
+
+function showToast(message, type = 'success') {
+  let toastContainer = document.getElementById("spendwiseToastContainer");
+  if (!toastContainer) {
+    toastContainer = document.createElement("div");
+    toastContainer.id = "spendwiseToastContainer";
+    toastContainer.className = "fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none";
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transform transition-all duration-300 translate-y-3 opacity-0 ${
+    type === 'success' 
+      ? 'bg-slate-900 text-white border-slate-700 shadow-slate-900/30' 
+      : 'bg-rose-900 text-white border-rose-700 shadow-rose-900/30'
+  }`;
+  toast.innerHTML = `
+    <div class="w-5 h-5 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'} flex items-center justify-center shrink-0 text-white">
+      <i data-lucide="${type === 'success' ? 'check' : 'alert-circle'}" class="w-3 h-3"></i>
+    </div>
+    <span>${message}</span>
+  `;
+  toastContainer.appendChild(toast);
+  initLucide();
+
+  setTimeout(() => {
+    toast.classList.remove("translate-y-3", "opacity-0");
+  }, 10);
+
+  setTimeout(() => {
+    toast.classList.add("translate-y-3", "opacity-0");
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  }, 3500);
 }
 
 function getPersonBadgeClass(usedBy) {
@@ -1493,6 +1802,7 @@ function setupQuickStatementModal() {
   const openBtns = [document.getElementById("openQuickStatementModalBtn"), document.getElementById("openQuickStatementModalBtn2")];
   const closeBtn = document.getElementById("closeQuickStatementModalBtn");
   const saveBtn = document.getElementById("saveQuickStatementBtn");
+  const autoFillBtn = document.getElementById("quickModalFillSlipBtn");
   const tbody = document.getElementById("quickStatementTableBody");
 
   const open = () => {
@@ -1517,12 +1827,32 @@ function setupQuickStatementModal() {
     if (e.target === modal) close();
   });
 
+  if (autoFillBtn) {
+    autoFillBtn.addEventListener("click", () => {
+      const rows = tbody.querySelectorAll("tr[data-exp-id]");
+      let count = 0;
+      rows.forEach(r => {
+        const id = r.getAttribute("data-exp-id");
+        const tx = appState.expenses.find(x => x.id === id);
+        const stmtInput = r.querySelector(".quick-stmt-input");
+        if (tx && stmtInput) {
+          const curVal = parseFloat(stmtInput.value) || 0;
+          if (curVal === 0 && (tx.slipAmount || 0) > 0) {
+            stmtInput.value = tx.slipAmount.toFixed(2);
+            count++;
+          }
+        }
+      });
+      showToast(`Auto-filled ${count} pending items in modal.`);
+    });
+  }
+
   function renderQuickStatementTable() {
     const monthExpenses = appState.expenses.filter(e => e.month === appState.currentMonth && (e.paymentType || "Card").toLowerCase() !== "non-card");
     const cur = appState.settings.currencySymbol || "₹";
 
     if (monthExpenses.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500">No card transactions for this cycle.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500 font-medium">No card transactions for this statement cycle.</td></tr>`;
       return;
     }
 
@@ -1536,27 +1866,27 @@ function setupQuickStatementModal() {
       const p1 = appState.settings.person1 || "Kitkat";
       const p2 = appState.settings.person2 || "Rashu";
       return `
-        <tr data-exp-id="${item.id}" class="hover:bg-slate-800/40">
-          <td class="px-3 py-2 text-slate-400 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
-          <td class="px-3 py-2 text-white font-medium">${item.description}</td>
+        <tr data-exp-id="${item.id}" class="hover:bg-slate-50/80 transition border-b border-slate-100">
+          <td class="px-3 py-2 text-slate-500 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
+          <td class="px-3 py-2 text-slate-900 font-semibold">${item.description}</td>
           <td class="px-3 py-2 text-center">
-            <select class="quick-usedby-select px-2 py-1 bg-slate-800 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-indigo-500 font-medium">
+            <select class="quick-usedby-select px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 font-medium focus:outline-none focus:border-sky-500">
               <option value="${p1}" ${used === p1 ? 'selected' : ''}>${p1}</option>
               <option value="${p2}" ${used === p2 ? 'selected' : ''}>${p2}</option>
               <option value="Both" ${used === 'Both' ? 'selected' : ''}>Both</option>
             </select>
           </td>
-          <td class="px-3 py-2 text-right font-mono text-slate-300">${cur}${(item.slipAmount || 0).toFixed(2)}</td>
+          <td class="px-3 py-2 text-right font-mono text-slate-700 font-medium">${cur}${(item.slipAmount || 0).toFixed(2)}</td>
           <td class="px-3 py-2 text-center">
-            <input type="number" step="0.01" value="${item.statementAmount || ''}" placeholder="${item.slipAmount || '0.00'}" class="quick-stmt-input w-24 px-2 py-1 bg-slate-800 border border-slate-700 rounded text-center text-xs font-mono text-white focus:outline-none focus:border-indigo-500" />
+            <input type="number" step="0.01" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="quick-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-sky-500" />
           </td>
           <td class="px-3 py-2 text-center">
-            <input type="number" step="0.01" value="${item.fuelWaiver || ''}" placeholder="0.00" class="quick-fuel-input w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded text-center text-xs font-mono text-amber-400 focus:outline-none focus:border-indigo-500" />
+            <input type="number" step="0.01" value="${item.fuelWaiver || ''}" placeholder="0.00" class="quick-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600 focus:outline-none focus:border-sky-500" />
           </td>
           <td class="px-3 py-2 text-center">
-            <input type="number" step="0.01" value="${item.refundAmount || ''}" placeholder="0.00" class="quick-ref-input w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded text-center text-xs font-mono text-emerald-400 focus:outline-none focus:border-indigo-500" />
+            <input type="number" step="0.01" value="${item.refundAmount || ''}" placeholder="0.00" class="quick-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600 focus:outline-none focus:border-sky-500" />
           </td>
-          <td class="px-3 py-2 text-right font-mono font-bold text-indigo-400">${cur}${eff.toFixed(2)}</td>
+          <td class="px-3 py-2 text-right font-mono font-bold text-sky-700">${cur}${eff.toFixed(2)}</td>
         </tr>
       `;
     }).join("");
@@ -1565,6 +1895,7 @@ function setupQuickStatementModal() {
   if (saveBtn) {
     saveBtn.addEventListener("click", () => {
       const rows = tbody.querySelectorAll("tr[data-exp-id]");
+      let updatedCount = 0;
       rows.forEach(r => {
         const id = r.getAttribute("data-exp-id");
         const usedByVal = r.querySelector(".quick-usedby-select")?.value || "Both";
@@ -1574,17 +1905,25 @@ function setupQuickStatementModal() {
 
         const tx = appState.expenses.find(x => x.id === id);
         if (tx) {
-          tx.usedBy = usedByVal;
-          tx.statementAmount = stmtVal;
-          tx.fuelWaiver = fuelVal;
-          tx.refundAmount = refVal;
-          StorageManager.saveExpenseAsync(tx);
+          if (tx.usedBy !== usedByVal || tx.statementAmount !== stmtVal || tx.fuelWaiver !== fuelVal || tx.refundAmount !== refVal) {
+            tx.usedBy = usedByVal;
+            tx.statementAmount = stmtVal;
+            tx.fuelWaiver = fuelVal;
+            tx.refundAmount = refVal;
+            updatedCount++;
+          }
         }
       });
 
+      // Save to storage and push full sync to MongoDB Cloud
+      StorageManager.saveExpenses(appState.expenses);
+      if (typeof StorageManager.pushFullSyncToServer === 'function') {
+        StorageManager.pushFullSyncToServer();
+      }
+
       renderApp();
       close();
-      alert("Statement reconciliation values and user assignments saved successfully!");
+      showToast(`✅ Saved ${updatedCount} reconciliations to database!`);
     });
   }
 }
