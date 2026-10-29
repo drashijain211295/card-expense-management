@@ -212,6 +212,16 @@ input, select, textarea {
   }
 }
 
+/* Hide number input spinners / counters across all browsers */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* Batch Statement Edit Mode Styles */
 .batch-edit-input {
   transition: all 0.15s ease-in-out;

@@ -207,6 +207,129 @@ function initEventListeners() {
   setupQuickStatementModal();
   setupSettingsForm();
   setupTrashListeners();
+  setupNumericInputGuards();
+}
+
+/**
+ * Universal Number & Decimal Input Keyboard Guard & Sanitizer
+ * Enforces text fields with inputmode="decimal" to open phone number pad,
+ * blocks non-numeric keystrokes, and sanitizes input in real-time.
+ */
+function setupNumericInputGuards() {
+  // 1. Prevent invalid keystrokes before they hit the input
+  document.addEventListener("keydown", (e) => {
+    const target = e.target;
+    if (!target || target.tagName !== "INPUT") return;
+    const mode = target.getAttribute("inputmode");
+    if (mode !== "decimal" && mode !== "numeric") return;
+
+    // Standard navigation and editing keys
+    const allowedKeys = [
+      "Backspace", "Delete", "Tab", "Escape", "Enter",
+      "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+      "Home", "End"
+    ];
+    if (allowedKeys.includes(e.key)) return;
+
+    // Allow keyboard shortcuts (Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z, Cmd+A, etc.)
+    if (e.ctrlKey || e.metaKey) return;
+
+    // Digits 0-9 are allowed
+    if (/^[0-9]$/.test(e.key)) return;
+
+    // Decimal point handling for decimal inputs
+    if (mode === "decimal" && (e.key === "." || e.key === "," || e.key === "Decimal")) {
+      const val = target.value || "";
+      const selStart = target.selectionStart;
+      const selEnd = target.selectionEnd;
+      const hasSelection = selStart !== null && selEnd !== null && selStart !== selEnd;
+      const selectedText = hasSelection ? val.substring(selStart, selEnd) : "";
+
+      // Allow if there is no decimal point yet, or if the selection covers the existing decimal point
+      if (!val.includes(".") || selectedText.includes(".")) {
+        return;
+      }
+      e.preventDefault();
+      return;
+    }
+
+    // Block any other key (letters, symbols, operators, minus signs)
+    e.preventDefault();
+  });
+
+  // 2. Real-time input sanitizer (vital for mobile soft keyboards, voice typing, and clipboard paste)
+  document.addEventListener("input", (e) => {
+    const target = e.target;
+    if (!target || target.tagName !== "INPUT") return;
+    const mode = target.getAttribute("inputmode");
+    if (mode === "decimal") {
+      sanitizeDecimalInputField(target);
+    } else if (mode === "numeric") {
+      sanitizeIntegerInputField(target);
+    }
+  });
+
+  // 3. Clean up edge cases on blur (e.g. solitary dot, trailing dot, leading dot)
+  document.addEventListener("blur", (e) => {
+    const target = e.target;
+    if (!target || target.tagName !== "INPUT") return;
+    if (target.getAttribute("inputmode") === "decimal") {
+      let val = (target.value || "").trim();
+      if (!val) return;
+
+      let changed = false;
+      if (val === ".") {
+        val = "";
+        changed = true;
+      } else if (val.startsWith(".")) {
+        val = "0" + val;
+        changed = true;
+      } else if (val.endsWith(".")) {
+        val = val.slice(0, -1);
+        changed = true;
+      }
+
+      if (changed) {
+        target.value = val;
+        target.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+  }, true);
+}
+
+function sanitizeDecimalInputField(el) {
+  const val = el.value || "";
+  if (!val) return;
+
+  // Convert comma to period (common on some international mobile numeric keyboards)
+  let cleaned = val.replace(/,/g, '.');
+
+  // Strip all characters except digits and decimal point
+  cleaned = cleaned.replace(/[^0-9.]/g, '');
+
+  // Ensure only the first decimal point is kept
+  const parts = cleaned.split('.');
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('');
+  }
+
+  if (val !== cleaned) {
+    const cursor = el.selectionStart;
+    el.value = cleaned;
+    if (cursor !== null) {
+      const newPos = Math.min(cursor, cleaned.length);
+      el.setSelectionRange(newPos, newPos);
+    }
+  }
+}
+
+function sanitizeIntegerInputField(el) {
+  const val = el.value || "";
+  if (!val) return;
+  const cleaned = val.replace(/[^0-9]/g, '');
+  if (val !== cleaned) {
+    el.value = cleaned;
+  }
 }
 
 function switchTab(tabName) {
@@ -646,13 +769,13 @@ function renderExpensesView() {
           </td>
           <td class="px-3 py-2 text-right font-mono text-slate-700 font-medium">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
           <td class="px-2 py-1.5 text-right">
-            <input type="number" step="0.01" data-field="statementAmount" data-id="${item.id}" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="batch-edit-input batch-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900" />
+            <input type="text" inputmode="decimal" data-field="statementAmount" data-id="${item.id}" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="batch-edit-input batch-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900" autocomplete="off" />
           </td>
           <td class="px-2 py-1.5 text-right">
-            <input type="number" step="0.01" data-field="fuelWaiver" data-id="${item.id}" value="${item.fuelWaiver || ''}" placeholder="0.00" class="batch-edit-input batch-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600" />
+            <input type="text" inputmode="decimal" data-field="fuelWaiver" data-id="${item.id}" value="${item.fuelWaiver || ''}" placeholder="0.00" class="batch-edit-input batch-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600" autocomplete="off" />
           </td>
           <td class="px-2 py-1.5 text-right">
-            <input type="number" step="0.01" data-field="refundAmount" data-id="${item.id}" value="${item.refundAmount || ''}" placeholder="0.00" class="batch-edit-input batch-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600" />
+            <input type="text" inputmode="decimal" data-field="refundAmount" data-id="${item.id}" value="${item.refundAmount || ''}" placeholder="0.00" class="batch-edit-input batch-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600" autocomplete="off" />
           </td>
           <td class="px-2 py-1.5 text-center">
             <select data-field="usedBy" data-id="${item.id}" class="batch-edit-input batch-usedby-select px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800">
@@ -1878,13 +2001,13 @@ function setupQuickStatementModal() {
           </td>
           <td class="px-3 py-2 text-right font-mono text-slate-700 font-medium">${cur}${(item.slipAmount || 0).toFixed(2)}</td>
           <td class="px-3 py-2 text-center">
-            <input type="number" step="0.01" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="quick-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-sky-500" />
+            <input type="text" inputmode="decimal" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="quick-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-sky-500" autocomplete="off" />
           </td>
           <td class="px-3 py-2 text-center">
-            <input type="number" step="0.01" value="${item.fuelWaiver || ''}" placeholder="0.00" class="quick-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600 focus:outline-none focus:border-sky-500" />
+            <input type="text" inputmode="decimal" value="${item.fuelWaiver || ''}" placeholder="0.00" class="quick-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600 focus:outline-none focus:border-sky-500" autocomplete="off" />
           </td>
           <td class="px-3 py-2 text-center">
-            <input type="number" step="0.01" value="${item.refundAmount || ''}" placeholder="0.00" class="quick-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600 focus:outline-none focus:border-sky-500" />
+            <input type="text" inputmode="decimal" value="${item.refundAmount || ''}" placeholder="0.00" class="quick-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600 focus:outline-none focus:border-sky-500" autocomplete="off" />
           </td>
           <td class="px-3 py-2 text-right font-mono font-bold text-sky-700">${cur}${eff.toFixed(2)}</td>
         </tr>
