@@ -269,7 +269,20 @@ function setupNumericInputGuards() {
     }
   });
 
-  // 3. Clean up edge cases on blur (e.g. solitary dot, trailing dot, leading dot)
+  // 3. Clear 0 on focus so user can immediately type their new number without 0 highlighting
+  document.addEventListener("focus", (e) => {
+    const target = e.target;
+    if (!target || target.tagName !== "INPUT") return;
+    const mode = target.getAttribute("inputmode");
+    if (mode === "decimal" || mode === "numeric") {
+      const val = (target.value || "").trim();
+      if (val === "0" || val === "0.00" || val === "0.0" || val === "00") {
+        target.value = "";
+      }
+    }
+  }, true);
+
+  // 4. Clean up edge cases on blur (e.g. solitary dot, trailing dot, leading dot)
   document.addEventListener("blur", (e) => {
     const target = e.target;
     if (!target || target.tagName !== "INPUT") return;
@@ -760,6 +773,11 @@ function renderExpensesView() {
     totalP2 += shares.person2Share;
 
     if (isBatch) {
+      const stmtVal = (item.statementAmount && parseFloat(item.statementAmount) > 0) ? item.statementAmount : '';
+      const fuelVal = (item.fuelWaiver && parseFloat(item.fuelWaiver) > 0) ? item.fuelWaiver : '';
+      const refVal = (item.refundAmount && parseFloat(item.refundAmount) > 0) ? item.refundAmount : '';
+      const slipPlaceholder = (item.slipAmount && parseFloat(item.slipAmount) > 0) ? parseFloat(item.slipAmount).toFixed(2) : '0.00';
+
       return `
         <tr data-exp-id="${item.id}" class="batch-edit-active-row transition border-b border-indigo-100/60">
           <td class="px-3 py-2 text-slate-500 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
@@ -769,13 +787,13 @@ function renderExpensesView() {
           </td>
           <td class="px-3 py-2 text-right font-mono text-slate-700 font-medium">${item.slipAmount ? `${cur}${item.slipAmount.toFixed(2)}` : '-'}</td>
           <td class="px-2 py-1.5 text-right">
-            <input type="text" inputmode="decimal" data-field="statementAmount" data-id="${item.id}" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="batch-edit-input batch-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900" autocomplete="off" />
+            <input type="text" inputmode="decimal" data-field="statementAmount" data-id="${item.id}" value="${stmtVal}" placeholder="${slipPlaceholder}" class="batch-edit-input batch-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900" autocomplete="off" />
           </td>
           <td class="px-2 py-1.5 text-right">
-            <input type="text" inputmode="decimal" data-field="fuelWaiver" data-id="${item.id}" value="${item.fuelWaiver || ''}" placeholder="0.00" class="batch-edit-input batch-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600" autocomplete="off" />
+            <input type="text" inputmode="decimal" data-field="fuelWaiver" data-id="${item.id}" value="${fuelVal}" placeholder="0.00" class="batch-edit-input batch-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600" autocomplete="off" />
           </td>
           <td class="px-2 py-1.5 text-right">
-            <input type="text" inputmode="decimal" data-field="refundAmount" data-id="${item.id}" value="${item.refundAmount || ''}" placeholder="0.00" class="batch-edit-input batch-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600" autocomplete="off" />
+            <input type="text" inputmode="decimal" data-field="refundAmount" data-id="${item.id}" value="${refVal}" placeholder="0.00" class="batch-edit-input batch-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600" autocomplete="off" />
           </td>
           <td class="px-2 py-1.5 text-center">
             <select data-field="usedBy" data-id="${item.id}" class="batch-edit-input batch-usedby-select px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800">
@@ -1685,10 +1703,10 @@ function editExpense(id) {
   document.getElementById("expenseMonthInput").value = item.month;
   document.getElementById("expenseDateInput").value = parseToISODate(item.date);
   document.getElementById("expenseDescInput").value = item.description;
-  document.getElementById("expenseSlipInput").value = item.slipAmount || '';
-  document.getElementById("expenseStmtInput").value = item.statementAmount || '';
-  document.getElementById("expenseFuelInput").value = item.fuelWaiver || '';
-  document.getElementById("expenseRefundInput").value = item.refundAmount || '';
+  document.getElementById("expenseSlipInput").value = (parseFloat(item.slipAmount) || 0) > 0 ? item.slipAmount : '';
+  document.getElementById("expenseStmtInput").value = (parseFloat(item.statementAmount) || 0) > 0 ? item.statementAmount : '';
+  document.getElementById("expenseFuelInput").value = (parseFloat(item.fuelWaiver) || 0) > 0 ? item.fuelWaiver : '';
+  document.getElementById("expenseRefundInput").value = (parseFloat(item.refundAmount) || 0) > 0 ? item.refundAmount : '';
   if (document.getElementById("expenseRefundTypeInput")) {
     document.getElementById("expenseRefundTypeInput").value = item.refundType || 'Card';
   }
@@ -1877,7 +1895,7 @@ function editUpiExpense(id) {
   document.getElementById("upiMonthInput").value = item.month || appState.currentMonth;
   document.getElementById("upiDateInput").value = parseToISODate(item.date);
   document.getElementById("upiDescInput").value = item.description || "";
-  document.getElementById("upiAmountInput").value = item.amount || "";
+  document.getElementById("upiAmountInput").value = (parseFloat(item.amount) || 0) > 0 ? item.amount : "";
   document.getElementById("upiUsedByInput").value = item.usedBy || "Both";
   document.getElementById("upiPaidByInput").value = item.paidBy || "Rashu";
   
@@ -1988,6 +2006,11 @@ function setupQuickStatementModal() {
       const used = item.usedBy || 'Both';
       const p1 = appState.settings.person1 || "Kitkat";
       const p2 = appState.settings.person2 || "Rashu";
+      const stmtVal = (item.statementAmount && parseFloat(item.statementAmount) > 0) ? item.statementAmount : '';
+      const fuelVal = (item.fuelWaiver && parseFloat(item.fuelWaiver) > 0) ? item.fuelWaiver : '';
+      const refVal = (item.refundAmount && parseFloat(item.refundAmount) > 0) ? item.refundAmount : '';
+      const slipPlaceholder = (item.slipAmount && parseFloat(item.slipAmount) > 0) ? parseFloat(item.slipAmount).toFixed(2) : '0.00';
+
       return `
         <tr data-exp-id="${item.id}" class="hover:bg-slate-50/80 transition border-b border-slate-100">
           <td class="px-3 py-2 text-slate-500 whitespace-nowrap">${formatDisplayDate(item.date)}</td>
@@ -2001,13 +2024,13 @@ function setupQuickStatementModal() {
           </td>
           <td class="px-3 py-2 text-right font-mono text-slate-700 font-medium">${cur}${(item.slipAmount || 0).toFixed(2)}</td>
           <td class="px-3 py-2 text-center">
-            <input type="text" inputmode="decimal" value="${item.statementAmount !== undefined && item.statementAmount !== null && item.statementAmount !== '' ? item.statementAmount : ''}" placeholder="${item.slipAmount || '0.00'}" class="quick-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-sky-500" autocomplete="off" />
+            <input type="text" inputmode="decimal" value="${stmtVal}" placeholder="${slipPlaceholder}" class="quick-stmt-input w-24 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-slate-900 focus:outline-none focus:border-sky-500" autocomplete="off" />
           </td>
           <td class="px-3 py-2 text-center">
-            <input type="text" inputmode="decimal" value="${item.fuelWaiver || ''}" placeholder="0.00" class="quick-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600 focus:outline-none focus:border-sky-500" autocomplete="off" />
+            <input type="text" inputmode="decimal" value="${fuelVal}" placeholder="0.00" class="quick-fuel-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-amber-600 focus:outline-none focus:border-sky-500" autocomplete="off" />
           </td>
           <td class="px-3 py-2 text-center">
-            <input type="text" inputmode="decimal" value="${item.refundAmount || ''}" placeholder="0.00" class="quick-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600 focus:outline-none focus:border-sky-500" autocomplete="off" />
+            <input type="text" inputmode="decimal" value="${refVal}" placeholder="0.00" class="quick-ref-input w-20 px-2 py-1 bg-white border border-slate-300 rounded-lg text-right text-xs font-mono font-semibold text-teal-600 focus:outline-none focus:border-sky-500" autocomplete="off" />
           </td>
           <td class="px-3 py-2 text-right font-mono font-bold text-sky-700">${cur}${eff.toFixed(2)}</td>
         </tr>
